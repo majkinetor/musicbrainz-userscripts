@@ -4345,6 +4345,15 @@ body.col-dragging,body.col-dragging *{cursor:grabbing!important;user-select:none
 .artgrid figure{margin:0;display:flex;flex-direction:column;gap:6px}
 .disco{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}.disco a{display:flex;flex-direction:column;gap:5px;color:inherit;text-decoration:none}.disco img,.disco .dn{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}.disco .dt{font-weight:600;line-height:1.3;min-width:0;overflow-wrap:anywhere}.disco .dy{font-size:13px;color:var(--soft)}.disco-h{margin:18px 0 10px;font-size:14px;color:var(--soft)}.gf{display:inline-flex;align-items:center;gap:8px;background:none;border:0;padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;cursor:pointer}.gf .cv{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;border:1px solid var(--border)}.gf:hover{color:var(--text)}.gf:hover .cv{border-color:var(--accent)}.disco-h:first-of-type{margin-top:0}.sec.pend .secthead{cursor:default;justify-content:flex-start}.sec.pend .fold{display:flex;align-items:center;gap:inherit;opacity:.6}.ld{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:ldspin .8s linear infinite}@keyframes ldspin{to{transform:rotate(360deg)}}.als{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0}.als span:not(:last-of-type)::after{content:'·';margin:0 8px;color:var(--soft)}.als .chip{margin-left:10px;cursor:pointer}.disco.ed-row{grid-template-columns:none;grid-auto-columns:140px}.ed-t a.tt .dn{width:100%;height:100%;display:grid;place-items:center}.disco .dn svg,.ed-t a.tt .dn svg{opacity:.45}.art .apic{object-fit:cover;object-position:top}.art .ipic{object-fit:cover}.ed-t td ul{list-style:none;margin:0;padding:0}.ed-t tr.tsub td{padding-top:18px;font-weight:600;color:var(--soft)}.art .lpic{object-fit:contain;background:#fff;padding:12px;box-sizing:border-box}.art .mpic{object-fit:contain;background:var(--chip);padding:16px;box-sizing:border-box}.art .imgflag{position:absolute;left:12px;top:12px;width:40px;height:auto;border-radius:2px;box-shadow:0 1px 4px var(--shadow);pointer-events:none}.arc{display:block}.arc .flagi{display:inline;height:.8em;width:auto;max-width:none;margin-right:5px;vertical-align:0;border-radius:2px;box-shadow:0 0 0 1px var(--border)}
 .artgrid figcaption{font-size:13px;color:var(--soft);text-align:center}
+.rga-h{display:flex;align-items:center;gap:8px;margin:16px 0 8px;font-size:13px;font-weight:700;color:var(--soft)}.rga-h:first-child{margin-top:0}
+.rga-books{display:flex;flex-direction:column;gap:2px;max-height:320px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
+.rga-bk{all:unset;display:flex;align-items:center;gap:12px;padding:6px 8px;border-radius:8px;cursor:pointer}.rga-bk:hover{background:var(--chip)}
+.rga-bk img{width:44px;height:44px;object-fit:cover;border-radius:6px;background:var(--chip);flex:none}
+.rga-bk .t{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;min-width:0;font-size:13px}.rga-bk .r{flex-basis:100%;color:var(--muted)}
+.rga-pdf{font:700 10px/1 'JetBrains Mono',ui-monospace,monospace;padding:2px 4px;border-radius:4px;background:var(--chip);color:var(--soft)}
+.rga-grid button{all:unset;cursor:pointer;display:block}.rga-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block;background:var(--chip)}
+.rga-busy{color:var(--muted)}.rga-big{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.ed-art{all:unset;cursor:pointer;white-space:nowrap;font-size:13px;color:var(--soft)}.ed-art:hover{color:var(--text)}.ed-art b{color:var(--text)}
 
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--toast-bg);color:var(--toast-text);padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;z-index:40;box-shadow:0 10px 30px var(--shadow)}
 
@@ -5130,7 +5139,7 @@ const S = {
     fold: [], discFold: [], grpFold: [], // grpFold: the discography's and releases' folded groups, 'dg:Album' / 'ed:Bootleg'
     edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date', edSort: '', lmAuto: true, tabView: 'table', clView: 'grid', clSort: 'name', // clSort: name, type, privacy (pv) or items, each in its natural order (items most first), a leading '-' reversing it; edSort: the releases table's column, '' its own order, a leading '-' reversing it
     lbGroups: true, // a label's releases shown by release group
-    ed: { kinds: new Set(), official: false },
+    ed: { kinds: new Set(), official: false, book: false, pdf: false },
     open: new Set(),
     fxOpen: [], // keys of the recording and work facts boxes that are open
     imgOrder: ['discogs', 'wikipedia', 'deezer', 'spotify', 'tidal', 'apple', 'soundcloud'], // whose artist image or label logo comes first
@@ -5526,6 +5535,8 @@ const edition = e => ({
     events: (e['release-events'] || []).map(v => ({ date: v.date || '', area: v.area ? v.area.name.replace(/^\[(.*)\]$/, '$1') : '', iso: v.area && ((v.area['iso-3166-1-codes'] || [])[0] || v.area.name.replace(/^\[(.*)\]$/, '$1')) })),
     ac: e['artist-credit'] || [], links: urlsOf(e.relations || []),
     // its release group's types, on a label's or a recording's releases (inc=release-groups, in the same request)
+    // its archive listing's counts: the release group's Artwork reads only the releases that have images
+    caa: e['cover-art-archive'] || null,
     rgType: e['release-group'] ? [e['release-group']['primary-type'], ...(e['release-group']['secondary-types'] || [])].filter(Boolean).join(' + ') : '',
     rg: e['release-group'] ? (g => ({ id: g.id, title: g.title || e.title || '', dis: g.disambiguation || '', first: g['first-release-date'] || '', ac: g['artist-credit'] || e['artist-credit'] || [],
         type: [g['primary-type'] || '', ...(g['secondary-types'] || [])].filter(Boolean).join(' · ') || 'Unspecified' }))(e['release-group']) : null,
@@ -6330,7 +6341,7 @@ async function edToggle(id) {
 }
 // flat: a paged list loads in MusicBrainz's order, so status groups would grow above the reader
 // the releases table's sortable columns: key, heading, the value it sorts by
-const ED_COLS = [['title', 'Release', e => e.title || ''], ['artist', 'Artist', e => (e.ac || []).map(c => (c.name || '') + (c.joinphrase || '')).join('')], ['format', 'Format', e => fmtSummary(e.formats)], ['rgtype', 'Type', e => e.rgType || '\uffff'],
+const ED_COLS = [['title', 'Release', e => e.title || ''], ['artist', 'Artist', e => (e.ac || []).map(c => (c.name || '') + (c.joinphrase || '')).join('')], ['format', 'Format', e => fmtSummary(e.formats)], ['art', 'Art', e => rgaSort(e)], ['rgtype', 'Type', e => e.rgType || '\uffff'],
     ['tracks', 'Tracks', e => String(e.counts.reduce((a, b) => a + (+b || 0), 0)).padStart(5, '0')], ['date', 'Country / date', e => e.date || '9'], ['label', 'Label', e => (e.li[0] || {}).name || '\uffff'],
     ['catno', 'Catalog#', e => (e.li[0] || {}).catno || '\uffff'], ['barcode', 'Barcode', e => e.barcode || '\uffff'],
     ['status', 'Status', e => e.status || '\uffff'], ['packaging', 'Packaging', e => e.packaging || '\uffff'], ['lang', 'Language / script', e => (e.lang || []).join(' ') || '\uffff'], ['comment', 'Comment', e => e.disambig || '\uffff']];
@@ -6348,6 +6359,8 @@ function colState(sc) {
     if (sc === 'ed' && edNoLinks) order.splice(order.indexOf('links'), 1);
     // Type is the release group's: a release group's own releases all share it, and only a label's or a recording's fetch it
     if (sc === 'ed' && !(data && (data.kind === 'label' || data.kind === 'recording'))) order.splice(order.indexOf('rgtype'), 1);
+    // Art reads the archive listings of a release group's releases (its Artwork card's scan)
+    if (sc === 'ed' && !(data && data.kind === 'rg')) order.splice(order.indexOf('art'), 1);
     return { order, off: new Set(keys.slice(1).filter(k => known.includes(k) ? (saved.off || []).includes(k) : off.includes(k))) };
 }
 const colKeep = (sc, order, off) => { S.colPick = { ...S.colPick, [sc]: { order, off: [...off] } }; };
@@ -6428,6 +6441,7 @@ function edTable(es, curId, flat, part, edRg) {
                 title: [`<a class="${longC(e.title)}"${longT(e.title)} href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}`],
                 artist: [acHtml(e.ac)],
                 format: [esc(fmtSummary(e.formats))],
+                art: [rgaCell(e), 'art'],
                 rgtype: [esc(e.rgType || '')],
                 tracks: [`<button class="ed-tr" type="button" data-edtr="${e.id}" data-edrg="${(e.rg && e.rg.id) || edRg || ''}" aria-expanded="${edOpen.has(e.id)}" data-tip="${edOpen.has(e.id) ? 'Hide' : 'Show'} the tracklist&#10;Right-click: ${edOpen.has(e.id) ? 'hide' : 'show'} every row's tracklist">${e.counts.join(' + ')}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>`, 'num'],
                 date: [evCell(e)],
@@ -6459,6 +6473,8 @@ function edHtml(r, eds, count) {
         eds = eds.map(e => e.id === r.id ? { ...e, thumb } : e);
     }
     const lb = !r.id && /^\/label\//.test(r.page || ''), grp = lb && S.lbGroups;
+    // a release group's switches for its artwork: they hold only once its listings are read
+    const rgaOn = !!(r.rgId && !r.id && !r.native && data && data.kind === 'rg');
     const view = r.id ? S.edView : grp && S.rgView === 'format' ? 'grid' : S.rgView;
     // a label's or group's releases past the first 100 load with "Load more" (lmFoot); they come in MusicBrainz's
     // order, so the list keeps it (sorting would reshuffle what is already on screen)
@@ -6466,17 +6482,17 @@ function edHtml(r, eds, count) {
     const all = paged ? [...eds] : [...eds].sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
     const kinds = {}; for (const e of all) { const k = fmtKind(e.formats[0]); kinds[k] = (kinds[k] || 0) + 1; }
     const kindList = Object.entries(kinds).sort((a, b) => b[1] - a[1]);
-    const shown = all.filter(e => (!S.ed.kinds.size || S.ed.kinds.has(fmtKind(e.formats[0]))) && (!S.ed.official || r.native || e.status === 'Official') && fltPass('ed', e));
+    const shown = all.filter(e => (!S.ed.kinds.size || S.ed.kinds.has(fmtKind(e.formats[0]))) && (!S.ed.official || r.native || e.status === 'Official') && (!rgaOn || ((!S.ed.book || (rgaImgs(e) || []).some(rgaBook)) && (!S.ed.pdf || (rgaImgs(e) || []).some(rgaPdf)))) && fltPass('ed', e));
     const covers = all.filter(e => e.thumb).length, unofficial = all.filter(e => e.status !== 'Official').length;
     const views = '<span class="ed-div"></span>' + viewBs(grp ? ['grid', 'row', 'table'] : ['grid', 'row', 'format', 'table'], view, 'edview', 'Editions view');
     // folded: a format opens the section filtered to it
     const folded = `<div class="ed-folded"><span class="stack">${all.filter(e => e.thumb).slice(0, 7).map(e => `<img src="${edThumb(e)}" alt="" data-edid="${e.id}">`).join('')}</span>
         <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" data-tip="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}<span class="kn">${KIND_NAME[k]} </span>${n}</button>`).join('')}</span>
         <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
-    let filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}" data-tip="Show only official releases, hiding bootlegs, promotions and other unofficial ones"><i></i>Official</button><span class="ed-div"></span>${fltBtn('ed', all)}${views.replace('<span class="ed-div"></span>', '')}</div>` + fltBar('ed', all);
+    let filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}" data-tip="Show only official releases, hiding bootlegs, promotions and other unofficial ones"><i></i>Official</button>${rgaOn ? `<button class="ed-sw" type="button" role="switch" data-edbook aria-checked="${S.ed.book}" data-tip="Show only releases with a booklet, liner or poster&#10;Reads every release's artwork first"><i></i>Has booklet</button><button class="ed-sw" type="button" role="switch" data-edpdf aria-checked="${S.ed.pdf}" data-tip="Show only releases with a PDF in their artwork&#10;Reads every release's artwork first"><i></i>Has PDF</button>` : ''}<span class="ed-div"></span>${fltBtn('ed', all)}${views.replace('<span class="ed-div"></span>', '')}</div>` + fltBar('ed', all);
     const tools = fltBtn('ed', all) + (view === 'table' && !grp ? colBtn('ed') : '') + views;
     filters = filters.replace(fltBtn('ed', all), '').replace(views.replace('<span class="ed-div"></span>', ''), '');
-    if (r.native) filters = filters.replace(/<button class="ed-sw"[\s\S]*?<\/button>/, '');
+    if (r.native) filters = filters.replace(/<button class="ed-sw"[\s\S]*?<\/button>/g, '');
     let body;
     if (grp) body = lbGroupsHtml(shown, view);
     else if (view === 'table') body = edTable(shown, r.id, paged || r.native, paged, r.rgId);
@@ -11259,6 +11275,142 @@ function discoHtml(d) {
 }
 
 /* ── artwork ───────────────────────────────────────── */
+// A release group's artwork (#1116, options A and C of the mock): every release's archive listing, read 6 at a time
+// and kept per release, so the Editions table's Art column and the Artwork card fill in as it runs. The card merges
+// look-alikes of a type across releases (a 64-bit difference hash of the small thumbnail) and keeps booklets apart,
+// one row per release, since their pages differ from release to release.
+const RGA = new Map(), RGA_REL = new Map(), RGA_HASH = caaStore('eh:caa-dh', 24 * 60 * 60 * 1000), RGA_BIG = 50;
+const RGA_BOOK = ['Booklet', 'Liner', 'Poster'];
+const rgaOf = id => { if (!RGA.has(id)) RGA.set(id, { on: false, busy: false, hashed: false, n: 0 }); return RGA.get(id); };
+// a release's images once read; null before
+const rgaImgs = e => RGA_REL.has(e.id) ? RGA_REL.get(e.id) : null;
+const rgaWith = eds => eds.filter(e => e.caa && e.caa.count);
+const rgaBook = i => (i.types || []).some(t => RGA_BOOK.includes(t));
+const rgaPdf = i => /\.pdf$/i.test(i.image || '');
+const rgaRedraw = rgId => { if (data && data.kind === 'rg' && ((data.g && data.g.id === rgId) || data.id === rgId)) { const y = scrollY; render(); keepY(y); } };
+async function rgaScan(rgId, eds) {
+    const st = rgaOf(rgId);
+    if (st.busy) return;
+    const todo = rgaWith(eds).filter(e => !RGA_REL.has(e.id));
+    st.on = true; st.busy = true;
+    LOG.info(`Group artwork: reading ${todo.length} release listings of ${rgId}`);
+    const t0 = performance.now();
+    let last = 0;
+    const work = async () => {
+        for (let e; (e = todo.shift());) {
+            const j = await caaJson('release', e.id);
+            RGA_REL.set(e.id, ((j && j.images) || []).map(i => ({ ...i, image: (i.image || '').replace(/^http:/, 'https:') })));
+            st.n++;
+            if (performance.now() - last > 500) { last = performance.now(); rgaRedraw(rgId); }
+        }
+    };
+    await Promise.all(Array.from({ length: 6 }, work));
+    LOG.info(`Group artwork: ${st.n} listings in ${Math.round(performance.now() - t0)} ms`);
+    st.hashed = false; rgaRedraw(rgId);
+    // the hashes: only for types that can merge, booklets aside
+    const all = rgaWith(eds).flatMap(e => (rgaImgs(e) || []).filter(i => !rgaBook(i) && !rgaPdf(i) && !RGA_HASH.has(String(i.id))));
+    LOG.debug(`Group artwork: hashing ${all.length} images`);
+    const hw = async () => { for (let i; (i = all.shift());) RGA_HASH.set(String(i.id), await rgaHash(i)); };
+    await Promise.all(Array.from({ length: 6 }, hw));
+    st.busy = false; st.hashed = true;
+    LOG.info(`Group artwork: done in ${Math.round(performance.now() - t0)} ms`);
+    rgaRedraw(rgId);
+}
+// the difference hash of an image's smallest thumbnail, as 16 hex digits; '' when it won't load
+async function rgaHash(i) {
+    const th = i.thumbnails || {}, u = (th['250'] || th.small || i.image || '').replace(/^http:/, 'https:');
+    try {
+        const r = await mbnLog(u, undefined, { label: 'artwork hash ' + i.id });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const bm = await createImageBitmap(await r.blob()), c = document.createElement('canvas');
+        c.width = 9; c.height = 8;
+        const x = c.getContext('2d', { willReadFrequently: true });
+        x.drawImage(bm, 0, 0, 9, 8); bm.close && bm.close();
+        const p = x.getImageData(0, 0, 9, 8).data, g = (cx, cy) => { const o = (cy * 9 + cx) * 4; return p[o] * .299 + p[o + 1] * .587 + p[o + 2] * .114; };
+        let h = '';
+        for (let y = 0; y < 8; y++) { let n = 0; for (let cx = 0; cx < 8; cx++) n = n << 1 | (g(cx, y) > g(cx + 1, y) ? 1 : 0); h += n.toString(16).padStart(2, '0'); }
+        return h;
+    } catch (e) { LOG.debug('artwork hash failed', i.id, e); return ''; }
+}
+const rgaDist = (a, b) => { let d = 0; for (let k = 0; k < 16; k += 2) { let v = parseInt(a.slice(k, k + 2), 16) ^ parseInt(b.slice(k, k + 2), 16); while (v) { d += v & 1; v >>= 1; } } return d; };
+// the merged images: one per look-alike of a type, with every release it is on, most releases first
+function rgaMerge(eds) {
+    const out = [];
+    for (const e of eds) for (const i of rgaImgs(e) || []) {
+        if (rgaBook(i)) continue;
+        const type = (i.types || [])[0] || 'Untyped', h = RGA_HASH.get(String(i.id)) || '';
+        const m = h && out.find(c => c.type === type && c.h && rgaDist(c.h, h) <= 10);
+        if (m) { m.all.push({ i, e }); if (!m.rels.includes(e)) m.rels.push(e); }
+        else out.push({ type, h, i, e, all: [{ i, e }], rels: [e] });
+    }
+    return out.sort((a, b) => b.rels.length - a.rels.length);
+}
+// a release in a line: date · country · format · label and catalog number
+const rgaRel = e => [e.date, e.where[0], fmtSummary(e.formats), e.li[0] && [e.li[0].name, e.li[0].catno].filter(Boolean).join(' ')].filter(Boolean).join(' · ');
+const rgaGal = (i, e) => ({ id: i.id, types: i.types, comment: [i.comment, rgaRel(e)].filter(Boolean).join(' · '), image: i.image });
+// Art Station's viewer, else the image in a tab
+function rgaOpen(release, images, start) {
+    if (!images.length) return;
+    LOG.debug(`Group artwork: opening ${images.length} images`);
+    const ask = new CustomEvent('mbu-gallery-open', { cancelable: true, detail: JSON.stringify({ release, start: start || images[0].id, images }) });
+    document.dispatchEvent(ask);
+    if (!ask.defaultPrevented) window.open((images.find(i => i.id === start) || images[0]).image, '_blank', 'noopener');
+}
+// the clicks of the card and the column, through the page's delegated handler; true when it took the click
+function rgaClick(d) {
+    const g = data && data.g, eds = (data && data.editions) || [];
+    if (!g || data.kind !== 'rg') return false;
+    if ('rgascan' in d) { rgaScan(g.id, eds); return true; }
+    const merged = () => rgaMerge(rgaWith(eds));
+    if ('rgaall' in d) { const m = merged(); rgaOpen(m[0] && m[0].e.id, m.map(c => rgaGal(c.i, c.e))); return true; }
+    if (d.rgatile) { const m = merged(), c = m[+d.rgatile]; if (c) rgaOpen(c.e.id, m.map(x => rgaGal(x.i, x.e)), c.i.id); return true; }
+    if (d.rgarel) {
+        const e = eds.find(x => x.id === d.rgarel), im = e && rgaImgs(e);
+        if (im) rgaOpen(e.id, im.map(i => rgaGal(i, e)), (('rgabook' in d && im.find(rgaBook)) || im[0] || {}).id);
+        return true;
+    }
+    return false;
+}
+// the Editions table's Art cell: how many, then the types, a booklet's pages and a PDF
+function rgaCell(e) {
+    const im = rgaImgs(e);
+    if (!im) return e.caa && e.caa.count ? `<span class="sub" data-tip="Not read yet">${e.caa.count}</span>` : '';
+    if (!im.length) return '';
+    const types = [], book = im.filter(rgaBook).length;
+    for (const i of im) for (const t of i.types || []) if (!RGA_BOOK.includes(t) && !types.includes(t)) types.push(t);
+    const bits = types.slice(0, 3).map(t => esc(t.toLowerCase()));
+    if (types.length > 3) bits.push('+' + (types.length - 3));
+    if (book) bits.push(`booklet×${book}`);
+    return `<button class="ed-art" type="button" data-rgarel="${e.id}" data-tip="Open this release's ${im.length} image${im.length === 1 ? '' : 's'} in the viewer"><b>${im.length}</b> ${bits.join(' ')}${im.some(rgaPdf) ? ' <span class="rga-pdf">PDF</span>' : ''}</button>`;
+}
+const rgaSort = e => { const im = rgaImgs(e); return String(im ? im.length : e.caa ? e.caa.count : 0).padStart(4, '0'); };
+const RGA_IMG = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+// the group's Artwork card
+function rgaHtml(g, eds) {
+    const withArt = rgaWith(eds), st = rgaOf(g.id);
+    if (!withArt.length) return '';
+    // a small group reads its releases' listings at once; a big one waits for Scan
+    if (!st.on && withArt.length <= RGA_BIG) setTimeout(() => rgaScan(g.id, eds));
+    else if (st.on && !st.busy && withArt.some(e => !RGA_REL.has(e.id))) setTimeout(() => rgaScan(g.id, eds));
+    const read = withArt.filter(e => RGA_REL.has(e.id)), total = withArt.reduce((a, e) => a + e.caa.count, 0);
+    if (!st.on) {
+        const note = `${total} images on ${withArt.length} releases`;
+        return sect('art', 'Artwork', `<span class="aside">${note}</span>`, `<div class="rga-big">${note}: reading every listing takes a while. <button class="lnk" type="button" data-rgascan>Scan</button></div>`, `<div class="folded-note">${note}</div>`);
+    }
+    const books = read.filter(e => rgaImgs(e).some(rgaBook)), merged = rgaMerge(read), n = read.reduce((a, e) => a + rgaImgs(e).length, 0);
+    const prog = st.busy ? ` · <span class="rga-busy">${read.length < withArt.length ? `reading ${read.length} of ${withArt.length}` : 'merging look-alikes'}</span>` : '';
+    const note = `${n} images on ${read.length} releases · ${merged.length + books.length} after merging${prog}`;
+    const row = e => {
+        const im = rgaImgs(e), bk = im.filter(rgaBook), f = bk.find(i => !rgaPdf(i)) || bk[0], types = [...new Set(bk.flatMap(i => i.types.filter(t => RGA_BOOK.includes(t))))];
+        return `<button class="rga-bk" type="button" data-rgarel="${e.id}" data-rgabook data-tip="Open this release's images in the viewer, at its ${esc(types[0].toLowerCase())}"><img src="${esc(thumbOf(f))}" alt="" loading="lazy" data-rgaimg data-full="${esc(f.image)}"><span class="t"><b>${esc(types.join(', '))}</b> <span class="sub">${bk.length} ${bk.length === 1 ? 'scan' : 'scans'}</span>${bk.some(rgaPdf) ? ' <span class="rga-pdf">PDF</span>' : ''}<span class="r">${esc(rgaRel(e))}</span></span></button>`;
+    };
+    const types = [...new Set(merged.map(c => c.type))];
+    const tile = c => { const k = merged.indexOf(c); return `<figure><button type="button" data-rgatile="${k}" data-tip="${esc(c.type)}${c.i.comment ? ' · ' + esc(c.i.comment) : ''}&#10;On ${c.rels.length} release${c.rels.length === 1 ? '' : 's'}:&#10;${c.rels.slice(0, 8).map(e => esc(rgaRel(e))).join('&#10;')}${c.rels.length > 8 ? `&#10;and ${c.rels.length - 8} more` : ''}"><img src="${esc(thumbOf(c.i))}" data-full="${esc(c.i.image)}" data-rgaimg alt="" loading="lazy"></button><figcaption>×${c.rels.length} release${c.rels.length === 1 ? '' : 's'}</figcaption></figure>`; };
+    const body = (books.length ? `<div class="rga-h">Booklets <span class="count">${books.length}</span></div><div class="rga-books">${books.map(row).join('')}</div>` : '')
+        + types.map(t => `<div class="rga-h">${esc(t)} <span class="count">${merged.filter(c => c.type === t).length}</span></div><div class="artgrid rga-grid">${merged.filter(c => c.type === t).map(tile).join('')}</div>`).join('');
+    const tools = `<span class="aside">${note}</span><button class="lnk" type="button" data-rgaall data-tip="Open every merged image in the viewer">${RGA_IMG}Open all</button>`;
+    return sect('art', 'Artwork', tools, body || `<div class="folded-note">${st.busy ? 'Reading…' : 'No images'}</div>`, `<div class="folded-note">${note}</div>`);
+}
 function artHtml(r) {
     // a lone front cover is already the header's picture
     if (!r.images.length || (r.images.length === 1 && r.images[0].types.length === 1 && r.images[0].types[0] === 'Front')) return '';
@@ -12240,7 +12392,7 @@ function renderDraw(keepPop) {
         : data.kind === 'instrument' ? insHero(data) + annotation(r) + wikipedia(data.wikiX) + w('ia', 'Artists', insList(data, 0)) + w('ir', 'Releases', insList(data, 1)) + w('ic', 'Recordings', insList(data, 2))
         : data.kind === 'area' ? areaHero(data) + annotation(r) + wikipedia(data.wikiX) + w('aa', 'Artists', areaList(data, 0)) + w('al', 'Labels', areaList(data, 1)) + w('ap', 'Places', areaList(data, 2))
         : data.kind === 'work' ? wkHero(data) + annotation(r) + wikipedia(data.wikiX) + wkCredits(r) + w('rc', 'Recordings', recsHtml(data))
-        : data.kind === 'label' ? lbHero(data) + annotation(r) + wikipedia(data.wikiX) + editions({ id: null, page: `/label/${r.id}`, type: 'label' }, data.editions, data.edCount) : data.kind === 'artist' ? arHero(data) + annotation(r) + wikipedia(data.wikiX) + discography(data) : data.kind === 'rg' ? rgHero(data) + annotation(r) + wikipedia(data.wikiX) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgCard(r, true)
+        : data.kind === 'label' ? lbHero(data) + annotation(r) + wikipedia(data.wikiX) + editions({ id: null, page: `/label/${r.id}`, type: 'label' }, data.editions, data.edCount) : data.kind === 'artist' ? arHero(data) + annotation(r) + wikipedia(data.wikiX) + discography(data) : data.kind === 'rg' ? rgHero(data) + annotation(r) + wikipedia(data.wikiX) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgaHtml(r, data.editions || []) + rgCard(r, true)
         : hero(r) + annotation(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r), t => heroShape(t, app));    // a group without its own cover shows its first release's, else the format's mark
     // an image the redraw had to draw anew takes back a loaded one it dropped, so the covers don't blink;
     // one it kept stays where it is, so a cover never jumps to another tile
@@ -15767,6 +15919,8 @@ function onClick(ev) {
     else if ('dismenu' in d) { const m = b.nextElementSibling, o = !m.classList.contains('open'); document.querySelectorAll('.dmenu.open').forEach(x => x.classList.remove('open')); m.classList.toggle('open', o); return; }
     else if (d.dism) { S.dis = d.dism; save(); }
     else if ('edoff' in d) S.ed.official = !S.ed.official;
+    else if ('edbook' in d || 'edpdf' in d) { const k = 'edbook' in d ? 'book' : 'pdf'; S.ed[k] = !S.ed[k]; if (S.ed[k] && data && data.kind === 'rg' && data.g) rgaScan(data.g.id, data.editions || []); }
+    else if (rgaClick(d)) return;
     else if (d.edtr) edToggle(d.edtr);
     else if (d.fdel) { const [sc, k] = d.fdel.split(':'); delete FLT[sc].f[k]; }
     else if (d.fclr) FLT[d.fclr] = { q: '', f: {}, open: true };

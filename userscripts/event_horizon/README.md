@@ -17,7 +17,7 @@ A clean, modern redesign of MusicBrainz's pages, with themes, automatic light an
 - **Recently opened** lists the pages you opened last on the homepage.
 - **[Tracklist](#tracklist)**: each track's credits and streaming links.
 - **[Player](#player)** plays recordings, releases and collections from their streaming links, and can send your listens to ListenBrainz.
-- **[Releases and discography](#releases-and-discography)** as a grid or a table, with columns, filters and saved views.
+- **[Releases and discography](#releases-and-discography)** as a grid or a table, with columns, filters and saved views, and a release group's artwork from all its releases.
 - **[Edit search](#edit-search)**: every MusicBrainz condition in compact rows, with saved searches.
 - **[URL search](#url-search)** finds links by address and by what they link to.
 - **[Tags](#tags)** shows an editor's, an entity's or MusicBrainz's most used tags as bars, a cloud, chips, A–Z or a table.
@@ -105,6 +105,8 @@ The funnel filters by title, or by column with `column:value`:
 | `(a OR b) AND year:2022-`      | group with brackets                  |
 
 The arrow at the end of the box saves a filter by name.
+
+A release group's **Artwork** card reads the cover art of all its releases. Each release's booklet is listed on its own row. The other images are grouped by type, and images that look alike count once, marked with how many releases have them. Click an image, or **Open all**, to view the images in Art Station's gallery. A group with more than 50 releases that have art is read only when you click **Scan**. In the table, **Art** shows each release's image count, and the **Has booklet** and **Has PDF** switches filter the releases.
 
 ## Edit search
 
