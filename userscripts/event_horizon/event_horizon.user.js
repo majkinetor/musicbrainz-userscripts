@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.25.190634
+// @version      2026.11.25.190934
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -19343,13 +19343,13 @@ const KEY_SYM = { arrowleft: '←', arrowright: '→', arrowup: '↑', arrowdown
 const keyShow = k => k ? k.split('+').map(p => `<kbd>${esc(KEY_SYM[p] || (p.length === 1 ? p.toUpperCase() : p[0].toUpperCase() + p.slice(1)))}</kbd>`).join('') : '<span class="eh-k-none">none</span>';
 const mbuCss = () => { if (!document.getElementById('eh-mbu')) { const m = document.createElement('style'); m.id = 'eh-mbu'; m.textContent = MBU_TOKENS + MBU_UI_CSS + CFG_CSS + KEYS_CSS; document.documentElement.append(m); } };
 const KEYS_CSS = '.eh-keys{width:min(640px,calc(100vw - 32px));font:14px/1.45 system-ui,sans-serif}.eh-keys h3{font:600 17px/1.3 system-ui,sans-serif}.eh-keys .mbu-ov-body{position:relative;overflow-x:hidden}.eh-keys .mbu-ov-x{position:absolute;top:-6px;right:-6px;margin:0;width:36px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;font-size:26px;line-height:1;border-radius:6px}.eh-keys h3{margin:0 0 12px;padding-right:36px}.eh-keys input[type=search]{width:100%;box-sizing:border-box;margin:0 0 10px;padding:7px 10px;font:inherit;background:none;color:inherit;border:0!important;outline:0!important;box-shadow:none!important;border-radius:6px}.eh-keys ul{list-style:none;margin:0;padding:0;max-height:60vh;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;display:grid;grid-template-columns:1fr 1fr;column-gap:24px}.eh-keys li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 4px;border-bottom:1px solid var(--mbu-border,rgba(127,127,127,.3));cursor:pointer}.eh-keys li>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.eh-keys li button{flex:none}.eh-keys li.sel{background:var(--mbu-hover,rgba(127,127,127,.15))}.eh-keys li button{display:inline-flex;gap:3px;padding:0;background:none;border:0;color:inherit;cursor:pointer;font:inherit}.eh-keys li button.rec{font-style:italic}.eh-keys kbd{font:inherit;font-size:.85em;box-sizing:border-box;min-width:2.2em;height:1.9em;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;border:1px solid var(--mbu-border,rgba(127,127,127,.4));border-radius:4px}.eh-keys li.sel kbd,.eh-keys li button:hover kbd{border-color:currentColor}.eh-k-none{opacity:.5}.eh-keys .eh-k-ft{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:.9em}.eh-keys .eh-k-ft>span{opacity:.5;font-size:.9em}.eh-keys .eh-k-ft>span.eh-k-warn{opacity:1;color:var(--mbu-warn,#b45309)}.eh-keys .eh-k-warn kbd{min-width:0;height:1.6em;padding:0 4px}.eh-keys .eh-k-ft button{background:none;border:1px solid var(--mbu-border,rgba(127,127,127,.4));border-radius:6px;padding:5px 12px;color:inherit;cursor:pointer;font:inherit}.eh-keys li.eh-k-sec{grid-column:1/-1;cursor:default;font-weight:600;border-bottom:0;padding-top:14px;opacity:.7}.eh-keys .eh-k-ro{display:inline-flex;gap:3px;flex:none;overflow:visible}@media(max-width:520px){.eh-keys ul{grid-template-columns:1fr}}';
-let keysRec = null;   // the command whose key is being set
+let keysRec = null;   // the command whose key is being set; 'pk:<n>' for the palette's n-th
 let keysWarn = null;  // a key pressed for it that another command has: { k, c }; the same key again moves it
 function keysOpen() {
     if (document.getElementById('eh-keys')) return;
     mbuCss(); if (!document.getElementById('eh-keys-css')) { const m = document.createElement('style'); m.id = 'eh-keys-css'; m.textContent = KEYS_CSS; document.documentElement.append(m); }
     const ov = document.createElement('div'); ov.className = 'mbu-ov'; ov.id = 'eh-keys';
-    ov.innerHTML = `<div class="mbu-ov-panel eh-keys mbu-ui" role="dialog" aria-label="Keyboard shortcuts"><div class="mbu-ov-body"><button type="button" class="mbu-ov-x" aria-label="Close">×</button><h3>Keyboard shortcuts</h3><input type="search" placeholder="Find a command" aria-label="Find a command"><ul></ul><div class="eh-k-ft"><span>Arrows choose · Enter runs · click a key, press another to change it</span><button type="button" class="eh-k-reset">Default keys</button></div></div></div>`;
+    ov.innerHTML = `<div class="mbu-ov-panel eh-keys mbu-ui" role="dialog" aria-label="Keyboard shortcuts"><div class="mbu-ov-body"><button type="button" class="mbu-ov-x" aria-label="Close">×</button><h3>Keyboard shortcuts</h3><input type="search" placeholder="Find a command" aria-label="Find a command"><ul></ul><div class="eh-k-ft"><span>Arrows choose · Enter runs · click a key, press another to change it · right-click: no key</span><button type="button" class="eh-k-reset">Default keys</button></div></div></div>`;
     document.documentElement.append(ov);
     const panel = ov.firstChild, inp = panel.querySelector('input'), ul = panel.querySelector('ul');
     let sel = 0;
@@ -19363,9 +19363,12 @@ function keysOpen() {
         const l = list(); sel = Math.max(0, Math.min(sel, l.length - 1));
         ul.innerHTML = l.map((c, i) => `<li data-cmd="${c[0]}"${i === sel ? ' class="sel"' : ''}><span>${esc(c[1])}</span><button type="button"${keysRec === c[0] ? ' class="rec"' : ''} aria-label="Change the key for ${esc(c[1])}">${keysRec === c[0] ? 'Press a key…' : keyShow(keyOfCmd(c))}</button></li>`).join('');
         pks = palKeys();
-        if (pks.length) ul.insertAdjacentHTML('beforeend', '<li class="eh-k-sec">Command palette</li>' + pks.map((x, i) => `<li data-pk="${i}"><span>${esc(x.label)}</span><span class="eh-k-ro">${x.keys.split('+').map(p => `<kbd>${esc(p)}</kbd>`).join('')}</span></li>`).join(''));
+        // a palette key with a setter is changed here as the palette changes it; the fixed ones only show
+        const pkKbd = x => x.keys.split('+').map(p => `<kbd>${esc(p)}</kbd>`).join('');
+        if (pks.length) ul.insertAdjacentHTML('beforeend', '<li class="eh-k-sec">Command palette</li>' + pks.map((x, i) => `<li data-pk="${i}"><span>${esc(x.label)}</span>${x.set ? `<button type="button"${keysRec === 'pk:' + i ? ' class="rec"' : ''} aria-label="Change the key for ${esc(x.label)}">${keysRec === 'pk:' + i ? 'Press a key…' : pkKbd(x)}</button>` : `<span class="eh-k-ro">${pkKbd(x)}</span>`}</li>`).join(''));
         hint.classList.toggle('eh-k-warn', !!keysWarn);
-        if (keysWarn) hint.innerHTML = `${keyShow(keysWarn.k)} is already the key for ${esc(keysWarn.c[1])}. Press it again to move it here, or press another key`; else hint.textContent = HINT;
+        if (keysWarn && keysWarn.err) hint.textContent = keysWarn.err;
+        else if (keysWarn) hint.innerHTML = `${keyShow(keysWarn.k)} is already the key for ${esc(keysWarn.c[1])}. Press it again to move it here, or press another key`; else hint.textContent = HINT;
     };
     const run = c => { close(); if (c) c[3](); };
     inp.addEventListener('input', () => { sel = 0; draw(); });
@@ -19374,7 +19377,13 @@ function keysOpen() {
             ev.preventDefault(); ev.stopPropagation();
             if (ev.key === 'Escape') { keysRec = keysWarn = null; draw(); return; }
             const k = ev.key === 'Backspace' || ev.key === 'Delete' ? '' : keyCombo(ev); if (k == null || (k === '' && ev.key !== 'Backspace' && ev.key !== 'Delete')) return;
+            if (String(keysRec).startsWith('pk:')) { pkRec(ev, k); return; }
             const c = KEY_CMDS.find(x => x[0] === keysRec);
+            // a key the palette has: the same warning, and pressed again it moves here where the palette can let it go
+            const pal = k && pks.find(x => x.hot && keyFromHot(x.hot) === k);
+            if (pal && !pal.set) { keysWarn = { err: `${pal.keys} opens ${pal.label}: press another key` }; draw(); return; }
+            if (pal && !(keysWarn && keysWarn.k === k)) { keysWarn = { k, c: [null, pal.label] }; draw(); return; }
+            if (pal) { const r = pal.set(null); if (r && r.err) { keysWarn = { err: r.err }; draw(); return; } }
             // a key belongs to one command: a key another command has only warns, and pressed again it moves here
             const other = k && KEY_CMDS.find(x => x !== c && keyOfCmd(x) === k);
             if (other && !(keysWarn && keysWarn.k === k)) { keysWarn = { k, c: other }; draw(); return; }
@@ -19388,10 +19397,33 @@ function keysOpen() {
         else if (ev.key === 'Enter') { ev.preventDefault(); run(l[sel]); }
         else if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); close(); }
     });
+    // a key for the palette's n-th: a key one of these commands has warns first, as one the palette has does
+    const pkRec = (ev, k) => {
+        const x = pks[+keysRec.slice(3)]; if (!x) { keysRec = keysWarn = null; draw(); return; }
+        const done = r => { if (r && r.err) { keysWarn = { err: r.err }; draw(); return; } keysRec = keysWarn = null; draw(); inp.focus(); };
+        if (!k) return done(x.set(null));
+        const again = keysWarn && keysWarn.k === k;
+        const other = KEY_CMDS.find(c => keyOfCmd(c) === k);
+        if (other && !again) { keysWarn = { k, c: other }; draw(); return; }
+        const r = x.set(ev, again);
+        if (r && r.clash) { keysWarn = { k, c: [null, r.clash] }; draw(); return; }
+        if (!(r && r.err) && other) keySet(other, '');
+        done(r);
+    };
+    // a right-click on a key removes it
+    panel.addEventListener('contextmenu', ev => {
+        const b = ev.target.closest('li button'); if (!b) return;
+        ev.preventDefault();
+        const li = b.closest('li'); keysRec = keysWarn = null;
+        if (li.dataset.pk != null) { const x = pks[+li.dataset.pk], r = x && x.set && x.set(null); if (r && r.err) keysWarn = { err: r.err }; }
+        else { const c = KEY_CMDS.find(x => x[0] === li.dataset.cmd); if (c) keySet(c, ''); }
+        draw();
+    });
     panel.addEventListener('click', ev => {
         if (ev.target.closest('.mbu-ov-x')) return close();
         if (ev.target.closest('.eh-k-reset')) { S.keys = {}; save(); draw(); return; }
         const pk = ev.target.closest('li[data-pk]');
+        if (pk && ev.target.closest('button')) { const id = 'pk:' + pk.dataset.pk; keysRec = keysRec === id ? null : id; keysWarn = null; draw(); panel.focus(); return; }
         if (pk) { const x = pks[+pk.dataset.pk]; close(); if (x) try { x.run(); } catch (e) { console.error('[Event Horizon] palette key failed:', e); } return; }
         const li = ev.target.closest('li[data-cmd]'); if (!li) return;
         if (ev.target.closest('button')) { keysRec = keysRec === li.dataset.cmd ? null : li.dataset.cmd; keysWarn = null; draw(); panel.focus(); return; }

@@ -79,5 +79,21 @@ test.describe('Event Horizon keys in the palette', () => {
     check(/F3/.test(btn), `Event Horizon has the new key (${btn})`);
     check(await page.locator('#eh-keys li.eh-k-sec').textContent() === 'Command palette', 'Ctrl+/ has a Command palette section');
     check(await page.locator('#eh-keys li[data-pk]').count() >= 1, 'with the palette keys');
+
+    // the palette's keys are set there too: its own hotkey and yours; Theme chooser stays fixed
+    check(await page.locator('#eh-keys li[data-pk]:has-text("Theme chooser") button').count() === 0, 'a fixed palette key has no button');
+    await page.locator('#eh-keys li[data-pk]:has-text("Command palette") button').click();
+    await page.keyboard.press('Control+Alt+F6');
+    const pal = await page.evaluate(() => GM_getValue('string_theory.palette', {}).key || {});
+    check(pal.key === 'f6' && pal.ctrl && pal.alt, `the palette's hotkey set from Ctrl+/ (${JSON.stringify(pal)})`);
+    check(/F6/.test(await page.locator('#eh-keys li[data-pk]:has-text("Command palette") button').textContent()), 'and shown there');
+    await page.locator('#eh-keys li[data-pk]:has-text("Command palette") button').click();
+    await page.keyboard.press('Control+Alt+F3');
+    check(/Toggle player/.test(await page.locator('#eh-keys .eh-k-ft>span').textContent()), 'a key Event Horizon has warns first');
+    await page.keyboard.press('Control+Alt+F3');
+    check((await page.evaluate(() => GM_getValue('string_theory.palette', {}).key || {})).key === 'f3', 'and moves on the second press');
+    check(!/F3/.test(await page.locator('#eh-keys li[data-cmd=player] button').textContent()), 'off Toggle player');
+    await page.locator('#eh-keys li[data-pk]:has-text("Command palette") button').click({ button: 'right' });
+    check(/needs a key/.test(await page.locator('#eh-keys .eh-k-ft>span').textContent()), 'the palette keeps a key');
   });
 });
