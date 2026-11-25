@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.25
+// @version      2026.11.25.150522
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12028,11 +12028,17 @@ function ehMorph(root, html, prep) {
 // an unnamed element is matched by its tag and first class, so "Clear" showing up before a filter box doesn't become the box;
 // an image's loaded mark doesn't count, so a loaded cover isn't a stranger to its own markup;
 // a cover that failed and became a placeholder still answers to its image, so a redraw doesn't try it again
-const ehMorphKey = n => n.nodeType !== 1 ? n.nodeName : n.id ? '#' + n.id : n.dataset.dgsrc ? 'dg:' + n.dataset.dgsrc : n.nodeName === 'IMG' && n.hasAttribute('data-dgcover') && n.getAttribute('src') ? 'dg:' + n.getAttribute('src') : n.nodeName + '.' + ((n.getAttribute('class') || '').replace(/\beh-ok\b/, '').trim().split(/\s+/)[0]);
+const ehMorphKey = n => n.nodeType !== 1 ? n.nodeName : n.id ? '#' + n.id : n.dataset.dgsrc ? 'dg:' + n.dataset.dgsrc : n.dataset.menuKey ? 'mk:' + n.dataset.menuKey : n.nodeName === 'IMG' && n.hasAttribute('data-dgcover') && n.getAttribute('src') ? 'dg:' + n.getAttribute('src') : n.nodeName + '.' + ((n.getAttribute('class') || '').replace(/\beh-ok\b/, '').trim().split(/\s+/)[0]);
 function ehMorphKids(a, b) {
     let ac = a.firstChild;
     for (let bc = b.firstChild; bc;) {
         const next = bc.nextSibling, k = ehMorphKey(bc);
+        // a menu item is the same node wherever the last layout put it (More holds some): it moves back rather than being
+        // made anew, so one being clicked during a redraw stays in the page and goes where it said
+        if (k.startsWith('mk:')) {
+            const m = [...a.querySelectorAll('[data-menu-key]')].find(x => x.dataset.menuKey === bc.dataset.menuKey);
+            if (m) { if (m === ac) ac = ac.nextSibling; else a.insertBefore(m, ac); ehMorphNode(m, bc); bc = next; continue; }
+        }
         let m = null, named = false;
         for (let x = ac; x; x = x.nextSibling) {
             if (x.nodeType === bc.nodeType && ehMorphKey(x) === k) { m = x; break; }
