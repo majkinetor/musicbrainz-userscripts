@@ -588,13 +588,21 @@ function stGateZoomWire() {
   });
   // no mouseover comes when the mouse leaves the window, or when the time line redraws under a still mouse:
   // a watchdog looks under the last mouse spot and closes the popup when neither it nor a cluster is there
-  document.addEventListener('mousemove', function (e) { mx = e.clientX; my = e.clientY; }, true);
+  // the mouse spot comes from every kind of move, on the window, so no page handler can keep it stale
+  var spot = function (e) { mx = e.clientX; my = e.clientY; };
+  ['mousemove', 'pointermove', 'mouseover'].forEach(function (t) { window.addEventListener(t, spot, { capture: true, passive: true }); });
   document.addEventListener('mouseout', function (e) { if (!e.relatedTarget) mx = my = -1; if (pop && !e.relatedTarget && !bye) bye = setTimeout(close, 400); });
   window.addEventListener('blur', function () { if (pop) close(); });
+  // a sure way out: Escape, or a press anywhere outside the popup, always closes it
+  window.addEventListener('keydown', function (e) { if (pop && e.key === 'Escape') close(); }, true);
+  window.addEventListener('mousedown', function (e) { if (pop && !(e.target.closest && e.target.closest('.st-gl-zoom'))) close(); }, true);
   var check = function () {
-    if (!pop) return close();
+    if (!pop || !pop.isConnected) return close();
     var el = mx < 0 ? null : document.elementFromPoint(mx, my);
-    if (!el || !el.closest || !el.closest('.st-gl-cl, .st-gl-zoom')) { if (!bye) bye = setTimeout(close, 400); }
+    var onPop = !!(el && el.closest && el.closest('.st-gl-zoom'));
+    // its time line is gone (the HUD closed): the popup goes as soon as the mouse is off it
+    if (!onPop && !document.querySelector('.st-gl-cl')) return close();
+    if (!onPop && !(el && el.closest && el.closest('.st-gl-cl'))) { if (!bye) bye = setTimeout(close, 400); }
     else { clearTimeout(bye); bye = 0; }
   };
   // the popup stays a moment after the mouse leaves, so it can cross the gap and click a row in it
