@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.25.113320
+// @version      2026.11.25.113321
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12088,6 +12088,18 @@ function keepY(y) {
     ehGlideGo = null;
     if (scrollY !== y) scrollTo(0, y);
 }
+// while the reader types in a filter, the box stays where it is on screen whatever else changes on the page: a load
+// going on meanwhile ("Auto" bringing the rest of a narrowed list) took the "loaded so far" note out of the header, and
+// the box rose a line; a mutation observer puts it back before the frame shows (a resize observer comes after the
+// frame's own animation callbacks, a frame late), and a scroll by the reader takes the place it scrolled to
+let FQH = null;
+function fqHold(k) {
+    const box = () => FQH && $(`[data-fq="${FQH.k}"]`), at = () => { const i = box(); if (i) FQH.top = i.getBoundingClientRect().top; };
+    if (!k) { if (FQH) { FQH.mo.disconnect(); removeEventListener('scroll', FQH.sc); FQH = null; } return; }
+    if (FQH) { FQH.k = k; return at(); }
+    FQH = { k, top: 0, sc: () => at(), mo: new MutationObserver(() => { const i = box(); if (!i || !i.isConnected) return; const d = i.getBoundingClientRect().top - FQH.top; if (Math.abs(d) >= 1) { scrollBy(0, d); LOG.debug(`Filter: held the box (${Math.round(d)} px)`); } }) };
+    at(); FQH.mo.observe(document.body, { subtree: true, childList: true, attributes: true, characterData: true }); addEventListener('scroll', FQH.sc, { passive: true });
+}
 // while a redraw wires the page, a node kept from the last one drops its earlier copy of the same handler
 function render(keepPop) {
     const app = $('#app') || (ehBody && ehBody.querySelector('#app')), P = EventTarget.prototype, add = P.addEventListener, rem = P.removeEventListener;
@@ -17881,7 +17893,7 @@ function listFilters(root) {
     const fq = (t, v) => { const sc = t.dataset.fq, p = v === undefined ? t.selectionStart : 0; FLT[sc].q = v === undefined ? t.value : v; const top = t.getBoundingClientRect().top, b = document.body; b.style.minHeight = Math.max(parseFloat(b.style.minHeight) || 0, document.documentElement.scrollHeight) + 'px'; render(); const i = $(`[data-fq="${sc}"]`); if (i) { const pin = () => scrollBy(0, i.getBoundingClientRect().top - top); pin(); requestAnimationFrame(pin); i.focus({ preventScroll: true }); i.setSelectionRange(p, p); fltSug(sc, i); } };
     root.addEventListener('mousedown', ev => { const r = ev.target.closest && ev.target.closest('.fs-row'); if (!r) return; ev.preventDefault(); fltTake(r.closest('.fbox').querySelector('input').dataset.fq, r); });
     // while typing, the page keeps its tallest height so a shrinking list doesn't scroll it; leaving the box lets it go
-    root.addEventListener('focusout', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) setTimeout(() => { fltSug(t.dataset.fq, t); if (!(document.activeElement && document.activeElement.dataset && document.activeElement.dataset.fq)) document.body.style.minHeight = ''; }); });
+    root.addEventListener('focusout', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) setTimeout(() => { fltSug(t.dataset.fq, t); if (!(document.activeElement && document.activeElement.dataset && document.activeElement.dataset.fq)) { document.body.style.minHeight = ''; fqHold(null); } }); });
     root.addEventListener('keydown', ev => {
         const t = ev.target, sc = t.dataset && t.dataset.fq, pop = sc && t.parentNode.querySelector('.fpop');
         if (!pop || pop.hidden) return;
@@ -17891,7 +17903,7 @@ function listFilters(root) {
     });
     root.addEventListener('input', ev => { const t = ev.target; if (t.dataset && t.dataset.tq) { const k = t.dataset.tq, p = t.selectionStart, y = scrollY; TQ[k] = t.value; render(); keepY(y); const i = $(`[data-tq="${k}"]`); if (i) { i.focus(); i.setSelectionRange(p, p); } } else if (t.dataset && t.dataset.fq) fq(t); else if (t.dataset && t.dataset.fadd && t.list && [...t.list.options].some(x => x.value === t.value)) t.dispatchEvent(new Event('change', { bubbles: true })); });
     root.addEventListener('keydown', ev => { if (ev.key === 'Escape' && ev.target.dataset && ev.target.dataset.fq && ev.target.value) { ev.stopPropagation(); fq(ev.target, ''); } }, true);
-    root.addEventListener('focusin', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) fltSug(t.dataset.fq, t); });
+    root.addEventListener('focusin', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) { fltSug(t.dataset.fq, t); fqHold(t.dataset.fq); } });
     root.addEventListener('keydown', ev => { const t = ev.target; if (ev.key === 'Enter' && t.dataset && t.dataset.nmname) { ev.preventDefault(); t.parentNode.querySelector('button').click(); } });
 }
 function build() {
