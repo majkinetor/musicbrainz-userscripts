@@ -1,7 +1,9 @@
 import { test, check, until, attachShot } from '../../../dev/test/harness.mjs';
 
 const ARTIST = 'a74b1b7f-71a5-4011-9441-d0b5e4122711'; // Radiohead: linked sites with pictures
-test.use({ gm: { name: 'Event Horizon', values: { 'mbu:artimg': { [ARTIST]: { all: [], t: Date.now() } } } } });
+// a miss that already asked the newer sources: without them, a Bandcamp or YouTube Music link
+// on the artist makes EH ask again on its own, and the picture can come before the retry is clicked
+test.use({ gm: { name: 'Event Horizon', values: { 'mbu:artimg': { [ARTIST]: { all: [], t: Date.now(), sources: ['bandcamp', 'ytmusic'] } } } } });
 
 test('an artist with a cached miss can ask for its image again', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
   await page.goto(`https://test.musicbrainz.org/artist/${ARTIST}`);

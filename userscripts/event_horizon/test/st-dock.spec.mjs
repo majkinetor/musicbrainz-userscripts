@@ -24,7 +24,7 @@ test('the corner launchers fold behind the dock while EH shows', { tag: ['@sandb
   check(!(await page.locator('#mc-launch').isVisible()), 'Mission Control folds in');
   check(!(await page.locator('#as-switch').isVisible()), 'Art Station is hidden');
   await page.locator('#mbu-dock').click();
-  check(await page.locator('#mc-launch').isVisible(), 'a click unrolls it');
+  check(await until(() => page.locator('#mc-launch').isVisible(), v => v) === true, 'a click unrolls it');
   check(await page.evaluate(() => localStorage.getItem('mbu.dockOpen')) === 'true', 'and it is remembered');
   check(await page.locator('#ii-dock').isVisible() && await page.locator('#mb-pc-dock').isVisible(), 'ISRC Scout and Platform Check are in it');
   await page.locator('#mb-pc-dock').click();
