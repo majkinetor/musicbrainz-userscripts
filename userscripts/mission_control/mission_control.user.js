@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.25
+// @version      2026.11.25.175657
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -32,6 +32,8 @@ const ICON_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5v
 let RELEASE = (location.pathname.match(/^\/release\/([0-9a-fA-F-]{36})\/?$/) || [])[1];
 // #702: and /release/add#mc=<token>, where First Contact's Consolidate hands over a release MusicBrainz doesn't have yet
 const CONS = !RELEASE && /^\/release\/add\/?$/.test(location.pathname) ? (location.hash.match(/[#&]mc=([a-z0-9]+)/i) || [])[1] : null;
+// #1118: #mc=<token>&bc=<barcode>, from String Theory's palette: no album handed over, only a barcode
+const CONS_BC = CONS ? ((location.hash.match(/[#&]bc=(\d{6,14})(?:&|$)/) || [])[1] || null) : null;
 if (!RELEASE && !CONS && !SETTINGS_ONLY) return;
 
 // #811: the last 10 page logs with an Execute in them stay in this browser (an Execute reloads the page)
@@ -4837,6 +4839,7 @@ const CC = {
     sel: null,            // the row in the inspector
     ticks: { is: true, as: true, pc: true },
     ui: null, seeded: false,
+    bc: null,             // #1118: a consolidation from a barcode: { code, state: wait | finding | reading | done | none, hits, at }
     inMb: { state: 'none', urls: '', releases: [] },   // the releases MusicBrainz links any of these albums to
 };
 
@@ -5015,6 +5018,7 @@ document.addEventListener('mc:read-progress', e => {
 });
 document.addEventListener('mc:read-result', e => {
     let d; try { d = JSON.parse(e.detail); } catch (x) { Log.cat('Platforms').warn('mc:read-result with unreadable detail: ' + x.message); return; }
+    if (CC.bc && CC.bc.state === 'reading' && d && d.run === CC.run && d.url === CC.bc.hits[0].url) { ccBcRead(d); return; }
     const s = d && d.run === CC.run && CC.sources.find(x => x.url === d.url && x.read.state === 'reading');
     if (!s) return;
     if (d.ok && d.rel) {
@@ -5440,7 +5444,11 @@ function ccPaintSteps() {
     const want = CC.sources.filter(s => s.take && ccReadable(s.key)), done = want.filter(s => s.read.state === 'done').length, busy = want.some(s => s.read.state === 'reading' || s.read.state === 'queued');
     const failed = want.filter(s => s.read.state === 'failed').length;
     const fc = ccStepHtml(busy ? 'busy' : failed ? 'err' : '', 'First Contact', (busy ? '<span class="mcc-spin"></span> ' : '') + 'read ' + done + ' of ' + want.length + (failed ? ' · ' + failed + ' failed' : ''));
-    box.innerHTML = mbuHtml(ccStepHtml('', 'Source', src ? esc(ccName(src.key)) + ' · ' + src.tracks + ' tracks' : '—', src ? ccIco(src.key, 16) : '') + '<span class="mcc-arrow">→</span>' + pc + '<span class="mcc-arrow">→</span>' + fc);
+    const b = !src && CC.bc;
+    const srcStep = b ? ccStepHtml(b.state === 'none' ? 'err' : b.state === 'wait' ? '' : 'busy', 'Source', (b.state === 'finding' || b.state === 'reading' ? '<span class="mcc-spin"></span> ' : '') + 'barcode ' + esc(b.code)
+        + (b.state === 'finding' ? ' · looking it up' : b.state === 'reading' ? ' · reading ' + esc(ccName(b.hits[0].key)) : b.state === 'none' ? ' · not found' : ''))
+        : ccStepHtml('', 'Source', src ? esc(ccName(src.key)) + ' · ' + src.tracks + ' tracks' : '—', src ? ccIco(src.key, 16) : '');
+    box.innerHTML = mbuHtml(srcStep + '<span class="mcc-arrow">→</span>' + pc + '<span class="mcc-arrow">→</span>' + fc);
 }
 // the format the release would get: the source's media, as the seed gives them
 function ccFormat() {
@@ -5571,8 +5579,14 @@ function ccTracksHtml(m) {
 }
 function ccPaintCenter() {
     const c = CC.ui && CC.ui.querySelector('.mcc-center'); if (!c) return;
-    if (CC.error) { c.innerHTML = mbuHtml('<div class="mcc-err"><b>Nothing to consolidate</b><p>' + esc(CC.error) + '</p><p>Use <b>Consolidate</b> on the album\'s page on a platform (First Contact) to start again.</p></div>'); return; }
-    if (!CC.src) { c.innerHTML = mbuHtml('<div class="mcc-note"><span class="mcc-spin"></span> Waiting for First Contact to hand over the album…</div>'); return; }
+    if (CC.error) { c.innerHTML = mbuHtml('<div class="mcc-err"><b>Nothing to consolidate</b><p>' + esc(CC.error) + '</p><p>' + (CC.bc ? 'Use <b>Barcode Consolidation</b> in String Theory\'s command palette (Ctrl+K) to try another barcode, or <b>Consolidate</b> on the album\'s page on a platform (First Contact).' : 'Use <b>Consolidate</b> on the album\'s page on a platform (First Contact) to start again.') + '</p></div>'); return; }
+    if (!CC.src) {
+        const b = CC.bc;
+        c.innerHTML = mbuHtml('<div class="mcc-note"><span class="mcc-spin"></span> ' + (!b ? 'Waiting for First Contact to hand over the album…'
+            : b.state === 'reading' ? 'Reading the album with barcode ' + esc(b.code) + ' on ' + esc(ccName(b.hits[0].key)) + '…'
+            : b.state === 'finding' ? 'Looking for barcode ' + esc(b.code) + ' on the platforms…' : 'Waiting for Platform Check…') + '</div>');
+        return;
+    }
     const m = ccModel();
     if (!m.fields) { c.innerHTML = mbuHtml('<div class="mcc-note">Nothing read yet.</div>'); return; }
     c.innerHTML = mbuHtml(ccInMbHtml() + ccFieldsHtml(m) + ccTracksHtml(m)
@@ -5782,6 +5796,9 @@ function ccOpen() {
         // a read that hasn't been heard from in a while has failed (First Contact gone, or a request that hangs)
         CC.sources.forEach(s => { if (s.read.state === 'reading' && Date.now() - s.read.at > CC_READ_WAIT) { s.read = { state: 'failed', error: 'no answer in ' + CC_READ_WAIT / 1000 + ' s' }; Log.cat('Consolidation').warn('read ' + ccName(s.key) + ': no answer'); pcVetFailed(s); ccPump(); } });
         if (CC.pc.state === 'busy') ccPaintSteps();
+        const b = CC.bc;
+        if (b && b.state === 'finding' && Date.now() - b.at > CC_BC_FIND_WAIT) ccBcNone('Platform Check didn\'t answer for barcode ' + b.code + ' in ' + CC_BC_FIND_WAIT / 1000 + ' s.');
+        if (b && b.state === 'reading' && Date.now() - b.at > CC_READ_WAIT) ccBcRead({ ok: false, error: 'no answer in ' + CC_READ_WAIT / 1000 + ' s' });
     }, 1000);
     ccPaint();
 }
@@ -5801,12 +5818,63 @@ function ccTake(json, from) {
 }
 // Platform Check's seed probe, as soon as both the album and Platform Check are here
 function ccAskPc() {
-    if (!CC.src || CC.pc.state !== 'wait' || !found.pc) return;
+    if (!CC.src) { ccBcFind(); return; }
+    if (CC.pc.state !== 'wait' || !found.pc) return;
     CC.pc = { state: 'busy', note: '', findings: [], at: Date.now() };
     const seed = ccSeed();
     Log.cat('Platforms').info('asking Platform Check (seed probe ' + CC.run + '): ' + JSON.stringify(seed));
     document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ run: CC.run, only: ['pc'], seed }) }));
     ccPaint();
+}
+// #1118: a consolidation from a barcode. Platform Check looks the barcode up where a lookup by barcode is exact
+// (mc:barcode-find); First Contact reads the first album found that it can, which then stands for the album a
+// Consolidate hands over: the seed probe and everything after it run as usual.
+const CC_BC_FIND_WAIT = 60000;
+function ccBcFind() {
+    const b = CC.bc;
+    if (!b || b.state !== 'wait' || !found.pc) return;
+    Object.assign(b, { state: 'finding', at: Date.now() });
+    Log.cat('Consolidation').info('barcode ' + b.code + ': asking Platform Check for the albums that carry it');
+    document.dispatchEvent(new CustomEvent('mc:barcode-find', { detail: JSON.stringify({ run: CC.run, barcode: b.code }) }));
+    ccPaint();
+}
+function ccBcNone(why) {
+    CC.bc.state = 'none';
+    CC.error = why;
+    Log.cat('Consolidation').warn('barcode ' + CC.bc.code + ': ' + why);
+    ccPaint();
+}
+// the next album found: read it, or give up when none is left
+function ccBcNext() {
+    const b = CC.bc;
+    while (b.hits.length && !ccReadable(b.hits[0].key)) b.hits.shift();
+    if (!b.hits.length) { ccBcNone('No platform First Contact can read has an album with barcode ' + b.code + '.'); return; }
+    Object.assign(b, { state: 'reading', at: Date.now() });
+    Log.cat('Consolidation').info('barcode ' + b.code + ': reading ' + ccName(b.hits[0].key) + ' ' + b.hits[0].url);
+    document.dispatchEvent(new CustomEvent('mc:read', { detail: JSON.stringify({ url: b.hits[0].url, run: CC.run }) }));
+    ccPaint();
+}
+document.addEventListener('mc:barcode-found', e => {
+    let d; try { d = JSON.parse(e.detail); } catch (x) { return; }
+    const b = CC.bc;
+    if (!b || b.state !== 'finding' || !d || d.run !== CC.run) return;
+    b.hits = (Array.isArray(d.hits) ? d.hits : []).filter(h => h && h.url && h.key);
+    Log.cat('Consolidation')[b.hits.length ? 'ok' : 'warn']('barcode ' + b.code + ': ' + (b.hits.length ? b.hits.map(h => ccName(h.key) + ' ' + h.url).join(' · ') : 'on no platform'));
+    if (!b.hits.length) { ccBcNone('No platform has an album with barcode ' + b.code + ' (Deezer, Apple Music, Tidal and 7digital were asked).'); return; }
+    ccBcNext();
+});
+// the album read: handed over as First Contact's Consolidate would
+function ccBcRead(d) {
+    const b = CC.bc, hit = b.hits.shift();
+    if (!d.ok || !d.rel || !d.provider) {
+        Log.cat('Consolidation').warn('barcode ' + b.code + ': reading ' + ccName(hit.key) + ' failed: ' + (d.error || 'no album'));
+        ccBcNext();
+        return;
+    }
+    const rel = d.rel;
+    if (!rel.barcode) rel.barcode = b.code;
+    b.state = 'done';
+    ccTake(JSON.stringify({ v: 1, token: CC.token, created: Date.now(), source: d.provider.id, sourceName: d.provider.name, platform: d.provider, url: rel.url || hit.url, rel }), 'barcode ' + b.code);
 }
 document.addEventListener('mc:findings', e => {
     if (!CC.token) return;
@@ -5953,6 +6021,19 @@ function ccInMbHtml() {
 function consolidateMain(token) {
     CC.token = token;
     Log.cat('Consolidation').info('consolidation page, token ' + token);
+    if (CONS_BC) {
+        CC.bc = { code: CONS_BC, state: 'wait', hits: [], at: 0 };
+        Log.cat('Consolidation').info('consolidation from barcode ' + CONS_BC + ' (String Theory\'s palette)');
+        const begin = () => {
+            ccOpen();
+            document.addEventListener('mc:provider', () => ccAskPc());
+            document.dispatchEvent(new CustomEvent('mc:discover', { detail: JSON.stringify({ release: null, mc: VERSION }) }));
+            ccAskPc();
+            setTimeout(() => { if (CC.bc.state === 'wait' && !CC.error) ccBcNone('Platform Check isn\'t running on this page: it finds the album by its barcode.'); }, 6000);
+        };
+        if (document.body) begin(); else document.addEventListener('DOMContentLoaded', begin, { once: true });
+        return;
+    }
     const start = () => {
         ccOpen();
         document.addEventListener('fc:consolidate', e => ccTake(e.detail, 'event'));

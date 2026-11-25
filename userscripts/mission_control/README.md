@@ -22,7 +22,7 @@ One window on a release page that asks the other scripts what the release is mis
 - **[Release credits](#release-credits)**: what the credit sources have, with a way into Credit Hoarder.
 - **[Inspector](#inspector)**: everything found for one track.
 - **[Execute](#execute)**: applies what you selected, script by script, in a fixed order.
-- **[Consolidate a new release](#consolidate-a-new-release)**: compare an album across the platforms and take the best of each into the release editor, or into the release MusicBrainz already has.
+- **[Consolidate a new release](#consolidate-a-new-release)**: compare an album across the platforms and take the best of each into the release editor, or into the release MusicBrainz already has. Start from the album's page, or [from its barcode](#from-a-barcode).
 
 Open Mission Control with its corner icon on a release page. On a phone it fills the screen in one column.
 
@@ -170,6 +170,16 @@ Once saved, Mission Control opens on the release and probes for what the editor 
 A click on a section's heading opens or closes it; a right-click opens every section when one is closed, and closes them all otherwise.
 
 A track's versions show on the right too. **▾ → Copy as Markdown** beside **Add release** copies the comparison as tables. **✕** shows the editor under it; the corner icon brings Mission Control back.
+
+### From a barcode
+
+If you have only the album's barcode, start the consolidation from String Theory's [command palette](../string_theory/README.md#command-palette) on any MusicBrainz page:
+
+1. Press Ctrl+K and choose **Mission Control: Barcode Consolidation**.
+2. Type or paste the barcode (UPC or EAN, 8, 12, 13 or 14 digits). If the last digit does not match the others, a warning shows, but you can go on.
+3. Press Enter, or click **Consolidate**.
+
+MusicBrainz's empty release editor opens. Platform Check looks the barcode up on Deezer, Apple Music, Tidal and 7digital, and First Contact reads the first album it finds. That album then takes the place of the album that **Consolidate** hands over, and the consolidation goes on as above. If no platform has the barcode, Mission Control tells you so.
 
 ### Update this release
 

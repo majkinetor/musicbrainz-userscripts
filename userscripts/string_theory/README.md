@@ -99,21 +99,22 @@ The table lists the requests of every tab, newest first: the script, the request
 
 Press **Ctrl+K** on any page String Theory runs on and type to filter the commands:
 
-| Category                      | Commands                                                         |
-| ----------------------------- | ---------------------------------------------------------------- |
-| Settings                      | String Theory's tabs and every script's settings                 |
-| Theme                         | the mode, and each light and dark theme                          |
-| Open                          | the window of each launcher on the page                          |
-| Fusion                        | its boards, adding from this page, the open window's buttons     |
-| This release, This artist     | the open entity's pages: edit, relationships, cover art and more |
-| Go to                         | linked entities, your pages, the edit queues, the website        |
-| Add                           | a new release, artist, label, work and the rest                  |
-| Starred, Recent               | Event Horizon's starred entities and the pages you visited last  |
-| Dock                          | fold, side, orientation                                          |
-| Scripts                       | turn a script on or off                                          |
-| Search                        | a MusicBrainz search for what you type, see below                |
-| New issue, New issue with log | a new issue about String Theory or one script, see below         |
-| String Theory                 | copy versions, docs, reload, What's new, Network log             |
+| Category                      | Commands                                                          |
+| ----------------------------- | ----------------------------------------------------------------- |
+| Settings                      | String Theory's tabs and every script's settings                  |
+| Theme                         | the mode, and each light and dark theme                           |
+| Open                          | the window of each launcher on the page                           |
+| Fusion                        | its boards, adding from this page, the open window's buttons      |
+| This release, This artist     | the open entity's pages: edit, relationships, cover art and more  |
+| Go to                         | linked entities, your pages, the edit queues, the website         |
+| Add                           | a new release, artist, label, work and the rest                   |
+| Starred, Recent               | Event Horizon's starred entities and the pages you visited last   |
+| Dock                          | fold, side, orientation                                           |
+| Scripts                       | turn a script on or off                                           |
+| Mission Control               | Barcode Consolidation: consolidate a new release from its barcode |
+| Search                        | a MusicBrainz search for what you type, see below                 |
+| New issue, New issue with log | a new issue about String Theory or one script, see below          |
+| String Theory                 | copy versions, docs, reload, What's new, Network log              |
 
 - **Your last input comes back** selected when you open the palette again: type to replace it.
 - **Theme commands show as you move over them** with the arrows; **Enter** keeps one, **Esc** goes back to yours.

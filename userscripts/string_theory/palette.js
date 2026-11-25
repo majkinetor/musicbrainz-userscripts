@@ -200,6 +200,9 @@ function stPalCommands() {
     } });
   });
 
+  // Mission Control: a consolidation from a barcode, when no album page is at hand (#1118)
+  if (ST_ON_MB && off.indexOf('mission_control') < 0) add({ id: 'mc:barcode', cat: 'Mission Control', label: 'Barcode Consolidation', run: function () { setTimeout(stBarcodeAsk, 0); } });
+
   // String Theory
   add({ id: 'st:copy', cat: 'String Theory', label: 'Copy versions as Markdown', run: function () {
     stCopy(stVersionsText(), function (ok) { toast(ok ? '✓ Versions copied as Markdown' : '⚠ Couldn’t copy the versions'); });
@@ -235,6 +238,76 @@ function stPalCommands() {
   kept.forEach(function (k) { newIssue('newissuelog:' + k.name + ':' + k.id, k.name, k.markdown, k.label); });
   add({ id: 'st:reload', cat: 'String Theory', label: 'Reload the page', run: function () { location.reload(); } });
   return out;
+}
+// ── Mission Control's barcode consolidation (#1118) ─────────────────────────
+// Asks for a barcode, then opens /release/add#mc=<token>&bc=<barcode>: there Platform Check looks the barcode
+// up on the platforms, First Contact reads the first album found, and Mission Control consolidates it as usual.
+var ST_BC_CSS = ''
+  + '#st-bc-ov{z-index:2147483600}'
+  + '#st-bc{width:min(420px,94vw);font:13px/1.4 var(--mbu-font)}'
+  + '#st-bc .mbu-ov-body{display:flex;flex-direction:column;gap:10px}'
+  + '#st-bc-in{box-sizing:border-box;width:100%;margin:0;height:34px;padding:0 10px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-text);font:15px/1.3 var(--mbu-font);letter-spacing:.04em;box-shadow:none}'
+  + '#st-bc-in:focus{outline:1px solid var(--mbu-accent);outline-offset:0;border-color:var(--mbu-accent)}'
+  + '#st-bc-msg{min-height:18px;color:var(--mbu-text-dim)}'
+  + '#st-bc-msg.st-bc-warn{color:var(--mbu-warn)}#st-bc-msg.st-bc-err{color:var(--mbu-error)}'
+  + '#st-bc-go{align-self:flex-end;min-height:30px;padding:0 14px;border:1px solid var(--mbu-accent)!important;border-radius:var(--mbu-radius);background:var(--mbu-accent)!important;color:#fff!important;font:600 13px/1 var(--mbu-font);cursor:pointer}'
+  + '#st-bc-go:disabled{opacity:.45;cursor:default}';
+// the GTIN check digit (UPC-A, EAN-8, EAN-13 and GTIN-14 alike): right to left, every other digit counts three times
+function stBarcodeCheck(d) {
+  var sum = 0;
+  for (var i = d.length - 2, w = 3; i >= 0; i--, w = 4 - w) sum += +d.charAt(i) * w;
+  return (10 - sum % 10) % 10 === +d.charAt(d.length - 1);
+}
+function stBarcodeAsk() {
+  if (document.getElementById('st-bc-ov')) return;
+  var U = stUI(), T = stTokens();
+  if (!document.getElementById('st-bc-css')) {
+    var css = document.createElement('style');
+    css.id = 'st-bc-css';
+    css.textContent = T.MBU_TOKENS + U.MBU_UI_CSS + ST_BC_CSS;
+    (document.head || document.documentElement).appendChild(css);
+  }
+  var ov = document.createElement('div');
+  ov.id = 'st-bc-ov';
+  ov.className = 'mbu-ov';
+  ov.innerHTML = '<div class="mbu-ov-panel mbu-ui" id="st-bc" role="dialog" aria-label="Barcode Consolidation">'
+    + '<div class="mbu-ov-h"><span class="mbu-ov-title">Barcode Consolidation</span><button type="button" class="mbu-ov-x" aria-label="Close">✕</button></div>'
+    + '<div class="mbu-ov-body"><label for="st-bc-in">The barcode of the album to add (UPC or EAN)</label>'
+    + '<input id="st-bc-in" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="e.g. 0602445790159">'
+    + '<div id="st-bc-msg" aria-live="polite">Mission Control finds the album on the platforms by its barcode.</div>'
+    + '<button type="button" id="st-bc-go" disabled>Consolidate</button></div></div>';
+  document.body.appendChild(ov);
+  var inp = ov.querySelector('#st-bc-in'), msg = ov.querySelector('#st-bc-msg'), go = ov.querySelector('#st-bc-go');
+  var close = function () { ov.remove(); document.removeEventListener('keydown', key, true); };
+  var code = function () { return inp.value.replace(/\D/g, ''); };
+  var check = function () {
+    var d = code(), ok = /^(\d{8}|\d{12,14})$/.test(d);
+    go.disabled = !ok;
+    msg.className = '';
+    if (!d) msg.textContent = 'Mission Control finds the album on the platforms by its barcode.';
+    else if (!ok) { msg.textContent = d.length + ' digits: a barcode has 8, 12, 13 or 14.'; if (d.length > 14) msg.className = 'st-bc-err'; }
+    else if (!stBarcodeCheck(d)) { msg.textContent = 'The last digit doesn’t check out: a typo? You can still go on.'; msg.className = 'st-bc-warn'; }
+    else msg.textContent = 'Press Enter to consolidate.';
+    return ok;
+  };
+  var start = function () {
+    if (!check()) return;
+    var token = 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    var onAdd = /^\/release\/add\/?$/.test(location.pathname);
+    close();
+    location.href = '/release/add#mc=' + token + '&bc=' + code();
+    if (onAdd) location.reload();   // only the hash changed: the scripts read it on load
+  };
+  var key = function (e) {
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
+    else if (e.key === 'Enter' && document.activeElement === inp) { e.preventDefault(); e.stopPropagation(); start(); }
+  };
+  document.addEventListener('keydown', key, true);
+  inp.addEventListener('input', check);
+  go.addEventListener('click', start);
+  ov.querySelector('.mbu-ov-x').addEventListener('click', close);
+  ov.addEventListener('mousedown', function (e) { if (e.target === ov) close(); });
+  inp.focus();
 }
 // Typed text that isn't a command can still be a search: one per entity type, last in the list
 var ST_SEARCHES = [['artist', 'Artist'], ['release', 'Release'], ['release_group', 'Release group'], ['recording', 'Recording'], ['work', 'Work'], ['label', 'Label'],
