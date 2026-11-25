@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.25.135834
+// @version      2026.11.25.131841
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -6790,11 +6790,12 @@ function tgInHtml() {
 function tgInDraw(focus) { const b = tgInBox(); if (!b || !tgIn) return; const o = b.querySelector('.tgi-in'), v = o ? o.value : ''; b.innerHTML = tgInHtml(); const i = b.querySelector('.tgi-in'); if (i) { i.value = v; if (focus) i.focus(); if (v) tgInAc(); } tgInTell(b); }
 // Fuzzy Logic follows the box (mbu-tags-edit) to offer its tags under it, and adds them through mbu-tags-add
 function tgInTell(box) { document.dispatchEvent(new CustomEvent('mbu-tags-edit', { detail: { path: tgIn ? tgIn.path : null, box: tgIn ? box : null } })); }
-// the suggestions under the box, as on the Tags page: the genres and this entity's tags that hold what's typed
+// the suggestions under the box, as on the Tags page: the genres and this entity's tags that hold what's typed;
+// none is selected until an arrow key, so Enter adds what's typed as it is
 function tgInAc() {
     const b = tgInBox(), i = b && b.querySelector('.tgi-in'), ac = b && b.querySelector('.tg-ac'); if (!i || !ac || !tgIn) return;
-    const xs = tgIn.t ? tgSugg({ t: tgIn.t }, i.value.split(',').pop()) : []; tgIn.acs = xs; tgIn.aci = 0;
-    ac.hidden = !xs.length; ac.innerHTML = xs.map((x, k) => `<button type="button" class="${k ? '' : 'on'}" data-tgin="pick:${k}">${esc(x)}${tgIn.t.gen.includes(x) ? '<small>genre</small>' : ''}</button>`).join('');
+    const xs = tgIn.t ? tgSugg({ t: tgIn.t }, i.value.split(',').pop()) : []; tgIn.acs = xs; tgIn.aci = -1;
+    ac.hidden = !xs.length; ac.innerHTML = xs.map((x, k) => `<button type="button" data-tgin="pick:${k}">${esc(x)}${tgIn.t.gen.includes(x) ? '<small>genre</small>' : ''}</button>`).join('');
 }
 // what's typed: the comma-separated names, the last one replaced by the picked suggestion
 function tgInTake(i, pick) { const ps = i.value.split(','); if (pick && ps[ps.length - 1].trim()) ps[ps.length - 1] = pick; i.value = ''; tgInAc(); return ps.map(x => x.trim().toLowerCase()).filter(Boolean); }
@@ -6821,6 +6822,8 @@ async function tgInSend(names, v) {
     } catch (e) { LOG.err('Tagging failed: ' + e.message); toast('Tagging failed: ' + e.message); }
     if (tgIn === d) tgInDraw(true);
 }
+// Done (✓): what's typed is added first, so a click never loses it
+async function tgInDone() { const d = tgIn, b = tgInBox(), i = b && b.querySelector('.tgi-in'); const ns = d && d.t && i ? tgInTake(i) : []; if (ns.length) { LOG.info('Done adds what was typed: ' + ns.join(', ')); await tgInSend(ns, 1); } if (tgIn === d) tgInClose(); }
 function tgInClose() { const dirty = tgIn && tgIn.dirty && tgIn.t.tags; if (dirty) MINE.set(tgIn.path.slice(1), new Set(dirty.filter(t => t.v > 0).map(t => t.n.toLowerCase()))); const box = tgInBox(); tgIn = null; tgInTell(null); ehDirty(box); const e = data && (data.rel || data.g); if (dirty && e) { const ts = dirty.filter(t => t.c > 0); e.genres = ts.filter(t => t.g).map(t => t.n); e.tags = ts.filter(t => !t.g).map(t => t.n); } render(); }
 function tgInWire() {
     if (tgInWired) return; tgInWired = true;
@@ -6837,17 +6840,18 @@ function tgInWire() {
         const b = ehOn && ev.target.closest('button[data-tgin]'); if (!b) return;
         ev.preventDefault(); const [a, i, v] = b.dataset.tgin.split(':');
         if (a === 'open') tgInOpen();
-        else if (a === 'close') tgInClose();
+        else if (a === 'close') tgInDone();
         else if (a === 'v' && tgIn && tgIn.t) { const t = tgIn.t.tags[+i]; if (t) tgInSend([t.n], +v); }
         else if (a === 'pick' && tgIn && tgIn.acs) tgInSend(tgInTake(tgInBox().querySelector('.tgi-in'), tgIn.acs[+i]), 1);
     });
     document.addEventListener('keydown', ev => {
         if (!ehOn || !tgIn || !ev.target.matches('.tgi-in')) return;
         if (ev.key === 'Escape') { ev.preventDefault(); tgInClose(); }
-        else if ((ev.key === 'ArrowDown' || ev.key === 'ArrowUp') && (tgIn.acs || []).length) { ev.preventDefault(); const L = tgIn.acs.length; tgIn.aci = ((tgIn.aci || 0) + (ev.key === 'ArrowDown' ? 1 : -1) + L) % L; tgInBox().querySelectorAll('.tg-ac button').forEach((b, k) => b.classList.toggle('on', k === tgIn.aci)); }
-        // Enter takes the selected suggestion, else what's typed; typed before the tags load, it's sent once they have
+        else if ((ev.key === 'ArrowDown' || ev.key === 'ArrowUp') && (tgIn.acs || []).length) { ev.preventDefault(); const L = tgIn.acs.length; const c = tgIn.aci ?? -1; tgIn.aci = c < 0 ? (ev.key === 'ArrowDown' ? 0 : L - 1) : (c + (ev.key === 'ArrowDown' ? 1 : -1) + L) % L; tgInBox().querySelectorAll('.tg-ac button').forEach((b, k) => b.classList.toggle('on', k === tgIn.aci)); }
+        // Enter takes the suggestion selected with the arrows, else what's typed as it is; Tab takes the selected one or the
+        // first; typed before the tags load, it's sent once they have
         else if (ev.key === 'Enter' && !ev.target.value.trim()) { ev.preventDefault(); tgInClose(); }
-        else if (ev.key === 'Enter') { ev.preventDefault(); const ns = tgInTake(ev.target, (tgIn.acs || [])[tgIn.aci || 0]); if (!ns.length) return; if (tgIn.t) tgInSend(ns, 1); else tgIn.pend = [...(tgIn.pend || []), ...ns]; }
+        else if (ev.key === 'Enter' || (ev.key === 'Tab' && !ev.shiftKey && (tgIn.acs || []).length)) { ev.preventDefault(); const k = ev.key === 'Tab' ? Math.max(tgIn.aci ?? -1, 0) : tgIn.aci ?? -1; const ns = tgInTake(ev.target, k < 0 ? null : (tgIn.acs || [])[k]); if (!ns.length) return; if (tgIn.t) tgInSend(ns, 1); else tgIn.pend = [...(tgIn.pend || []), ...ns]; }
     });
     document.addEventListener('input', ev => { if (ehOn && tgIn && ev.target.matches('.tgi-in')) tgInAc(); });
 }

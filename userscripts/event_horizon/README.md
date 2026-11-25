@@ -137,7 +137,7 @@ Single keys work on an entity's page, in the viewer or on MusicBrainz's. **Ctrl+
 | R               | Edit relationships                                                    |
 | C               | Cover art                                                             |
 | H               | Editing history                                                       |
-| T               | Tags; in the viewer, edits them in place (Enter on an empty box ends) |
+| T               | Tags; in the viewer, edits them in place: Enter adds what you typed, ↓ or Tab takes a suggestion, Enter on an empty box ends |
 | D               | Details                                                               |
 | A               | Aliases; in the viewer, edits them in a window                        |
 | V               | toggles Event Horizon                                                 |

@@ -95,8 +95,25 @@ test('the header\'s pencil edits the tags in place: add, withdraw, done', { tag:
   await attachShot(testInfo, page, 'editing');
   await mine.locator('button').click();
   check(await until(() => mine.count(), n => n === 0) === 0, 'withdrawn');
+  // with suggestions showing, Enter still adds what's typed; none is selected until an arrow key
+  await i.fill('boogi');
+  await until(() => page.locator('.tgi-row .tg-ac button').count(), n => n > 0);
+  check(await page.locator('.tgi-row .tg-ac button.on').count() === 0, 'no suggestion is selected before an arrow key');
+  await i.press('Enter');
+  const boogi = page.locator('.tgi.mine').filter({ has: page.locator('xpath=self::*[normalize-space(text()[1])="boogi"]') });
+  check(await until(() => boogi.count(), n => n === 1) === 1, 'Enter added "boogi" as typed, not the first suggestion');
+  await boogi.locator('button').click();
+  check(await until(() => boogi.count(), n => n === 0) === 0, 'withdrawn');
+  // Done adds what's typed before it closes
+  await i.fill('eh done test');
   await page.click('button[data-tgin="close"]');
   check(await until(() => page.locator('.tgi-in').count(), n => n === 0) === 0, 'Done closes the editor');
+  await page.click('button.eh-edit[data-tgin="open"]');
+  const done = page.locator('.tgi.mine', { hasText: 'eh done test' });
+  check(await until(() => done.count(), n => n === 1) === 1, 'Done added what was typed');
+  await done.locator('button').click();
+  check(await until(() => done.count(), n => n === 0) === 0, 'withdrawn');
+  await page.click('button[data-tgin="close"]');
 });
 
 // the header redraws from markup it remembers (#1029): with nothing changed, ✓ must still put the tags back, every time

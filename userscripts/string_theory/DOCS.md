@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-25 13:59 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-25 14:19 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -965,7 +965,7 @@ Single keys work on an entity's page, in the viewer or on MusicBrainz's. **Ctrl+
 | R               | Edit relationships                                                    |
 | C               | Cover art                                                             |
 | H               | Editing history                                                       |
-| T               | Tags; in the viewer, edits them in place (Enter on an empty box ends) |
+| T               | Tags; in the viewer, edits them in place: Enter adds what you typed, ↓ or Tab takes a suggestion, Enter on an empty box ends |
 | D               | Details                                                               |
 | A               | Aliases; in the viewer, edits them in a window                        |
 | V               | toggles Event Horizon                                                 |
