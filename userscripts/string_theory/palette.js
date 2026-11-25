@@ -70,7 +70,7 @@ var ST_PAL_CSS = ''
   + '#st-pal-list .st-pal-pin:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}'
   + '#st-pal-list .st-pal-i:hover .st-pal-pin,#st-pal-list .st-pal-i[aria-selected=true] .st-pal-pin,#st-pal-list .st-pal-pin[aria-pressed=true]{visibility:visible}'
   + '#st-pal-list .st-pal-pin[aria-pressed=true]{color:var(--mbu-accent-text)}'
-  // a hotkey of your own (#1119): the keyboard beside the pin sets it, as Alt+K does
+  // a hotkey of your own (#1119): the keyboard beside the pin sets it, a right-click on it removes it
   + '#st-pal-list .st-pal-kb{flex:0 0 auto;width:24px;height:22px;display:inline-flex;align-items:center;justify-content:center;margin:0;padding:0;border:0;border-radius:var(--mbu-radius);background:none;color:var(--mbu-text-weak);cursor:pointer;visibility:hidden}'
   + '#st-pal-list .st-pal-kb svg{width:15px;height:15px}'
   + '#st-pal-list .st-pal-kb:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}'
@@ -465,7 +465,7 @@ function stPalette() {
   ov.innerHTML = '<div class="mbu-ov-panel mbu-ui" id="st-pal" role="dialog" aria-label="String Theory commands">'
     + '<input id="st-pal-q" type="text" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="st-pal-list" placeholder="Type a command, or a name to search">'
     + '<ul id="st-pal-list" role="listbox"></ul>'
-    + '<div id="st-pal-foot"><span><kbd>↑↓</kbd> move</span><span><kbd>Enter</kbd> run</span><span><kbd>Alt+P</kbd> pin</span><span><kbd>Alt+K</kbd> hotkey</span><span><kbd>Alt+↑↓</kbd> move a pin</span><span><kbd>Esc</kbd> close</span></div></div>';
+    + '<div id="st-pal-foot"><span><kbd>↑↓</kbd> move</span><span><kbd>Enter</kbd> run</span><span><kbd>Alt+P</kbd> pin</span><span><kbd>Alt+↑↓</kbd> move a pin</span><span><kbd>Esc</kbd> close</span></div></div>';
   (document.body || html).appendChild(ov);
   stPalOv = ov;
   var input = ov.querySelector('#st-pal-q'), list = ov.querySelector('#st-pal-list');
@@ -491,7 +491,7 @@ function stPalette() {
       + (c.hint ? '<span class="st-pal-h">' + stEsc(c.hint) + '</span>' : '')
       + (rec === c.id ? '<kbd class="st-pal-k st-pal-rec">Press keys…</kbd>' : mine ? '<kbd class="st-pal-k">' + stEsc(stKeyLabel(mine)) + '</kbd>' : c.keys ? '<kbd class="st-pal-k">' + stEsc(c.keys) + '</kbd>' : '')
       + (stPalKeyable(c) ? '<button type="button" class="st-pal-kb" tabindex="-1" aria-label="' + (mine ? 'Change the hotkey' : 'Set a hotkey') + '" data-tip="'
-        + (mine ? 'Change the hotkey&#10;Backspace, as you set it: no hotkey' : 'Set a hotkey that runs this command on any page') + '&#10;Alt+K: the same, on the selected command">' + ST_PAL_KEY_ICON + '</button>' : '')
+        + (mine ? 'Change the hotkey&#10;Right-click: no hotkey' : 'Set a hotkey that runs this command on any page') + '">' + ST_PAL_KEY_ICON + '</button>' : '')
       + (c.pinless ? '' : '<button type="button" class="st-pal-pin" tabindex="-1" aria-pressed="' + pinned + '" aria-label="' + (pinned ? 'Unpin' : 'Pin') + '" data-tip="' + (pinned ? 'Unpin' : 'Pin to the top') + '">' + (pinned ? '★' : '☆') + '</button>')
       + '</li>';
   };
@@ -592,12 +592,19 @@ function stPalette() {
     render(true);
   };
   var recEnd = function () { rec = null; clash = null; foot.innerHTML = footHtml; render(true); };
+  var unkey = function (id) {
+    var keys = {}, now = stPalRead().keys;
+    if (!now[id]) return;
+    Object.keys(now).forEach(function (k) { if (k !== id) keys[k] = now[k]; });
+    stPalSet({ keys: keys });
+    try { console.info('[String Theory] palette: no hotkey for ' + name(id)); } catch (x) { /* no console */ }
+  };
   var recKey = function (e) {
     var keys = {}, now = stPalRead().keys, label = name(rec);
     Object.keys(now).forEach(function (k) { keys[k] = now[k]; });
     if (e.key === 'Escape') return recEnd();
     if (e.key === 'Backspace' || e.key === 'Delete') {
-      if (keys[rec]) { delete keys[rec]; stPalSet({ keys: keys }); try { console.info('[String Theory] palette: no hotkey for ' + label); } catch (x) { /* no console */ } }
+      unkey(rec);
       return recEnd();
     }
     var h = stKeyOf(e), shown = stKeyLabel(h);
@@ -644,7 +651,6 @@ function stPalette() {
       run(shown[keyed && active >= 0 ? active : 0]);
     }
     else if (e.altKey && e.code === 'KeyP') pin(shown[active]);
-    else if (e.altKey && e.code === 'KeyK') recStart(shown[active]);
     else if (stKeyIs(e, stPalRead().key)) close();
     else nav = false;
     if (nav) e.preventDefault();
@@ -660,6 +666,16 @@ function stPalette() {
     if (e.target.closest('.st-pal-kb')) { recStart(c); return; }
     if (rec) { recEnd(); return; }
     if (e.target.closest('.st-pal-pin')) pin(c); else run(c);
+  });
+  // a right-click on the keyboard removes the hotkey
+  list.addEventListener('contextmenu', function (e) {
+    var li = e.target.closest('.st-pal-i');
+    if (!li || !e.target.closest('.st-pal-kb')) return;
+    e.preventDefault();
+    var c = shown[Array.prototype.indexOf.call(list.querySelectorAll('.st-pal-i'), li)];
+    if (rec) { rec = null; clash = null; foot.innerHTML = footHtml; }
+    unkey(c.id);
+    render(true);
   });
   // a pinned row drags up and down among the pinned; the order is kept when it's dropped
   list.addEventListener('pointerdown', function (e) {
