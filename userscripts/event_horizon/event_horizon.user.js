@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.25.174356
+// @version      2026.11.25.174611
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -15567,8 +15567,7 @@ setInterval(() => {
     }
     if (!PLY_WINDOW && ply.i >= 0) plySend({ type: 'tab-active', id: PLY_ID });
     if (!plyResumed && plyTabSeen && Date.now() - plyTabSeen < 5000) plyResumed = true;
-    // only while Event Horizon shows (#938): a page that opens on MusicBrainz's view keeps the saved player for later
-    if (!plyResumed && ehOn && !PLY_WINDOW && ply.i < 0 && S.player && !plyInWin()) {
+    if (!plyResumed && !PLY_WINDOW && ply.i < 0 && S.player && !plyInWin()) {
         let v = null; try { v = JSON.parse(sessionStorage.getItem('eh-ply') || 'null'); } catch (e) {}
         if (v && Array.isArray(v.q) && v.q.length) {
             plyResumed = true;
@@ -18099,9 +18098,6 @@ function setOn(on) {
 }
 function setOn1(on) {
 
-    // the player belongs to Event Horizon's view (#938): turning EH off stops one playing in this tab, so no sound
-    // goes on with its controls gone; a player in its own window keeps playing and keeps its controls there
-    if (!on && ehOn && ply.i >= 0 && !plyRemote && !PLY_WINDOW) { PLOG.info('stopped: Event Horizon turned off'); plyClose(); }
     if (/^(relate|form)\//.test(PAGE_ID)) { relSet(on); return; }
     // navigated inside EH: reload for MusicBrainz's page of this one, and stay off there
     if (!on && keyOf(location.href) !== PAGE_ID) { try { sessionStorage.setItem('eh-off', 1); } catch (e) {} location.reload(); return; }
