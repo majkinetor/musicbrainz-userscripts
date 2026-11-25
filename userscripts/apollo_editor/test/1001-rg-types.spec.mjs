@@ -9,7 +9,7 @@ test('release-group name edits keep the type controls usable', { tag: ['@sandbox
   await expect(page.locator('#primary-type')).toBeDisabled();
   await expect(page.locator('#primary-type + .tc-rg-seg button[data-v="1"]')).toBeDisabled();
   await expect(page.locator('#secondary-types + .tc-rg-seg button[data-v="1"]')).toBeDisabled();
-  await page.clock.pauseAt(new Date());
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));   // the page's clock, which can run ahead of this machine's
   const group = page.locator('input#release-group');
   await group.press('End');
   await group.press('Backspace');
