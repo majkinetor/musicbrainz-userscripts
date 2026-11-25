@@ -868,6 +868,7 @@ html:root[data-eh-theme] .kicker svg:not(.on *) { color: var(--link); }
 html:root[data-eh-theme] :is(button.tx.tx:is([data-playall], [data-playrec], [data-colplay]), a.tx.tx[href*="listenbrainz.org/"]):not(:hover) { color: var(--link); }
 html:root[data-eh-theme] .tr .trp { color: var(--link); }
 html:root[data-eh-theme] .tr .trp:hover { background: color-mix(in srgb, var(--link) 14%, transparent); }
+html:root[data-eh-theme] .hico.edit { color: var(--link); }
 /* Small heading tags use the ink colour, independently of filled-button contrast. */
 html:root[data-eh-theme] .detail .grp h4 .tag {
 	color: var(--link);
