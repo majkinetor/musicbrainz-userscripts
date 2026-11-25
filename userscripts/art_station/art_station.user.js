@@ -9933,7 +9933,8 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   .as-gv-sec h3 .as-gv-edit{display:inline-flex;padding:3px;border-radius:4px;color:var(--mbu-text-dim);text-decoration:none}
   .as-gv-sec h3 .as-gv-edit svg{color:inherit}
   .as-gv-sec h3 .as-gv-edit:hover{color:var(--mbu-text);background:var(--mbu-bg-hover)}
-  .as-gv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+  .as-gv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(var(--as-gv-tile,140px),calc(50vw - 32px)),1fr));gap:10px}
+  .as-gv .as-size button{background:transparent}
   .as-gv-t{margin:0;cursor:pointer;min-width:0}
   .as-gv-im{position:relative;aspect-ratio:1;background:var(--mbu-bg-sunken);border:2px solid transparent;border-radius:var(--mbu-radius);overflow:hidden;display:flex;align-items:center;justify-content:center}
   .as-gv-t:hover .as-gv-im{border-color:var(--mbu-border)}
@@ -10119,7 +10120,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     const nb = tiles.filter(t => t.kind === 'stack').length, np = tiles.filter(t => t.kind === 'pdf').length;
     const bar = `<div class="as-gv-bar"><span class="as-gv-lbl">Group by</span><div class="as-gv-seg">${seg('type', 'Type')}${seg('release', 'Release')}${seg('none', 'None')}</div>
       ${chip('merge', 'Merge look-alikes')}${chip('book', 'Booklets only' + (nb ? ' ' + nb : ''))}${np ? chip('pdf', 'PDF ' + np) : ''}
-      <span class="as-gv-sp"></span><div class="as-gv-dlw"><button type="button" class="as-gv-dl" data-gvdl${items.length ? '' : ' disabled'}>${GV_SVG.dl} Download zip</button>
+      <span class="as-gv-sp"></span><span class="as-size" data-tip="${SIZE_TIP}">${TILE_SIZES.map(([n], i) => `<button type="button" data-gvsize="${i}" class="${i === tileIdx() ? 'on' : ''}" aria-label="${n}">${tileIcon(i)}</button>`).join('')}</span><div class="as-gv-dlw"><button type="button" class="as-gv-dl" data-gvdl${items.length ? '' : ' disabled'}>${GV_SVG.dl} Download zip</button>
       <div class="as-gv-menu${GV.menu ? ' open' : ''}"><button type="button" data-gvzip="sel"${GV.sel.size ? '' : ' disabled'}>Selected (${GV.sel.size})</button><button type="button" data-gvzip="big">Largest of each (${shown.length})</button><button type="button" data-gvzip="all">Everything (${items.length})</button></div></div></div>
       <div class="as-gv-note">${gvNote(d, items, tiles)}</div>`;
     const body = secs.map((sec, si) => `<section class="as-gv-sec">${sec.name ? `<h3>${sec.icon || ''}<span>${esc(sec.name)}</span>${sec.sub ? `<span class="as-gv-sub">${esc(sec.sub)}</span>` : ''}<span class="as-gv-cnt">${sec.tiles.length}</span>${sec.id ? `<a class="as-gv-edit" href="/release/${esc(sec.id)}/cover-art" target="_blank" rel="noopener" data-gvedit="${esc(sec.id)}" data-tip="Edit this release's art
@@ -10198,8 +10199,20 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
     asLog.ok(`Group gallery: saved ${zipName}, ${files.length} files · ${fmtBytes(files.reduce((x, f) => x + f.data.length, 0))}${failed.length ? `, ${failed.length} dropped` : ''}`);
     if (failed.length) toast(`${failed.length} image${failed.length === 1 ? '' : 's'} could not be fetched and ${failed.length === 1 ? 'is' : 'are'} not in the zip`, 8000);
   }
+  // the thumbnail size is Art Station's own (the same setting, buttons and gestures as its gallery)
+  let gvSzT = null;
+  function gvSize(px, keep) {
+    SETTINGS.tile = Math.max(120, Math.min(340, px));
+    if (GV.el) {
+      GV.el.style.setProperty('--as-gv-tile', SETTINGS.tile + 'px');
+      const cur = tileIdx(); GV.el.querySelectorAll('[data-gvsize]').forEach((b, i) => b.classList.toggle('on', i === cur));
+    }
+    GV.bar = null;   // the bar's buttons are drawn with the size marked
+    clearTimeout(gvSzT); if (!keep) gvSzT = setTimeout(() => { save(); asLog.debug(`Group gallery: tile ${SETTINGS.tile}px`); }, 250);
+  }
   function gvMount(slot) {
     const el = document.createElement('div'); el.className = 'as-gv';
+    el.style.setProperty('--as-gv-tile', SETTINGS.tile + 'px');
     // the pencil opens the release in a new tab (its link does that); Event Horizon is told, to read it again on return
     const edited = e => { const a = e.target.closest('[data-gvedit]'); if (a && GV.d && (e.type === 'click' || e.button === 1)) document.dispatchEvent(new CustomEvent('mbu-art-group-edit', { detail: JSON.stringify({ rg: GV.d.rg, release: a.dataset.gvedit }) })); return !!a; };
     el.addEventListener('auxclick', edited);
@@ -10207,6 +10220,7 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
       if (edited(e)) return;
       const b = e.target.closest('button');
       if (b && el.contains(b)) {
+        if (b.dataset.gvsize) { gvSize(TILE_SIZES[+b.dataset.gvsize][1]); return; }
         if (b.dataset.gvby) { GV.by = b.dataset.gvby; gvRender(); return; }
         if (b.dataset.gvchip) { const k = b.dataset.gvchip; GV[k] = !GV[k]; gvRender(); return; }
         if ('gvpause' in b.dataset) { const p = (GV.d && GV.d.progress) || {}; document.dispatchEvent(new CustomEvent('mbu-art-group-pause', { detail: JSON.stringify({ rg: GV.d.rg, paused: !p.paused }) })); return; }
@@ -10216,7 +10230,18 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
       const f = e.target.closest('[data-gvk]');
       if (f) { const t = gvTile(f.dataset.gvk); if (t) gvOpen(t, +f.dataset.gvs); }
     });
-    let paint = null;   // right-drag: the state the first tile took, given to every tile passed over
+    let paint = null, painted = [], rmb = false;   // right-drag: the state the first tile took, given to every tile passed over
+    // the wheel over the size buttons, or anywhere with the right button held, sizes the thumbnails; a right-drag
+    // that turns into that gives back the tiles it selected on the way
+    el.addEventListener('wheel', e => {
+      const over = e.target.closest('.as-size');
+      if (!over && !rmb) return;
+      e.preventDefault();
+      if (over) { over.removeAttribute('data-tip'); mbuTipHide(true); }
+      if (paint !== null) { for (const k of painted) setSel(k, !paint); paint = null; painted = []; }
+      gvSize(SETTINGS.tile + (e.deltaY < 0 ? 25 : -25));
+    }, { passive: false });
+    el.addEventListener('mouseleave', () => { const s = el.querySelector('.as-size'); if (s) s.setAttribute('data-tip', SIZE_TIP); });
     // only the tile's mark and the menu's count change: redrawing would reload every cover
     const setSel = (k, v) => {
       if (GV.sel.has(k) === v) return; if (v) GV.sel.add(k); else GV.sel.delete(k);
@@ -10225,15 +10250,18 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
       GV.bar = null;
     };
     el.addEventListener('contextmenu', e => { if (e.target.closest('[data-gvk]')) e.preventDefault(); });
+    el.addEventListener('contextmenu', e => { if (rmb) e.preventDefault(); });
     el.addEventListener('mousedown', e => {
+      if (e.button === 2) rmb = true;
       const f = e.button === 2 && e.target.closest('[data-gvk]'); if (!f) return;
-      e.preventDefault(); paint = !GV.sel.has(f.dataset.gvk); setSel(f.dataset.gvk, paint);
+      e.preventDefault(); paint = !GV.sel.has(f.dataset.gvk); painted = []; if (!GV.sel.has(f.dataset.gvk) === paint) painted.push(f.dataset.gvk); setSel(f.dataset.gvk, paint);
     });
     el.addEventListener('mouseover', e => {
       if (paint === null) return; if (!(e.buttons & 2)) { paint = null; return; }
-      const f = e.target.closest('[data-gvk]'); if (f) setSel(f.dataset.gvk, paint);
+      const f = e.target.closest('[data-gvk]'); if (f && GV.sel.has(f.dataset.gvk) !== paint) { painted.push(f.dataset.gvk); setSel(f.dataset.gvk, paint); }
     });
-    document.addEventListener('mouseup', e => { if (e.button === 2) paint = null; });
+    document.addEventListener('mouseup', e => { if (e.button === 2) { paint = null; rmb = false; } });
+    window.addEventListener('blur', () => { rmb = false; });
     document.addEventListener('mousedown', e => { if (GV.menu && !e.target.closest('.as-gv-dlw')) { GV.menu = false; gvRender(); } });
     slot.append(el);
     return el;
