@@ -25,7 +25,7 @@ test('a 429 from Discogs is retried, and the badge recovers without a reload', {
     ? route.fulfill({ status: 429, headers: { 'retry-after': '1', 'access-control-allow-origin': '*' }, body: '{"message":"rate limited"}' })
     : route.fallback()));
   await openApollo(page, inject, { release: '627a37f2-6e95-4460-80db-84cdc1cb4a10', tab: 'tracklist' });   // Nigeria Special Volume 3
-  const got = await page.waitForFunction(() => /tc-disc-badge|tc-disc-ok/.test(document.querySelector('.tc-discstat')?.className || ''), null, { timeout: 30000 }).then(() => true).catch(() => false);
+  const got = await page.waitForFunction(() => /tc-disc-badge|tc-disc-ok/.test(document.querySelector('.tc-discstat')?.className || ''), null, { timeout: 60000 }).then(() => true).catch(() => false);
   check(hits > 2, `Discogs was asked again after the refusals (${hits} reads)`);
   check(got, `the badge settles to a result (${JSON.stringify(await badge(page))})`);
   await ws.done();

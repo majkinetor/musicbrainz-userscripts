@@ -25,13 +25,15 @@ test('a type letter before the words picks that type, and the type list shows th
   await attachShot(testInfo, page, 'types');
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT, clip: { x: 0, y: 0, width: 1400, height: 900 } });
   await page.keyboard.press('p');
-  check(await page.locator('.hm-srch select[name=type]').inputValue() === 'place' && await page.locator('.hm-td').isHidden(), 'its letter picks Place and closes the list');
-  check(await page.locator('.hm-srch .hm-ty').textContent() === 'Place', 'the button shows Place');
+  // the results page may still be drawing its box anew: wait for the pick to land
+  check(await until(async () => await page.locator('.hm-srch select[name=type]').inputValue().catch(() => '') === 'place' && await page.locator('.hm-td').isHidden(), v => v) === true, 'its letter picks Place and closes the list');
+  check(await until(() => page.locator('.hm-srch .hm-ty').textContent().catch(() => ''), t => t === 'Place') === 'Place', 'the button shows Place');
   await page.locator('.hm-srch input[name=query]').fill('');
   await page.locator('.hm-srch input[name=query]').pressSequentially('e ');
   check(await page.locator('.hm-srch .hm-ty').textContent() === 'Editor' && await page.locator('.hm-srch input[name=query]').inputValue() === '', 'typing e and a space picks Editor at once and leaves the box empty');
   await page.locator('.hm-srch input[name=query]').fill('w yesterday');
   await page.locator('.hm-srch input[name=query]').press('Enter');
   check(await until(() => page.url(), h => /type=work/.test(h) && /query=yesterday(&|$)/.test(h)), 'w yesterday searches works for yesterday');
-  check(await page.locator('.hm-srch select[name=type]').inputValue() === 'work', 'the type shows Work');
+  // the address changes a moment before the new page's box shows its type
+  check(await until(() => page.locator('.hm-srch select[name=type]').inputValue().catch(() => ''), v => v === 'work') === 'work', 'the type shows Work');
 });

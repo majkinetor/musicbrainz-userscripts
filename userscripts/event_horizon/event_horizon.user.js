@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.25.191238
+// @version      2026.11.25.192244
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13125,7 +13125,7 @@ const srchHint = t => 'Search ' + (t === 'doc' ? 'documentation' : t === 'series
 // the top bar's search: a type's letter and a space at the start picks the type, like the home search's
 document.addEventListener('input', e => {
     const f = e.target.closest && e.target.closest('form.srch'); if (!f || e.target !== f.query) return;
-    const m = /^([a-z]) ([sS]*)$/.exec(f.query.value), k = m && Object.keys(SRCH_K).find(t => SRCH_K[t] === m[1]);
+    const m = /^([a-z]) ([\s\S]*)$/.exec(f.query.value), k = m && Object.keys(SRCH_K).find(t => SRCH_K[t] === m[1]);
     if (k) { f.query.value = m[2]; f.query.setSelectionRange(0, 0); if (f.querySelector('.hm-ty')) srchTop.set(f, k); else { f.type.value = k; f.query.placeholder = srchHint(k); } }
 }, true);
 const srchTop = {
