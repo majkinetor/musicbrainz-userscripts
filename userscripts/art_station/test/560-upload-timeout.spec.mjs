@@ -108,6 +108,9 @@ test('the upload timeout is a setting, and reaches the upload request', { tag: [
   await page.click('#as-switch', { button: 'right' });
   await page.waitForSelector('.as-setup-uptimeout', { timeout: 5000 });
   await page.evaluate(() => { const i = document.querySelector('.as-setup-uptimeout'); i.value = '10'; i.dispatchEvent(new Event('change', { bubbles: true })); document.getElementById('as-setup').remove(); });
+  // the aborted first run can leave nothing staged (seen on CI: no POST, "undefined ms"): stage again if so
+  const staged10 = await page.evaluate(() => !!document.querySelector('.as-commit') && !document.querySelector('.as-commit').disabled);
+  if (!staged10) check(await stage(), 'fixture: a file staged again for the 10 min run');
   const at10 = await runCommit();
   const up10 = at10.find(x => x.method === 'POST');
   console.log('XHR at 10 min: ' + JSON.stringify(up10));
