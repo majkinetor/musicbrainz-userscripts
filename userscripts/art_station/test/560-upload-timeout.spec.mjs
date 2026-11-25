@@ -73,7 +73,7 @@ test('the upload timeout is a setting, and reaches the upload request', { tag: [
   // ── the value actually reaches the live XHR ────────────────────────────────
   await page.evaluate(() => { document.getElementById('as-setup').remove(); });
   // stage a real (tiny) file the way a drop does, then drive the real commit
-  const staged = await page.evaluate(async () => {
+  const stage = () => page.evaluate(async () => {
     const png = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='), c => c.charCodeAt(0));
     const file = new File([png], 'booklet-probe.png', { type: 'image/png' });
     const dt = new DataTransfer(); dt.items.add(file);
@@ -81,6 +81,7 @@ test('the upload timeout is a setting, and reaches the upload request', { tag: [
     for (let i = 0; i < 60; i++) { await new Promise(r => setTimeout(r, 100)); if (!document.querySelector('.as-commit')?.disabled) break; }
     return !document.querySelector('.as-commit')?.disabled;
   });
+  const staged = await stage();
   check(staged, 'fixture: a file staged, so there is something to upload (otherwise no XHR is produced)');
 
   const runCommit = async () => page.evaluate(async () => {
@@ -122,10 +123,13 @@ test('the upload timeout is a setting, and reaches the upload request', { tag: [
   await page.click('#as-switch', { button: 'right' });
   await page.waitForSelector('.as-setup-uptimeout', { timeout: 5000 });
   await page.evaluate(() => { const i = document.querySelector('.as-setup-uptimeout'); i.value = '1'; i.dispatchEvent(new Event('change', { bubbles: true })); document.getElementById('as-setup').remove(); });
-  await page.evaluate(() => {
-    const c = document.querySelector('.as-commit');
-    if (c) c.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
-  });
+  // the earlier, aborted runs can leave nothing staged (seen on CI: "none selected", no third POST),
+  // and then the right-click below uploads nothing and no timeout can ever fire — stage again if so
+  const stillStaged = await page.evaluate(() => !!document.querySelector('.as-commit') && !document.querySelector('.as-commit').disabled);
+  console.log('a file still staged before the hung upload: ' + stillStaged);
+  if (!stillStaged) check(await stage(), 'fixture: a file staged again for the hung upload');
+  const hung = await runCommit();
+  check(hung.some(x => x.method === 'POST'), 'fixture: the hung upload was sent');
   const timedOut = await page.waitForFunction(
     () => /timed out after \d+ min/i.test(document.body.innerText),
     null, { timeout: 100000 }).then(() => true).catch(() => false);
