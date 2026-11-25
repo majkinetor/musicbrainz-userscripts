@@ -11287,7 +11287,49 @@ function discoHtml(d) {
 // and kept per release, so the Editions table's Art column and the Artwork card fill in as it runs. The card merges
 // look-alikes of a type across releases (a 64-bit difference hash of the small thumbnail) and keeps booklets apart,
 // one row per release, since their pages differ from release to release.
-const RGA = new Map(), RGA_REL = new Map(), RGA_HASH = caaStore('eh:caa-dh2', 24 * 60 * 60 * 1000), RGA_BIG = 50;
+const RGA = new Map(), RGA_REL = new Map(), RGA_BIG = 50;
+// An image's hashes, kept in IndexedDB ('eh-caa-hash') for every tab and visit: an archive image never changes under
+// its id, so a group's merges come at once the next time. Not in localStorage, whose 5 MB the suite shares; a hash is
+// about 80 bytes, so the cap of 50 000 is some 4 MB, past which the longest unused go. Reads are synchronous, from
+// memory: rgaHashLoad fills it for the images about to be shown.
+const RGA_HASH_MAX = 50000, RGA_HMEM = new Map();
+let rgaHdb = null, rgaHputs = 0;
+const rgaHstore = mode => (rgaHdb || (rgaHdb = new Promise((ok, no) => {
+    const q = indexedDB.open('eh-caa-hash', 1);
+    q.onupgradeneeded = () => q.result.createObjectStore('h', { keyPath: 'k' }).createIndex('at', 'at');
+    q.onsuccess = () => ok(q.result); q.onerror = () => no(q.error);
+}))).then(db => db.transaction('h', mode).objectStore('h'));
+const RGA_HASH = {
+    get: k => RGA_HMEM.get(k),
+    set(k, h) {
+        RGA_HMEM.set(k, h);
+        rgaHstore('readwrite').then(s => {
+            s.put({ k, h, at: Date.now() });
+            if (++rgaHputs % 200 !== 1) return;
+            const c = s.count();
+            c.onsuccess = () => { let left = c.result - RGA_HASH_MAX; if (left > 0) s.index('at').openCursor().onsuccess = ev => { const cur = ev.target.result; if (cur && left-- > 0) { cur.delete(); cur.continue(); } }; };
+        }).catch(e => LOG.debug('Group artwork: hash not stored, ' + (e && e.message || e)));
+    },
+};
+// the kept hashes of these image ids into memory; the ones read are marked used, so the cap drops the others first
+async function rgaHashLoad(ids) {
+    ids = ids.map(String).filter(k => !RGA_HMEM.has(k));
+    if (!ids.length) return;
+    const t0 = performance.now();
+    let n = 0;
+    try {
+        const s = await rgaHstore('readwrite'), now = Date.now();
+        await new Promise(ok => {
+            let left = ids.length;
+            for (const k of ids) {
+                const q = s.get(k);
+                q.onsuccess = () => { const e = q.result; if (e && e.h) { RGA_HMEM.set(k, e.h); n++; if (now - e.at > 864e5) s.put({ ...e, at: now }); } if (!--left) ok(); };
+                q.onerror = () => { if (!--left) ok(); };
+            }
+        });
+    } catch (e) { LOG.debug('Group artwork: kept hashes not read, ' + (e && e.message || e)); }
+    LOG.debug(`Group artwork: ${n} of ${ids.length} hashes kept, read in ${Math.round(performance.now() - t0)} ms`);
+}
 const RGA_BOOK = ['Booklet', 'Liner', 'Poster'];
 const rgaOf = id => { if (!RGA.has(id)) RGA.set(id, { on: false, busy: false, hashed: false, n: 0 }); return RGA.get(id); };
 // a release's images once read; null before
@@ -11317,7 +11359,8 @@ async function rgaScan(rgId, eds) {
     };
     await Promise.all(Array.from({ length: 6 }, work));
     LOG.info(`Group artwork: ${st.n} listings in ${Math.round(performance.now() - t0)} ms`);
-    // the hashes: only for types that can merge, booklets aside
+    // the hashes: only for types that can merge, booklets aside; those kept from before come first
+    await rgaHashLoad(rgaWith(eds).flatMap(e => (rgaImgs(e) || []).filter(i => !rgaBook(i) && !rgaPdf(i)).map(i => i.id)));
     const all = rgaWith(eds).flatMap(e => (rgaImgs(e) || []).filter(i => !rgaBook(i) && !rgaPdf(i) && !RGA_HASH.get(String(i.id))));
     st.hashed = false; st.hn = 0; st.ht = all.length; rgaRedraw(rgId);
     LOG.debug(`Group artwork: hashing ${all.length} images`);
@@ -16998,6 +17041,7 @@ async function rgaRefresh() {
         const e = (d.editions || []).find(x => x.id === id);
         if (e) e.caa = { ...(e.caa || {}), artwork: im.length > 0, count: im.length, front: im.some(i => i.front) };
         LOG.info(`Group artwork: release ${id} read again, ${im.length} images`);
+        await rgaHashLoad(im.map(i => i.id));
         for (const i of im.filter(i => !rgaBook(i) && !rgaPdf(i) && !RGA_HASH.get(String(i.id)))) { const h = await rgaHash(i); if (h) RGA_HASH.set(String(i.id), h); }
     }
     if (data === d) rgaRedraw(d.rgId);
