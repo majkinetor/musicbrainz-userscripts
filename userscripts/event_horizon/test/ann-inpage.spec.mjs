@@ -43,3 +43,21 @@ test("a label's annotation editor opens in the tab with Apollo's editor", { tag:
   await expect(page.locator('#eh-anno #tc-anno-wrap')).toBeVisible({ timeout: 30000 });
   expect(await page.evaluate(() => window.__stay)).toBe(1);
 });
+
+// Enter edit posts the annotation in the background and opens the label's page in the tab: no page load, so the player plays on
+test("Enter edit on a label's annotation opens the label in the tab without a page load", { tag: '@sandbox' }, async ({ page, inject }) => {
+  await page.goto(`https://test.musicbrainz.org/label/${LABEL}`, { waitUntil: 'domcontentloaded' });
+  await idle(page);
+  await inject('event_horizon');
+  await inject('apollo_editor');
+  await expect(page.locator('#app')).toBeVisible();
+  await page.evaluate(() => { window.__stay = 1; });
+  await page.locator(`#app a[href$="/label/${LABEL}/edit_annotation"]`).first().evaluate(a => a.click());
+  await expect(page.locator('#eh-anno #tc-anno-submit')).toBeVisible({ timeout: 30000 });
+  const text = 'EH test annotation ' + Date.now();
+  await page.locator('#eh-anno textarea[name="edit-annotation.text"]').evaluate((t, v) => { t.value = v; t.dispatchEvent(new Event('input', { bubbles: true })); }, text);
+  await page.locator('#eh-anno #tc-anno-submit').click();
+  await expect(page).toHaveURL(new RegExp(`/label/${LABEL}/?$`), { timeout: 30000 });
+  await expect(page.locator('#app')).toContainText(text, { timeout: 30000 });
+  expect(await page.evaluate(() => window.__stay)).toBe(1);
+});
