@@ -77,7 +77,7 @@ test('what the spec proves', { tag: '@sandbox' }, async ({ page, inject }) => {
 - **`console.log`** in a spec goes to the test's report (a `log` attachment), not the terminal, so a run shows only pass and fail lines. `TEST_LOG=1` prints it as well. Code run in the page logs to the page, as before.
 - **`check(cond, message)`** is a soft assertion: a failed check is reported and the test continues.
 - **No fixed sleeps.** A spec waits for what it checks, never for a length of time: a wait long enough here is too short on a slower machine (CI). Instead:
-  - **`until(read, ok)`** polls the value a check is about until `ok(value)` holds (20 s at most), and returns it either way, so a failing check still reports what was there: `check(await until(() => page.evaluate(…), v => v === 'flex'), …)`.
+  - **`until(read, ok, timeout)`** polls the value a check is about until `ok(value)` holds (for `timeout` ms, 20 s if left out; `{ timeout, every }` works too), and returns it either way, so a failing check still reports what was there: `check(await until(() => page.evaluate(…), v => v === 'flex'), …)`.
   - **`idle(page)`**: the page has loaded and its main thread is idle, where a script goes in once MusicBrainz has started. **`settled(page)`** waits for the network to go quiet first (MusicBrainz's release editor loads tracks as its tabs open).
   - **`frames(page, n)`**: `n` drawn frames, for what is laid out a frame later (a ResizeObserver, then requestAnimationFrame), where the state before the change would pass the check too.
   - **`page.clock`**, Playwright's fake clock, for a script's own timers (debounces, countdowns, polls): `page.clock.install()` before the page loads, then `page.clock.runFor(ms)` jumps ahead at once.
