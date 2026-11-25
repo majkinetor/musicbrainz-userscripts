@@ -138,7 +138,7 @@ function changedScripts() {
   const base = changedScripts.base = prev && tryRun(() => git('rev-parse', '--verify', '--quiet', `refs/tags/${prev.tag}`)) ? prev.tag : 'stable';
   const files = tryRun(() => git('diff', '--name-only', `${base}...main`)) || '';
   const dirs = new Set();
-  for (const f of files.split('\n')) { const m = f.match(/^userscripts\/([^/]+)\/.*\.user\.js$/); if (m) dirs.add(m[1]); }
+  for (const f of files.split('\n')) { const m = f.match(/^userscripts\/([^/]+)\/.*\.user\.js$/); if (m && existsSync(resolve(ROOT, `userscripts/${m[1]}`))) dirs.add(m[1]); }   // a removed script has nothing to release
   return dirs;
 }
 
