@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.25.095751
+// @version      2026.11.25.111618
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -17436,6 +17436,12 @@ function histBursts(es) {
     }
     return out;
 }
+// a burst is keyed by its newest edit, and a later page can bring a newer one into it: an open burst stays open as it grows
+function histBurstKey(d, es) {
+    const k = 'b' + es[0].id; if (d.open.has(k)) return k;
+    const old = es.find(e => d.open.has('b' + e.id)); if (old) { d.open.delete('b' + old.id); d.open.add(k); }
+    return k;
+}
 async function histLoad(n, all) {
     const d = data; if (d.busy || !d.more) return;
     d.busy = true; render();
@@ -17526,6 +17532,9 @@ const histVio = new IntersectionObserver(es => es.forEach(x => { if (!x.isInters
 document.addEventListener('toggle', ev => {
     const dt = ev.target; if (!dt.matches?.('#app details.hed')) return;
     if (dt.open) histVio.observe(dt); else histVio.unobserve(dt);
+    // an edit opened stays open when a later page re-renders the list: a burst that grows rebuilt it folded, under the reader's hand
+    const id = (dt.querySelector(':scope>summary>a.d')?.getAttribute('href') || '').match(/\/edit\/(\d+)/)?.[1];
+    if (id && data && data.kind === 'hist' && data.open) dt.open ? data.open.add('e' + id) : data.open.delete('e' + id);
 }, true);
 async function histVload(dt) {
     if (dt.dataset.hvf) return;
@@ -17750,7 +17759,7 @@ document.addEventListener('click', ev => {
 });
 function histEdit(e, sh) {
     const ns = sh ? e.notes.filter(n => hnKey(n) !== sh) : e.notes;
-    return `<details class="hed" data-st="${e.st}"${histLean(e) ? ` data-lean="${histLean(e)}"` : ''}><summary><a class="d" href="${MB}/edit/${e.id}" data-tip="Edit #${e.id}">${histTm(e.t)}</a>${e.canNote ? `<button type="button" class="hnico" data-hnoteo="${e.id}" aria-label="Add note" data-tip="Add note">${H_NOTE_SVG}</button>` : ''}${histIco(e.tk)}<span class="hty">${esc(e.type)}</span>${histOne(data.id) || (data.grp !== 'burst' && data.grp !== 'editor') ? `<span class="hwho">${e.ed ? `<a href="${MB}/user/${encodeURIComponent(e.ed)}">${esc(e.ed)}</a>` : 'Editor hidden'}</span>` : ''}<span class="hst ${e.st}"${e.votes ? ` data-tip="${esc(e.votes[0].toUpperCase() + e.votes.slice(1))}"` : ''}>${H_ST[e.st]}</span>${ns.length ? `<span class="hnc" data-tip="${ns.length} edit note${ns.length > 1 ? 's' : ''}">💬 ${ns.length}</span><span class="hnp">${esc(ns[0].text.slice(0, 140))}</span>` : ''}${!e.can && e.myt && !/^(none|n\/a)$/i.test(e.myt) ? `<span class="hmy" data-tip="Your vote">${esc(e.myt)}</span>` : ''}${histBar(e)}</summary><div class="hdt">${e.det}${histVotes(e)}${ns.map(histNote).join('')}${e.canNote ? histNoteForm(e) : ''}</div></details>`;
+    return `<details class="hed"${data && data.open && data.open.has('e' + e.id) ? ' open' : ''} data-st="${e.st}"${histLean(e) ? ` data-lean="${histLean(e)}"` : ''}><summary><a class="d" href="${MB}/edit/${e.id}" data-tip="Edit #${e.id}">${histTm(e.t)}</a>${e.canNote ? `<button type="button" class="hnico" data-hnoteo="${e.id}" aria-label="Add note" data-tip="Add note">${H_NOTE_SVG}</button>` : ''}${histIco(e.tk)}<span class="hty">${esc(e.type)}</span>${histOne(data.id) || (data.grp !== 'burst' && data.grp !== 'editor') ? `<span class="hwho">${e.ed ? `<a href="${MB}/user/${encodeURIComponent(e.ed)}">${esc(e.ed)}</a>` : 'Editor hidden'}</span>` : ''}<span class="hst ${e.st}"${e.votes ? ` data-tip="${esc(e.votes[0].toUpperCase() + e.votes.slice(1))}"` : ''}>${H_ST[e.st]}</span>${ns.length ? `<span class="hnc" data-tip="${ns.length} edit note${ns.length > 1 ? 's' : ''}">💬 ${ns.length}</span><span class="hnp">${esc(ns[0].text.slice(0, 140))}</span>` : ''}${!e.can && e.myt && !/^(none|n\/a)$/i.test(e.myt) ? `<span class="hmy" data-tip="Your vote">${esc(e.myt)}</span>` : ''}${histBar(e)}</summary><div class="hdt">${e.det}${histVotes(e)}${ns.map(histNote).join('')}${e.canNote ? histNoteForm(e) : ''}</div></details>`;
 }
 // a group's edits, a run of one type folded into one line
 function histRuns(es) {
@@ -17791,7 +17800,7 @@ function histPage(app, d) {
         let day = '';
         for (const g of gs) {
             const dy = histDay(g.es[0].t); if (dy !== day && d.grp === 'burst') { day = dy; body += `<div class="hday">${esc(dy)}</div>`; }
-            body += d.grp === 'burst' ? histGroup('b' + g.es[0].id, name(g.es[0]), g.es, true, g.es[0].ed) : histGroup('d' + dy, esc(dy), g.es);
+            body += d.grp === 'burst' ? histGroup(histBurstKey(d, g.es), name(g.es[0]), g.es, true, g.es[0].ed) : histGroup('d' + dy, esc(dy), g.es);
         }
     } else {
         const by = d.grp === 'editor' ? e => e.ed || 'Editor hidden' : d.grp === 'type' ? e => e.type : e => H_ST[e.st], m = new Map();

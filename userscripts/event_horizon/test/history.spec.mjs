@@ -64,9 +64,11 @@ test('an open edit takes your vote and a note in place, and your votes open as a
   await page.goto('https://test.musicbrainz.org/edit/open');
   await inject('event_horizon');
   await page.getByText(/^1 edit · /).first().click();
-  const ed = page.locator('details.hed', { has: page.locator('.hvote') }).first();
-  check(await until(() => ed.count(), n => n > 0) > 0, 'an open edit shows the vote buttons');
-  const id = (await ed.locator('summary a.d').getAttribute('href')).split('/').pop();
+  const first = page.locator('details.hed', { has: page.locator('.hvote') }).first();
+  check(await until(() => first.count(), n => n > 0) > 0, 'an open edit shows the vote buttons');
+  const id = (await first.locator('summary a.d').getAttribute('href')).split('/').pop();
+  // that edit by its id: a later page can bring a newer edit into its burst, and the first one is then another edit
+  const ed = page.locator('details.hed', { has: page.locator(`summary a.d[href$="/edit/${id}"]`) });
   if (!(await ed.evaluate(x => x.open))) await ed.locator('summary .hty').click();
   const pick = (await ed.locator('.hvote button.v-1').getAttribute('aria-checked')) === 'true' ? 'v-2' : 'v-1';
   await ed.locator('.hvote button.' + pick).click();
