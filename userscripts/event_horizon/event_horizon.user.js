@@ -11310,10 +11310,19 @@ async function rgaScan(rgId, eds) {
     // the hashes: only for types that can merge, booklets aside
     const all = rgaWith(eds).flatMap(e => (rgaImgs(e) || []).filter(i => !rgaBook(i) && !rgaPdf(i) && !RGA_HASH.has(String(i.id))));
     LOG.debug(`Group artwork: hashing ${all.length} images`);
-    const hw = async () => { for (let i; (i = all.shift());) RGA_HASH.set(String(i.id), await rgaHash(i)); };
-    await Promise.all(Array.from({ length: 6 }, hw));
+    // each thumbnail takes a hop to archive.org (about 600 ms), so many at once; the card merges as they come
+    st.hn = 0; st.ht = all.length;
+    let bad = 0;
+    const hw = async () => {
+        for (let i; (i = all.shift());) {
+            const h = await rgaHash(i);
+            RGA_HASH.set(String(i.id), h); st.hn++; if (!h) bad++;
+            if (performance.now() - last > 1000) { last = performance.now(); rgaRedraw(rgId); }
+        }
+    };
+    await Promise.all(Array.from({ length: 16 }, hw));
     st.busy = false; st.hashed = true;
-    LOG.info(`Group artwork: done in ${Math.round(performance.now() - t0)} ms`);
+    LOG.info(`Group artwork: done in ${Math.round(performance.now() - t0)} ms, ${st.hn} hashed, ${bad} failed`);
     rgaRedraw(rgId);
 }
 // the difference hash of an image's smallest thumbnail, as 16 hex digits; '' when it won't load
@@ -11398,7 +11407,7 @@ function rgaHtml(g, eds) {
         return sect('art', 'Artwork', `<span class="aside">${note}</span>`, `<div class="rga-big">${note}: reading every listing takes a while. <button class="lnk" type="button" data-rgascan>Scan</button></div>`, `<div class="folded-note">${note}</div>`);
     }
     const books = read.filter(e => rgaImgs(e).some(rgaBook)), merged = rgaMerge(read), n = read.reduce((a, e) => a + rgaImgs(e).length, 0);
-    const prog = st.busy ? ` · <span class="rga-busy">${read.length < withArt.length ? `reading ${read.length} of ${withArt.length}` : 'merging look-alikes'}</span>` : '';
+    const prog = st.busy ? ` · <span class="rga-busy">${read.length < withArt.length ? `reading ${read.length} of ${withArt.length}` : `merging look-alikes, ${st.hn || 0} of ${st.ht || 0}`}</span>` : '';
     const note = `${n} images on ${read.length} releases · ${merged.length + books.length} after merging${prog}`;
     const row = e => {
         const im = rgaImgs(e), bk = im.filter(rgaBook), f = bk.find(i => !rgaPdf(i)) || bk[0], types = [...new Set(bk.flatMap(i => i.types.filter(t => RGA_BOOK.includes(t))))];
