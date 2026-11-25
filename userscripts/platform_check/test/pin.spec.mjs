@@ -83,7 +83,9 @@ test('a pinned dock panel stays open where it was dragged', { tag: ['@sandbox', 
   check(await page.locator('.mbu-dock-win').evaluate(w => !w.hidden), 'on a page of Event Horizon that is no release, it hides, still pinned');
   await page.evaluate(r => document.documentElement.setAttribute('data-mbu-release', r), release);
   await win.waitFor({ state: 'visible' });
-  await page.evaluate(() => { document.documentElement.removeAttribute('data-mbu-dock'); document.documentElement.removeAttribute('data-mbu-release'); });
+  // no script turns the dock off on a live page (Event Horizon off is a reload), so the corner is restacked here (a resize), as a
+  // reload would, or the dock item keeps the folded dock's hide and the hover below never finds it
+  await page.evaluate(() => { document.documentElement.removeAttribute('data-mbu-dock'); document.documentElement.removeAttribute('data-mbu-release'); dispatchEvent(new Event('resize')); });
   await page.waitForTimeout(300);
   check(await win.isVisible(), 'it is back on a release, and stays there with Event Horizon off');
 
