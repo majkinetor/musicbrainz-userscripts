@@ -90,6 +90,12 @@ test('the artist edit page gets the links column, the name highlight and loujine
   // Sort name: guess is the shared sort icon, MusicBrainz's copy button is gone
   const sn = await page.evaluate(() => ({ gc: !!document.querySelector('button.guesscase-sortname svg'), copy: getComputedStyle(document.querySelector('button.sortname-copy')).display }));
   check(sn.gc && sn.copy === 'none', `sort name: the sort icon, no copy (${sn.gc}, ${sn.copy})`);
+  // both guesses' tips draw their right-click as a mouse row, not as words
+  for (const sel of ['form.tc-ent-form button.guesscase-title', 'button.guesscase-sortname']) {
+    await page.mouse.move(0, 0); await page.locator(sel).first().hover();
+    const m = await until(() => page.evaluate(() => { const t = document.querySelector('#mbu-tip.mbu-tip-on'); return t && { mouse: !!t.querySelector('.mbu-tip-mouse'), text: t.textContent }; }), v => v && v.mouse);
+    check(m && m.mouse && !/Right-click:/.test(m.text), `${sel}: the right-click is a mouse row (${JSON.stringify(m)})`);
+  }
   // right-click the sort name's guess: the name, as it is
   const sortVal = () => page.evaluate(() => [document.getElementById('id-edit-artist.name').value, document.getElementById('id-edit-artist.sort_name').value]);
   await page.locator('button.guesscase-sortname').click({ button: 'right' });
