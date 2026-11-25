@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.25.175657
+// @version      2026.11.25.180910
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -9069,7 +9069,7 @@ async function tidalAlbumByBarcode(barcode, token) {
     const r = await gmGet(`${TIDAL.api}/albums?countryCode=${TIDAL.country}&filter%5BbarcodeId%5D=${encodeURIComponent(barcode)}`,
         { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.api+json' } });
     if (!r.ok) return null;
-    try { const a = (JSON.parse(r.responseText).data || [])[0]; return a ? { id: a.id, barcode: a.attributes?.barcodeId || barcode } : null; }
+    try { const a = (JSON.parse(r.responseText).data || [])[0]; return a ? { id: a.id, barcode: a.attributes?.barcodeId || barcode, own: a.attributes?.barcodeId || null } : null; }
     catch { return null; }
 }
 async function scanTidal({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, wikidataTidalId, barcode }) {
@@ -11977,7 +11977,7 @@ async function pcBarcodeFind(barcode) {
         ['tidal', async () => {
             const tok = await tidalToken();
             const h = tok && await tidalAlbumByBarcode(barcode, tok);
-            return h ? `https://tidal.com/album/${h.id}` : null;
+            return h && same(h.own) ? `https://tidal.com/album/${h.id}` : null;
         }],
         ['sevendigital', async () => { const h = await sdByBarcode(barcode); return h ? h.url : null; }],
     ].filter(([k]) => providerEnabled(k));
