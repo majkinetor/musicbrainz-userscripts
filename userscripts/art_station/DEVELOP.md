@@ -83,6 +83,19 @@ Outside an art page Art Station draws nothing and runs only as a read-only full-
 
 Art Station answers with `preventDefault()`. A caller that sees no answer shows the images its own way. On a cover-art page, the event opens the page's own full-screen view when it is for the same release, and goes unanswered otherwise.
 
+### A release group's gallery
+
+On Event Horizon's `/release-group/<mbid>/artwork` tab, Event Horizon reads the releases and hashes the images, and on each step sends a cancelable `mbu-art-group` on `document` (a JSON string):
+
+```js
+{ rg, name, wait, err,
+  releases: [{ id, rel, date, country, catno, images }],   // images: the release's Cover Art Archive listing, null until read
+  progress: { read, total, hn, ht, busy, paused, hashed },
+  hashes: { <image id>: '<16 hex>' } }                     // look-alike when the first type matches and ≤ 10 bits differ
+```
+
+Art Station draws into `#as-gslot` and answers with `preventDefault()`; unanswered, Event Horizon shows its own card. Started after the tab, Art Station sends `mbu-art-group-ask` and gets the snapshot again. **Pause** sends `mbu-art-group-pause` with `{ rg, paused }`.
+
 ## AI scan
 
 The ✦ menu prepares the image and the prompt as it opens, so a provider's click only has to write the clipboard and open the tab, inside the click's activation. The image goes on the clipboard as PNG (the one image type every browser's clipboard takes), at most 2400 px on its long side; the prompt goes in the chat's `?q=`, or with the image on the clipboard for Gemini, which has none. The release's title, artist credit and tracklist come from one ws/2 `release?inc=recordings+artist-credits` read per page, through the gate.

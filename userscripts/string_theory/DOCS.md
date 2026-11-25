@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-26 10:46 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-26 10:47 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -528,6 +528,7 @@ A cover and event art editor for MusicBrainz: one gallery to view, sort, reorder
 - **[Add images](#add-images)**: files, folders, zips, URLs, MH Covers, reverse-image search.
 - **[Upscaled images](#upscaled-images)**: a big file that is a smaller picture enlarged shows its real size.
 - **[Full-screen viewer](#full-screen-viewer)** with zoom, pan and slideshow.
+- **[Release group artwork](#release-group-artwork)**: the art of all a group's releases, in Event Horizon.
 - **[File names ⇄ types](#file-names--types)**: a downloaded archive re-adds with its types and comments.
 - **[AI scan](#ai-scan)** reads a cover's printed credits for Group Therapy's Text parser.
 - **[Applying changes](#applying-changes)** as parallel edits, with automatic retries.
@@ -606,6 +607,12 @@ Its keys are in [Shortcuts](#shortcuts-1). A zoomed image follows the mouse, or 
 
 **↶ ↷** by **Download** turn the cover 90°. A new cover rotates in place; an existing one is staged as a rotated new copy with its type, comment and position, and the original is marked for removal. PNGs rotate losslessly, JPEGs are re-saved at high quality.
 
+### Release group artwork
+
+In [Event Horizon](../event_horizon/README.md), a release group's **Artwork** tab shows the art of all its releases. Images of a type that look alike are merged into one, marked with how many releases have them; each release's booklet is one stack. Group by type, release or nothing; **Booklets only** and **PDF** narrow the view, and **Merge look-alikes** turns merging off. **Pause** stops the reading.
+
+**Download zip** saves the selected images, the largest copy of each merged image, or everything, in a folder per release: `1984 JP CP35-3017/booklet-03.jpg`. Clicking an image opens the viewer over its row.
+
 ### File names ⇄ types
 
 When an added image has no type, it's guessed from its file name (switch it off in ⚙):
@@ -649,17 +656,17 @@ The answer is the credits as printed, each line with its [pattern](../group_ther
 
 ### Shortcuts
 
-| Key       | Where           |                                 |
-| --------- | --------------- | ------------------------------- |
-| Ctrl+V    | gallery         | import the URL on the clipboard |
-| ← → ↑ ↓   | gallery         | move between covers             |
-| Enter     | gallery         | open the cover full-screen      |
-| Space     | gallery         | select or deselect the cover    |
+| Key       | Where           |                                          |
+| --------- | --------------- | ---------------------------------------- |
+| Ctrl+V    | gallery         | import the URL on the clipboard          |
+| ← → ↑ ↓   | gallery         | move between covers                      |
+| Enter     | gallery         | open the cover full-screen               |
+| Space     | gallery         | select or deselect the cover             |
 | Delete    | gallery, viewer | mark for removal (the selection, if any) |
-| ← → / ↑ ↓ | viewer          | previous, next / zoom           |
-| Enter     | viewer          | edit the comment                |
-| D         | viewer          | download the original           |
-| P         | viewer          | slideshow                       |
+| ← → / ↑ ↓ | viewer          | previous, next / zoom                    |
+| Enter     | viewer          | edit the comment                         |
+| D         | viewer          | download the original                    |
+| P         | viewer          | slideshow                                |
 
 | Mouse                                                   |                                                    |
 | ------------------------------------------------------- | -------------------------------------------------- |
@@ -935,7 +942,7 @@ The funnel filters by title, or by column with `column:value`:
 
 The arrow at the end of the box saves a filter by name.
 
-A release group's **Artwork** card reads the cover art of all its releases. Each release's booklet is listed on its own row. The other images are grouped by type, and images that look alike count once, marked with how many releases have them. Click an image, or **Open all**, to view the images in Art Station's gallery. A group with more than 50 releases that have art is read only when you click **Scan**. In the table, **Art** shows each release's image count, and the **Has booklet** and **Has PDF** switches filter the releases.
+A release group's **Artwork** tab, in its header, reads the cover art of all its releases. With [Art Station](../art_station/README.md#release-group-artwork) it is a gallery of the whole group; without it, a card where each release's booklet has its own row and look-alike images count once. In the table, **Art** shows each release's image count, and the **Has booklet** and **Has PDF** switches filter the releases.
 
 ### Edit search
 
@@ -961,31 +968,31 @@ With **Show pending changes** on, titles, tracks, credits and links with open ed
 
 Single keys work on an entity's page, in the viewer or on MusicBrainz's. **Ctrl+/** lists them; click a key there to change it.
 
-| Key             | Does                                                                  |
-| --------------- | --------------------------------------------------------------------- |
-| O               | the entity's page                                                     |
-| E               | Edit                                                                  |
-| R               | Edit relationships                                                    |
-| C               | Cover art                                                             |
-| H               | Editing history                                                       |
+| Key             | Does                                                                                                                         |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| O               | the entity's page                                                                                                            |
+| E               | Edit                                                                                                                         |
+| R               | Edit relationships                                                                                                           |
+| C               | Cover art                                                                                                                    |
+| H               | Editing history                                                                                                              |
 | T               | Tags; in the viewer, edits them in place: Enter adds what you typed, ↓ or Tab takes a suggestion, Enter on an empty box ends |
-| D               | Details                                                               |
-| A               | Aliases; in the viewer, edits them in a window                        |
-| V               | toggles Event Horizon                                                 |
-| Ctrl+H / Ctrl+L | back / forward                                                        |
-| S               | search                                                                |
-| P               | play the release, recording or collection                             |
-| Space           | play or pause                                                         |
-| ← / →           | 5 seconds back or forward                                             |
-| Ctrl+← / Ctrl+→ | previous or next track                                                |
-| Ctrl+P          | open or close the player                                              |
-| Ctrl+Space      | the playlist: arrows pick, Enter plays                                |
-| Alt+1 / Alt+2   | the playing release / recording in or out of its default collection   |
-| Alt+3           | love the playing track on ListenBrainz                                |
-| U               | your profile                                                          |
-| .               | MusicBrainz's homepage                                                |
-| ,               | settings                                                              |
-| Ctrl+/          | this list                                                             |
+| D               | Details                                                                                                                      |
+| A               | Aliases; in the viewer, edits them in a window                                                                               |
+| V               | toggles Event Horizon                                                                                                        |
+| Ctrl+H / Ctrl+L | back / forward                                                                                                               |
+| S               | search                                                                                                                       |
+| P               | play the release, recording or collection                                                                                    |
+| Space           | play or pause                                                                                                                |
+| ← / →           | 5 seconds back or forward                                                                                                    |
+| Ctrl+← / Ctrl+→ | previous or next track                                                                                                       |
+| Ctrl+P          | open or close the player                                                                                                     |
+| Ctrl+Space      | the playlist: arrows pick, Enter plays                                                                                       |
+| Alt+1 / Alt+2   | the playing release / recording in or out of its default collection                                                          |
+| Alt+3           | love the playing track on ListenBrainz                                                                                       |
+| U               | your profile                                                                                                                 |
+| .               | MusicBrainz's homepage                                                                                                       |
+| ,               | settings                                                                                                                     |
+| Ctrl+/          | this list                                                                                                                    |
 
 ### Other scripts
 

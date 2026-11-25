@@ -17,6 +17,7 @@ A cover and event art editor for MusicBrainz: one gallery to view, sort, reorder
 - **[Add images](#add-images)**: files, folders, zips, URLs, MH Covers, reverse-image search.
 - **[Upscaled images](#upscaled-images)**: a big file that is a smaller picture enlarged shows its real size.
 - **[Full-screen viewer](#full-screen-viewer)** with zoom, pan and slideshow.
+- **[Release group artwork](#release-group-artwork)**: the art of all a group's releases, in Event Horizon.
 - **[File names ⇄ types](#file-names--types)**: a downloaded archive re-adds with its types and comments.
 - **[AI scan](#ai-scan)** reads a cover's printed credits for Group Therapy's Text parser.
 - **[Applying changes](#applying-changes)** as parallel edits, with automatic retries.
@@ -95,6 +96,12 @@ Its keys are in [Shortcuts](#shortcuts). A zoomed image follows the mouse, or dr
 
 **↶ ↷** by **Download** turn the cover 90°. A new cover rotates in place; an existing one is staged as a rotated new copy with its type, comment and position, and the original is marked for removal. PNGs rotate losslessly, JPEGs are re-saved at high quality.
 
+## Release group artwork
+
+In [Event Horizon](../event_horizon/README.md), a release group's **Artwork** tab shows the art of all its releases. Images of a type that look alike are merged into one, marked with how many releases have them; each release's booklet is one stack. Group by type, release or nothing; **Booklets only** and **PDF** narrow the view, and **Merge look-alikes** turns merging off. **Pause** stops the reading.
+
+**Download zip** saves the selected images, the largest copy of each merged image, or everything, in a folder per release: `1984 JP CP35-3017/booklet-03.jpg`. Clicking an image opens the viewer over its row.
+
 ## File names ⇄ types
 
 When an added image has no type, it's guessed from its file name (switch it off in ⚙):
@@ -138,17 +145,17 @@ The answer is the credits as printed, each line with its [pattern](../group_ther
 
 ## Shortcuts
 
-| Key       | Where           |                                 |
-| --------- | --------------- | ------------------------------- |
-| Ctrl+V    | gallery         | import the URL on the clipboard |
-| ← → ↑ ↓   | gallery         | move between covers             |
-| Enter     | gallery         | open the cover full-screen      |
-| Space     | gallery         | select or deselect the cover    |
+| Key       | Where           |                                          |
+| --------- | --------------- | ---------------------------------------- |
+| Ctrl+V    | gallery         | import the URL on the clipboard          |
+| ← → ↑ ↓   | gallery         | move between covers                      |
+| Enter     | gallery         | open the cover full-screen               |
+| Space     | gallery         | select or deselect the cover             |
 | Delete    | gallery, viewer | mark for removal (the selection, if any) |
-| ← → / ↑ ↓ | viewer          | previous, next / zoom           |
-| Enter     | viewer          | edit the comment                |
-| D         | viewer          | download the original           |
-| P         | viewer          | slideshow                       |
+| ← → / ↑ ↓ | viewer          | previous, next / zoom                    |
+| Enter     | viewer          | edit the comment                         |
+| D         | viewer          | download the original                    |
+| P         | viewer          | slideshow                                |
 
 | Mouse                                                   |                                                    |
 | ------------------------------------------------------- | -------------------------------------------------- |

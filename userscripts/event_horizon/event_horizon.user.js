@@ -6769,6 +6769,7 @@ const RG_ACTS = [
     ['edit', 'Edit', 'Edit release group', ACTS[0][3]],
     ['set-cover-art', 'Art', 'Set cover art', ACTS[1][3]],
     ['/release/add?release-group=', 'Add', 'Add a release to this group', '<path d="M12 5v14M5 12h14"/>'],
+    ['artwork', 'Artwork', 'The artwork of all its releases', '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>'],
     ['tags', 'Tags', 'Tags', CI_TAG],
     ['edits', 'History', 'Edit history', ACTS[3][3]],
     ACTS[4],
@@ -11287,7 +11288,9 @@ const rgaImgs = e => RGA_REL.has(e.id) ? RGA_REL.get(e.id) : null;
 const rgaWith = eds => eds.filter(e => e.caa && e.caa.count);
 const rgaBook = i => (i.types || []).some(t => RGA_BOOK.includes(t));
 const rgaPdf = i => /\.pdf$/i.test(i.image || '');
-const rgaRedraw = rgId => { if (data && data.kind === 'rg' && ((data.g && data.g.id === rgId) || data.id === rgId)) { const y = scrollY; render(); keepY(y); } };
+const rgaRedraw = rgId => { if (data && ((data.kind === 'rg' && ((data.g && data.g.id === rgId) || data.id === rgId)) || (data.kind === 'rgart' && data.rgId === rgId))) { const y = scrollY; render(); keepY(y); } };
+// Pause holds the workers between two reads
+const rgaHold = async st => { while (st.paused) await new Promise(r => setTimeout(r, 300)); };
 async function rgaScan(rgId, eds) {
     const st = rgaOf(rgId);
     if (st.busy) return;
@@ -11298,6 +11301,7 @@ async function rgaScan(rgId, eds) {
     let last = 0;
     const work = async () => {
         for (let e; (e = todo.shift());) {
+            await rgaHold(st);
             const j = await caaJson('release', e.id);
             RGA_REL.set(e.id, ((j && j.images) || []).map(i => ({ ...i, image: (i.image || '').replace(/^http:/, 'https:') })));
             st.n++;
@@ -11306,15 +11310,15 @@ async function rgaScan(rgId, eds) {
     };
     await Promise.all(Array.from({ length: 6 }, work));
     LOG.info(`Group artwork: ${st.n} listings in ${Math.round(performance.now() - t0)} ms`);
-    st.hashed = false; rgaRedraw(rgId);
     // the hashes: only for types that can merge, booklets aside
     const all = rgaWith(eds).flatMap(e => (rgaImgs(e) || []).filter(i => !rgaBook(i) && !rgaPdf(i) && !RGA_HASH.has(String(i.id))));
+    st.hashed = false; st.hn = 0; st.ht = all.length; rgaRedraw(rgId);
     LOG.debug(`Group artwork: hashing ${all.length} images`);
     // each thumbnail takes a hop to archive.org (about 600 ms), so many at once; the card merges as they come
-    st.hn = 0; st.ht = all.length;
     let bad = 0;
     const hw = async () => {
         for (let i; (i = all.shift());) {
+            await rgaHold(st);
             const h = await rgaHash(i);
             RGA_HASH.set(String(i.id), h); st.hn++; if (!h) bad++;
             if (performance.now() - last > 1000) { last = performance.now(); rgaRedraw(rgId); }
@@ -11367,8 +11371,8 @@ function rgaOpen(release, images, start) {
 }
 // the clicks of the card and the column, through the page's delegated handler; true when it took the click
 function rgaClick(d) {
-    const g = data && data.g, eds = (data && data.editions) || [];
-    if (!g || data.kind !== 'rg') return false;
+    const g = data && (data.kind === 'rgart' ? { id: data.rgId } : data.g), eds = (data && data.editions) || [];
+    if (!g || (data.kind !== 'rg' && data.kind !== 'rgart')) return false;
     if ('rgascan' in d) { rgaScan(g.id, eds); return true; }
     const merged = () => rgaMerge(rgaWith(eds));
     if ('rgaall' in d) { const m = merged(); rgaOpen(m[0] && m[0].e.id, m.map(c => rgaGal(c.i, c.e))); return true; }
@@ -11399,7 +11403,7 @@ function rgaHtml(g, eds) {
     const withArt = rgaWith(eds), st = rgaOf(g.id);
     if (!withArt.length) return '';
     // a small group reads its releases' listings at once; a big one waits for Scan
-    if (!st.on && withArt.length <= RGA_BIG) setTimeout(() => rgaScan(g.id, eds));
+    if (!st.on && (withArt.length <= RGA_BIG || (data && data.kind === 'rgart'))) setTimeout(() => rgaScan(g.id, eds));
     else if (st.on && !st.busy && withArt.some(e => !RGA_REL.has(e.id))) setTimeout(() => rgaScan(g.id, eds));
     const read = withArt.filter(e => RGA_REL.has(e.id)), total = withArt.reduce((a, e) => a + e.caa.count, 0);
     if (!st.on) {
@@ -12364,6 +12368,7 @@ function renderDraw(keepPop) {
     if (data.kind === 'upg') { upgPage(app, data); pinBar(app); return; }
     if (data.kind === 'esub') { subPage(app, data); pinBar(app); return; }
     if (data.kind === 'erlz') { rlzPage(app, data); pinBar(app); return; }
+    if (data.kind === 'rgart') { rgartPage(app, data); pinBar(app); return; }
     if (data.kind === 'ann') { document.title = (data.rel ? data.rel.title + ' · ' : '') + 'Annotation · Event Horizon'; annPage(app, data); pinBar(app); return; }
     if (data.kind === 'det') { document.title = (data.rel ? data.rel.title + ' · ' : '') + 'Details · Event Horizon'; detPage(app, data); pinBar(app); return; }
     if (data.kind === 'relate') { relPage(app, data); pinBar(app); return; }
@@ -12401,7 +12406,7 @@ function renderDraw(keepPop) {
         : data.kind === 'instrument' ? insHero(data) + annotation(r) + wikipedia(data.wikiX) + w('ia', 'Artists', insList(data, 0)) + w('ir', 'Releases', insList(data, 1)) + w('ic', 'Recordings', insList(data, 2))
         : data.kind === 'area' ? areaHero(data) + annotation(r) + wikipedia(data.wikiX) + w('aa', 'Artists', areaList(data, 0)) + w('al', 'Labels', areaList(data, 1)) + w('ap', 'Places', areaList(data, 2))
         : data.kind === 'work' ? wkHero(data) + annotation(r) + wikipedia(data.wikiX) + wkCredits(r) + w('rc', 'Recordings', recsHtml(data))
-        : data.kind === 'label' ? lbHero(data) + annotation(r) + wikipedia(data.wikiX) + editions({ id: null, page: `/label/${r.id}`, type: 'label' }, data.editions, data.edCount) : data.kind === 'artist' ? arHero(data) + annotation(r) + wikipedia(data.wikiX) + discography(data) : data.kind === 'rg' ? rgHero(data) + annotation(r) + wikipedia(data.wikiX) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgaHtml(r, data.editions || []) + rgCard(r, true)
+        : data.kind === 'label' ? lbHero(data) + annotation(r) + wikipedia(data.wikiX) + editions({ id: null, page: `/label/${r.id}`, type: 'label' }, data.editions, data.edCount) : data.kind === 'artist' ? arHero(data) + annotation(r) + wikipedia(data.wikiX) + discography(data) : data.kind === 'rg' ? rgHero(data) + annotation(r) + wikipedia(data.wikiX) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgCard(r, true)
         : hero(r) + annotation(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r), t => heroShape(t, app));    // a group without its own cover shows its first release's, else the format's mark
     // an image the redraw had to draw anew takes back a loaded one it dropped, so the covers don't blink;
     // one it kept stays where it is, so a cover never jumps to another tile
@@ -16008,7 +16013,7 @@ function navTo(href) {
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d && d.kind === 'erlz' ? (d.name ? d.name + ' · ' : '') + 'Releases · Event Horizon' : d && d.kind === 'colsubs' ? (d.g ? d.g.title + ' · ' : '') + 'Subscribers · Event Horizon' :d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? (d.idle ? 'Search' : d.t === 'url' ? (d.q ? d.q + ' · ' : '') + 'URL search' : d.q + ' · Search') + ' · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'colnew' ? (d.gid ? (d.f && d.f.cur.name ? d.f.cur.name + ' · ' : '') + 'Edit collection' : 'New collection') + ' · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'aliases' ? (d.t && d.t.en || 'Aliases') + ' · Aliases · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · ' + (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
+const titleOf = d => d && d.kind === 'rgart' ? (d.name ? d.name + ' · ' : '') + 'Artwork · Event Horizon' : d && d.kind === 'erlz' ? (d.name ? d.name + ' · ' : '') + 'Releases · Event Horizon' : d && d.kind === 'colsubs' ? (d.g ? d.g.title + ' · ' : '') + 'Subscribers · Event Horizon' :d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? (d.idle ? 'Search' : d.t === 'url' ? (d.q ? d.q + ' · ' : '') + 'URL search' : d.q + ' · Search') + ' · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'colnew' ? (d.gid ? (d.f && d.f.cur.name ? d.f.cur.name + ' · ' : '') + 'Edit collection' : 'New collection') + ' · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'aliases' ? (d.t && d.t.en || 'Aliases') + ' · Aliases · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · ' + (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 // a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). A release's cover-art
 // page also opens in the tab from any other release page (artIn): Art Station, asked by mbu-art-mount, starts its gallery
 // in the slot without a page load, so the player plays on. The add pages and an event's art load their page
@@ -16584,8 +16589,10 @@ const subKey = href => {
 // an artist's, label's, release group's or recording's Releases → "erlz/<type>:<mbid>": drawn from ws/2 in the tab, on a
 // click (the player plays on) and on a load alike
 const rlzKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/(artist|label|release-group|recording)/(' + MBID.source + ')/releases/?$', 'i')); return m ? 'erlz/' + m[1].toLowerCase() + ':' + m[2].toLowerCase() : null; };
-const inTab = href => navTo(href) || histKey(href) || artIn(href) || discKey(href) || detKey(href) || annKey(href) || relKey(href) || upgKey(href) || rlzKey(href) || subKey(href);
-const keyOf = href => navTo(href) || artKey(href) || discKey(href) || histKey(href) || relKey(href) || rlzKey(href) || formKey(href);
+// a release group's Artwork tab (#1116): not a MusicBrainz page, Event Horizon's own
+const rgartKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release-group/(' + MBID.source + ')/artwork/?$', 'i')); return m ? 'rgart/' + m[1].toLowerCase() : null; };
+const inTab = href => navTo(href) || histKey(href) || artIn(href) || discKey(href) || detKey(href) || annKey(href) || relKey(href) || upgKey(href) || rgartKey(href) || rlzKey(href) || subKey(href);
+const keyOf = href => navTo(href) || artKey(href) || discKey(href) || histKey(href) || relKey(href) || rgartKey(href) || rlzKey(href) || formKey(href);
 // let: the seed confirmation page (another site seeding the release editor, a POST to /release/add or …/edit) shares
 // the editor's address, so it gets its key, "form/seed/-/confirm", only once its .confirm-seed form is in the page
 let PAGE_ID = keyOf(location.href);
@@ -16903,6 +16910,60 @@ function upgPage(app, d) {
     }
 }
 const SUB_NAMES = { releases: 'Releases', details: 'Details', edit_annotation: 'Annotation', 'set-cover-art': 'Set cover art' };
+// The release group's Artwork tab (#1116): its releases, then every listing read and the look-alikes hashed at once.
+// Art Station draws the gallery from the snapshot (mbu-art-group); without it, the Artwork card stands in.
+async function rgartLoad(n, d) {
+    d.err = null; d.wait = true;
+    try {
+        const g = await ws(`release-group/${d.rgId}`);
+        d.name = g.title || ''; d.dis = g.disambiguation || '';
+        if (n === showing && data === d) render();
+        for (;;) {
+            const x = await ws(`release?release-group=${d.rgId}&inc=media+labels+artist-credits+url-rels&limit=100&offset=${d.editions.length}`);
+            const got = (x.releases || []).map(edition);
+            d.editions.push(...got); d.edCount = x['release-count'] || d.editions.length;
+            if (!got.length || d.editions.length >= d.edCount || n !== showing) break;
+        }
+        LOG.info(`Group artwork tab: ${d.editions.length} of ${d.edCount} releases of ${d.rgId}`);
+    } catch (e) { LOG.err('Loading the releases of release group ' + d.rgId + ' failed: ' + e.message); d.err = e.message; }
+    d.wait = false;
+    if (n !== showing || data !== d) return;
+    render();
+    if (!d.err) rgaScan(d.rgId, d.editions);
+}
+// what Art Station draws: the releases with their images, the scan's progress and the look-alike hashes
+function rgartSnap(d) {
+    const st = rgaOf(d.rgId), withArt = rgaWith(d.editions), hashes = {};
+    const releases = withArt.map(e => { const im = rgaImgs(e); for (const i of im || []) { const h = RGA_HASH.get(String(i.id)); if (h) hashes[i.id] = h; } return { id: e.id, rel: rgaRel(e), date: e.date || '', country: e.where[0] || '', catno: (e.li[0] && e.li[0].catno) || '', images: im }; });
+    return { rg: d.rgId, name: d.name, wait: !!d.wait, err: d.err || null, releases, progress: { read: withArt.filter(e => RGA_REL.has(e.id)).length, total: withArt.length, hn: st.hn || 0, ht: st.ht || 0, busy: !!st.busy, paused: !!st.paused, hashed: !!st.hashed }, hashes };
+}
+function rgartSend(d) {
+    const ask = new CustomEvent('mbu-art-group', { cancelable: true, detail: JSON.stringify(rgartSnap(d)) });
+    document.dispatchEvent(ask);
+    return ask.defaultPrevented;
+}
+function rgartPage(app, d) {
+    if (!app.querySelector(':scope > #as-gslot') || app.dataset.rgart !== d.rgId) { app.innerHTML = '<section class="arthd"></section><div id="as-gslot"></div>'; app.dataset.rgart = d.rgId; }
+    const hd = app.querySelector(':scope > .arthd'), slot = app.querySelector(':scope > #as-gslot');
+    hd.innerHTML = entHead({ type: 'release-group', id: d.rgId, img: visitImg({ key: 'release-group/' + d.rgId }), kick: 'Artwork · Release group', title: d.name, disamb: d.dis, acts: entActs('release-group', d.rgId, 'artwork') });
+    entHeadWire(hd);
+    if (d.err) { slot.innerHTML = `<p class="hm-none"><span class="u-err">${esc(d.err)}</span> <button type="button" class="sk-b" data-rgartretry>Retry</button></p>`; slot.querySelector('[data-rgartretry]').onclick = () => { const n = ++showing; d.editions = []; render(); rgartLoad(n, d); }; save(); return; }
+    // Art Station takes the slot; else the card, or the wait for the releases
+    if (rgartSend(d)) { const fb = slot.querySelector(':scope > .rga-fb'); if (fb) fb.remove(); save(); return; }
+    const body = d.wait ? pend('art', 'Releases') : rgaWith(d.editions).length ? rgaHtml({ id: d.rgId }, d.editions) : '<p class="hm-none">No release in this group has artwork.</p>';
+    let fb = slot.querySelector(':scope > .rga-fb');
+    if (!fb) { fb = document.createElement('div'); fb.className = 'rga-fb'; slot.append(fb); }
+    ehMorph(fb, body);
+    secRail(app); save();
+}
+// Art Station, started late, asks for the snapshot; its Pause holds the scan
+document.addEventListener('mbu-art-group-ask', () => { if (data && data.kind === 'rgart') render(); });
+document.addEventListener('mbu-art-group-pause', e => {
+    let x = {}; try { x = JSON.parse(e.detail || '{}'); } catch (_) {}
+    const st = x.rg && RGA.get(x.rg); if (!st) return;
+    st.paused = !!x.paused; LOG.info(`Group artwork: ${st.paused ? 'paused' : 'resumed'} ${x.rg}`);
+    rgaRedraw(x.rg);
+});
 async function rlzLoad(n, d) {
     d.err = null; d.wait = new Set(['ed']);
     try {
@@ -19254,6 +19315,7 @@ async function show(key, o = {}) {
         const path = decodeURIComponent(key.slice(5)), seg = path.replace(/\?.*$/, '').split('/');
         data = { kind, path, ty: seg[1], eid: seg[2], page: seg[3] }; scrollTo(0, 0); render(); subLoad(n, data); return;
     }
+    if (kind === 'rgart') { data = { kind, key, rgId: id, name: '', editions: [], edCount: 0, wait: true }; scrollTo(0, 0); render(); rgartLoad(n, data); return; }
     if (kind === 'erlz') {
         const [ty, eid] = id.split(':');
         data = { kind, key, ty, eid, name: '', dis: '', editions: [], edCount: 0, wait: new Set(['ed']) }; scrollTo(0, 0); render(); rlzLoad(n, data); return;

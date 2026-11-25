@@ -10,6 +10,7 @@
 // @match        *://*.musicbrainz.org/release/*/add-cover-art*
 // @match        *://*.musicbrainz.org/event/*/event-art*
 // @match        *://*.musicbrainz.org/event/*/add-event-art*
+// @match        *://*.musicbrainz.org/release-group/*/artwork
 // @match        *://vgmdb.net/album/*
 // @match        *://*.vgmdb.net/album/*
 // @grant        GM.xmlHttpRequest
@@ -1473,7 +1474,8 @@
   const searchUrlFor = it => it._del ? '' : (it._new
     ? (it._provImageUrl || (isImgUrl(it._provUrl) ? it._provUrl : ''))
     : imgUrl(it.id));
-  const thumb   = (id, n) => `${CAA}/${id}-${n}.jpg`; // 250 / 500 / 1200
+  let _gvCaa = null;   // #1116 the group viewer's image id → its release's archive
+  const thumb   = (id, n) => `${(_gvCaa && _gvCaa.get(String(id))) || CAA}/${id}-${n}.jpg`; // 250 / 500 / 1200
 
   // reverse-image-search engines (find a higher-resolution copy of a cover) — each
   // opens pre-loaded with the cover's public URL, so there's no download + drop.
@@ -6413,13 +6415,14 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
       area.querySelector('.as-lb-cmtadd').onclick = () => { _lbEditCmt = true; paintCmtArea(ov, byId(_lb)); };
     }
   }
-  let _lbDirty = false;
+  let _lbDirty = false, _gvRestore = null;   // #1116 the group viewer puts the gallery back on close
   function closeLightbox() {
     stopPlay(); resetZoom(); _lb = null;
     const ov = document.getElementById('as-lb'); if (ov) ov.style.display = 'none';
     document.body.classList.remove('as-lb-open');
     if (_lbScroll) { scrollTo(_lbScroll[0], _lbScroll[1]); _lbScroll = null; }
     const dm = ov && ov.querySelector('.as-lb-dlmenu'); if (dm) dm.classList.remove('open');   // don't reopen with the menu still showing
+    if (_gvRestore) { const f = _gvRestore; _gvRestore = null; _lbDirty = false; f(); }
     if (_lbDirty) { _lbDirty = false; render(); }   // reflect comment edits in the grid
   }
   let _play = null;
@@ -9880,6 +9883,46 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   .as-cm-ar.on{visibility:visible;padding-top:0}
   .as-cm-ar-done{color:var(--mbu-error)}
   .as-cm-note2{font-size:11px;color:var(--mbu-accent-text);margin-top:8px;text-align:center}
+  /* #1116 a release group's gallery, in Event Horizon's Artwork tab */
+  .as-gv{font-family:var(--mbu-font);color:var(--mbu-text);margin-top:10px}
+  .as-gv-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+  .as-gv-lbl{font-size:12px;color:var(--mbu-text-dim)}
+  .as-gv-seg{display:inline-flex;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden}
+  .as-gv-seg button{font:12px var(--mbu-font);padding:4px 10px;border:0;background:transparent;color:var(--mbu-text);cursor:pointer}
+  .as-gv-seg button+button{border-left:1px solid var(--mbu-border)}
+  .as-gv-seg button.on{background:var(--mbu-accent);color:var(--mbu-text-on-accent)}
+  .as-gv-chip{font:12px var(--mbu-font);padding:4px 10px;border:1px solid var(--mbu-border);border-radius:999px;background:transparent;color:var(--mbu-text);cursor:pointer}
+  .as-gv-chip.on{border-color:var(--mbu-accent);background:var(--mbu-accent);color:var(--mbu-text-on-accent)}
+  .as-gv-seg button:not(.on):hover,.as-gv-chip:not(.on):hover{background:var(--mbu-bg-hover)}
+  .as-gv-sp{flex:1}
+  .as-gv-dlw{position:relative}
+  .as-gv-dl{display:inline-flex;align-items:center;gap:5px;font:12px var(--mbu-font);padding:4px 10px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:transparent;color:var(--mbu-text);cursor:pointer}
+  .as-gv-dl:hover:not([disabled]){background:var(--mbu-bg-hover)}
+  .as-gv-dl[disabled]{opacity:.5;cursor:default}
+  .as-gv-menu{display:none;position:absolute;right:0;top:calc(100% + 4px);z-index:20;min-width:190px;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:4px 0}
+  .as-gv-menu.open{display:block}
+  .as-gv-menu button{display:block;width:100%;text-align:left;font:12.5px var(--mbu-font);padding:6px 12px;border:0;background:transparent;color:var(--mbu-text);cursor:pointer}
+  .as-gv-menu button:hover:not([disabled]){background:var(--mbu-bg-hover)}
+  .as-gv-menu button[disabled]{color:var(--mbu-text-weak);cursor:default}
+  .as-gv-note{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0 2px;font-size:12px;color:var(--mbu-text-dim)}
+  .as-gv-pause{display:inline-flex;align-items:center;gap:4px;font:12px var(--mbu-font);padding:2px 8px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:transparent;color:var(--mbu-text);cursor:pointer}
+  .as-gv-pause:hover{background:var(--mbu-bg-hover)}
+  .as-gv-dlnote{color:var(--mbu-accent-text)}
+  .as-gv-sec h3{font:600 13px var(--mbu-font);margin:14px 0 6px;color:var(--mbu-text)}
+  .as-gv-sec h3 span{font-weight:400;color:var(--mbu-text-dim);margin-left:4px}
+  .as-gv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+  .as-gv-t{margin:0;cursor:pointer;min-width:0}
+  .as-gv-im{position:relative;aspect-ratio:1;background:var(--mbu-bg-sunken);border:2px solid transparent;border-radius:var(--mbu-radius);overflow:hidden;display:flex;align-items:center;justify-content:center}
+  .as-gv-t:hover .as-gv-im{border-color:var(--mbu-border)}
+  .as-gv-t.on .as-gv-im{border-color:var(--mbu-accent)}
+  .as-gv-im img{width:100%;height:100%;object-fit:contain;display:block}
+  .as-gv-stk .as-gv-im{box-shadow:none;border-bottom:4px double var(--mbu-border)}
+  .as-gv-doc{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--mbu-text-dim);font:600 11px var(--mbu-font)}
+  .as-gv-n{position:absolute;right:4px;bottom:4px;font:600 11px var(--mbu-font);padding:1px 6px;border-radius:999px;background:rgba(0,0,0,.65);color:#fff}
+  .as-gv-pick{position:absolute;left:4px;top:4px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;padding:0;border:1px solid rgba(255,255,255,.7);border-radius:50%;background:rgba(0,0,0,.35);color:transparent;cursor:pointer;opacity:0}
+  .as-gv-t:hover .as-gv-pick,.as-gv-pick:focus-visible,.as-gv-t.on .as-gv-pick{opacity:1}
+  .as-gv-t.on .as-gv-pick{background:var(--mbu-accent);border-color:var(--mbu-accent);color:var(--mbu-text-on-accent)}
+  .as-gv-t figcaption{font-size:11.5px;line-height:1.35;color:var(--mbu-text-dim);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   `;
   // an id keeps it on where another script turns MusicBrainz's own sheets off (Event Horizon)
   const st = document.createElement('style'); st.id = 'as-css'; st.textContent = css; appendEl(st);
@@ -9945,6 +9988,205 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     const slot = document.getElementById('as-slot');
     asLog.info(`Embed: done, ${MODEL.length} images, gallery ${!root.isConnected ? 'detached' : slot && slot.contains(root) ? 'in the slot' : 'outside the slot'}, ${root.querySelectorAll('.as-card').length} cards`);
   }
+
+  // ── #1116 a release group's artwork, read-only, in Event Horizon's Artwork tab (#as-gslot) ─────────────
+  // Event Horizon reads every release's listing and hashes the images; each step it sends the whole snapshot
+  // (mbu-art-group), and this draws it: look-alikes of a type merged across releases, booklets one stack per
+  // release, grouped by type, release or not at all. See DEVELOP.md.
+  const GV = { d: null, by: 'type', merge: true, book: false, pdf: false, sel: new Set(), el: null, dl: '', menu: false, html: '' };
+  const GV_BOOK = ['Booklet', 'Liner', 'Poster'];
+  const GV_ORDER = ['Front', 'Back', 'Booklet', 'Medium', 'Tray', 'Obi', 'Spine', 'Track', 'Liner', 'Sticker', 'Poster', 'Panel', 'Top', 'Bottom', 'Matrix/Runout', 'Watermark', 'Raw/Unedited', 'Other', 'PDF'];
+  const gvHam = (a, b) => { let n = 0; for (let i = 0; i < 16; i++) { let x = parseInt(a[i], 16) ^ parseInt(b[i], 16); while (x) { n += x & 1; x >>= 1; } } return n; };
+  const gvRelLabel = r => [r.date, r.country, r.catno].filter(Boolean).join(' ') || r.rel || r.id;
+  const GV_SVG = {
+    check: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>',
+    pdf: '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/><path d="M8.5 15h7M8.5 18h5"/></svg>',
+    dl: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>',
+    pause: '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>',
+    play: '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>',
+  };
+  // every image of every read release, in release order
+  function gvItems(d) {
+    const out = [];
+    for (const r of d.releases || []) for (const im of r.images || []) {
+      const types = im.types || [], t0 = types[0] || 'Other', image = im.image || '', th = im.thumbnails || {};
+      out.push({ key: r.id + ':' + im.id, id: String(im.id), r, types, t0, comment: im.comment || '', image, thumb: th['500'] || th.large || th['250'] || image,
+        pdf: /\.pdf$/i.test(image), book: GV_BOOK.includes(t0), hash: (d.hashes || {})[im.id] || '' });
+    }
+    return out;
+  }
+  // tiles: look-alikes of a type merged (when on), booklet pages one stack per release, PDFs alone
+  function gvTiles(d) {
+    const items = gvItems(d), tiles = [], stacks = new Map(), byType = new Map();
+    for (const it of items) {
+      if (it.pdf) { tiles.push({ key: it.key, kind: 'pdf', t0: 'PDF', items: [it] }); continue; }
+      if (it.book) {
+        let st = stacks.get(it.r.id);
+        if (!st) { st = { key: 'bk:' + it.r.id, kind: 'stack', t0: 'Booklet', items: [] }; stacks.set(it.r.id, st); tiles.push(st); }
+        st.items.push(it); continue;
+      }
+      let t = null;
+      if (GV.merge && it.hash) { const ts = byType.get(it.t0) || []; t = ts.find(x => x.items[0].hash && gvHam(x.items[0].hash, it.hash) <= 10) || null; }
+      if (t) { t.items.push(it); continue; }
+      t = { key: it.key, kind: 'img', t0: it.t0, items: [it] };
+      tiles.push(t);
+      if (!byType.has(it.t0)) byType.set(it.t0, []);
+      byType.get(it.t0).push(t);
+    }
+    for (const t of tiles) t.n = new Set(t.items.map(x => x.r.id)).size;
+    return { items, tiles };
+  }
+  const gvShown = tiles => (GV.book || GV.pdf) ? tiles.filter(t => (GV.book && t.kind === 'stack') || (GV.pdf && t.kind === 'pdf')) : tiles;
+  function gvSections(tiles) {
+    if (GV.by === 'none') return [{ name: '', tiles }];
+    if (GV.by === 'release') {
+      const m = new Map();
+      for (const r of GV.d.releases || []) if (r.images && r.images.length) m.set(r.id, { name: gvRelLabel(r), sub: r.rel && gvRelLabel(r) !== r.rel ? r.rel : '', tiles: [] });
+      for (const t of tiles) { const sec = m.get(t.items[0].r.id); if (sec) sec.tiles.push(t); }
+      return [...m.values()].filter(x => x.tiles.length);
+    }
+    const m = new Map();
+    for (const t of tiles) { if (!m.has(t.t0)) m.set(t.t0, { name: t.t0, tiles: [] }); m.get(t.t0).tiles.push(t); }
+    const rank = n => { const i = GV_ORDER.indexOf(n); return i < 0 ? GV_ORDER.length - 1.5 : i; };
+    return [...m.values()].sort((a, b) => rank(a.name) - rank(b.name));
+  }
+  function gvTileHtml(t, si) {
+    const it = t.items[0], on = GV.sel.has(t.key);
+    const cap = t.kind === 'stack' ? `${gvRelLabel(it.r)} · ${t.items.length} p`
+      : GV.by === 'type' ? (t.n > 1 ? `${t.n} releases` : gvRelLabel(it.r)) + (it.comment ? ' · ' + it.comment : '')
+      : it.types.join(', ') + (it.comment ? ' · ' + it.comment : '');
+    const pic = t.kind === 'pdf' ? `<span class="as-gv-doc">${GV_SVG.pdf}<b>PDF</b></span>` : `<img loading="lazy" draggable="false" alt="" src="${esc(it.thumb)}">`;
+    return `<figure class="as-gv-t${on ? ' on' : ''}${t.kind === 'stack' ? ' stk' : ''}" data-gvk="${esc(t.key)}" data-gvs="${si}">
+      <div class="as-gv-im">${pic}${t.n > 1 ? `<span class="as-gv-n">×${t.n}</span>` : ''}${t.kind === 'stack' ? `<span class="as-gv-n">${t.items.length} p</span>` : ''}
+      <button type="button" class="as-gv-pick" data-gvpick aria-label="${on ? 'Unselect' : 'Select'}" aria-pressed="${on}">${GV_SVG.check}</button></div>
+      <figcaption>${esc(cap)}</figcaption></figure>`;
+  }
+  function gvNote(d, all, tiles) {
+    const p = d.progress || {}, live = !d.wait && (p.read < p.total || !p.hashed);
+    const btn = live && (p.busy || p.paused) ? `<button type="button" class="as-gv-pause" data-gvpause>${p.paused ? GV_SVG.play + ' Resume' : GV_SVG.pause + ' Pause'}</button>` : '';
+    const nRel = (d.releases || []).filter(r => r.images && r.images.length).length;
+    const txt = d.wait ? 'Reading the releases…'
+      : p.read < p.total ? `Reading ${p.read} of ${p.total} releases${p.paused ? ' · paused' : ''}`
+      : !p.hashed ? `Merging look-alikes${p.ht ? ` ${p.hn || 0}/${p.ht}` : '…'}${p.paused ? ' · paused' : ''}`
+      : !all.length ? 'No release in this group has artwork.'
+      : `${all.length} image${all.length === 1 ? '' : 's'} on ${nRel} release${nRel === 1 ? '' : 's'}${GV.merge ? ` · ${tiles.length} after merging` : ''}`;
+    return `<span class="as-gv-txt">${esc(txt)}</span>${btn}${GV.dl ? `<span class="as-gv-dlnote">${esc(GV.dl)}</span>` : ''}`;
+  }
+  function gvRender() {
+    const d = GV.d, el = GV.el; if (!d || !el) return;
+    const { items, tiles } = gvTiles(d), shown = gvShown(tiles), secs = gvSections(shown);
+    GV.secs = secs;
+    for (const k of [...GV.sel]) if (!tiles.some(t => t.key === k)) GV.sel.delete(k);
+    const seg = (v, l) => `<button type="button" data-gvby="${v}" aria-pressed="${GV.by === v}" class="${GV.by === v ? 'on' : ''}">${l}</button>`;
+    const chip = (k, l) => `<button type="button" class="as-gv-chip${GV[k] ? ' on' : ''}" data-gvchip="${k}" aria-pressed="${GV[k]}">${l}</button>`;
+    const nb = tiles.filter(t => t.kind === 'stack').length, np = tiles.filter(t => t.kind === 'pdf').length;
+    const bar = `<div class="as-gv-bar"><span class="as-gv-lbl">Group by</span><div class="as-gv-seg">${seg('type', 'Type')}${seg('release', 'Release')}${seg('none', 'None')}</div>
+      ${chip('merge', 'Merge look-alikes')}${chip('book', 'Booklets only' + (nb ? ' ' + nb : ''))}${np ? chip('pdf', 'PDF ' + np) : ''}
+      <span class="as-gv-sp"></span><div class="as-gv-dlw"><button type="button" class="as-gv-dl" data-gvdl${items.length ? '' : ' disabled'}>${GV_SVG.dl} Download zip</button>
+      <div class="as-gv-menu${GV.menu ? ' open' : ''}"><button type="button" data-gvzip="sel"${GV.sel.size ? '' : ' disabled'}>Selected (${GV.sel.size})</button><button type="button" data-gvzip="big">Largest of each (${shown.length})</button><button type="button" data-gvzip="all">Everything (${items.length})</button></div></div></div>
+      <div class="as-gv-note">${gvNote(d, items, tiles)}</div>`;
+    const body = secs.map((sec, si) => `<section class="as-gv-sec">${sec.name ? `<h3>${esc(sec.name)}${sec.sub ? ` <span>${esc(sec.sub)}</span>` : ''} <span>${sec.tiles.length}</span></h3>` : ''}<div class="as-gv-grid">${sec.tiles.map(t => gvTileHtml(t, si)).join('')}</div></section>`).join('');
+    const html = bar + `<div class="as-gv-body">${body}</div>`;
+    if (html !== GV.html) { GV.html = html; el.innerHTML = html; }
+  }
+  const gvTile = k => { for (const sec of GV.secs || []) { const t = sec.tiles.find(x => x.key === k); if (t) return t; } return null; };
+  // the full-screen viewer over a section's tiles (a stack: its pages); the gallery it lent is put back on close
+  function gvOpen(t, si) {
+    const it = t.items[0];
+    if (t.kind === 'pdf') { window.open(it.image, '_blank', 'noopener'); return; }
+    const seq = t.kind === 'stack' ? t.items : (GV.secs[si] || { tiles: [t] }).tiles.filter(x => x.kind === 'img').map(x => x.items[0]);
+    if (_lb) closeLightbox();
+    const was = { MODEL, CAA, VIEW_ONLY, QUIET }, ov0 = document.getElementById('as-lb'), ro = !!(ov0 && ov0.classList.contains('as-lb-ro'));
+    VIEW_ONLY = QUIET = true;
+    _gvCaa = new Map(seq.map(x => [x.id, 'https://coverartarchive.org/release/' + x.r.id]));
+    CAA = 'https://coverartarchive.org/release/' + it.r.id;
+    MODEL = seq.map((x, i) => ({ id: x.id, types: x.types, comment: [gvRelLabel(x.r), x.comment].filter(Boolean).join(' · '), order: i, _img: x.image, _pdf: false }));
+    _gvRestore = () => { MODEL = was.MODEL; CAA = was.CAA; VIEW_ONLY = was.VIEW_ONLY; QUIET = was.QUIET; _gvCaa = null; const ov = document.getElementById('as-lb'); if (ov && !ro) ov.classList.remove('as-lb-ro'); };
+    asLog.info(`Group gallery: viewer on ${it.id} of ${it.r.id}, ${seq.length} in the row`);
+    openLightbox(it.id);
+    const ov = document.getElementById('as-lb'); if (ov) ov.classList.add('as-lb-ro');
+  }
+  // the zip: a folder per release ("1984 JP CP35-3017/booklet-03.jpg")
+  async function gvZip(how) {
+    const d = GV.d; if (!d || GV.dl) return;
+    const { items, tiles } = gvTiles(d), shown = gvShown(tiles);
+    let pick;   // [{it, alts}] alts: copies whose largest is kept
+    if (how === 'all') pick = items.map(it => ({ it, alts: [it] }));
+    else {
+      const ts = how === 'sel' ? tiles.filter(t => GV.sel.has(t.key)) : shown;
+      pick = ts.flatMap(t => t.kind === 'img' ? [{ it: t.items[0], alts: how === 'big' ? t.items : [t.items[0]] }] : t.items.map(it => ({ it, alts: [it] })));
+    }
+    if (!pick.length) return;
+    const folders = new Map(), usedF = new Set(), cnt = new Map();
+    const folder = r => { if (folders.has(r.id)) return folders.get(r.id);
+      const b = (gvRelLabel(r) || r.id).replace(/[<>:"|?*\\/]/g, '_').replace(/\s+/g, ' ').trim().slice(0, 80) || r.id;
+      let f = b, n = 2; while (usedF.has(f.toLowerCase())) f = `${b} (${n++})`; usedF.add(f.toLowerCase()); folders.set(r.id, f); return f; };
+    const ext = u => ((u || '').match(/\.(jpe?g|png|gif|pdf|webp)(?:$|\?)/i) || ['', 'jpg'])[1].toLowerCase().replace('jpeg', 'jpg');
+    const total = pick.reduce((a, p) => a + p.alts.length, 0);
+    let done = 0, idx = 0; const out = new Array(pick.length).fill(null), failed = [];
+    const note = () => { GV.dl = `Downloading ${done} of ${total}`; gvRender(); };
+    asLog.info(`Group gallery: zip "${how}", ${pick.length} files from ${total} copies`);
+    note();
+    const worker = async () => {
+      for (let i; (i = idx++) < pick.length;) {
+        const p = pick[i]; let best = null, from = p.it;
+        for (const a of p.alts) {
+          try { const b = await fetchBytes(a.image); if (!best || b.length > best.length) { best = b; from = a; } }
+          catch (e) { logErr(`Group zip: ${a.image}`, e); }
+          done++; note();
+        }
+        if (!best) { failed.push(p.it.image); continue; }
+        out[i] = { from, data: best };
+      }
+    };
+    try { await Promise.all(Array.from({ length: Math.min(4, pick.length) }, worker)); }
+    finally { GV.dl = ''; }
+    const files = out.filter(Boolean).map(o => {
+      const f = folder(o.from.r), t = (o.from.pdf ? 'pdf' : o.from.t0).toLowerCase().replace(/[^a-z0-9]+/g, '-'), k = f + '/' + t, n = (cnt.get(k) || 0) + 1;
+      cnt.set(k, n);
+      return { name: `${f}/${t}-${String(n).padStart(2, '0')}.${ext(o.from.image)}`, data: o.data };
+    });
+    gvRender();
+    if (!files.length) { toast('Download failed: no image could be fetched. Try again.', 10000); return; }
+    const zipName = ((d.name || d.rg) + ' artwork').replace(/[<>:"|?*\\/]/g, '_').trim() + '.zip';
+    const obj = URL.createObjectURL(makeZip(files));
+    const a = document.createElement('a'); a.href = obj; a.download = zipName;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(obj), 8000);
+    asLog.ok(`Group gallery: saved ${zipName}, ${files.length} files · ${fmtBytes(files.reduce((x, f) => x + f.data.length, 0))}${failed.length ? `, ${failed.length} dropped` : ''}`);
+    if (failed.length) toast(`${failed.length} image${failed.length === 1 ? '' : 's'} could not be fetched and ${failed.length === 1 ? 'is' : 'are'} not in the zip`, 8000);
+  }
+  function gvMount(slot) {
+    const el = document.createElement('div'); el.className = 'as-gv';
+    el.addEventListener('click', e => {
+      const b = e.target.closest('button');
+      if (b && el.contains(b)) {
+        if (b.dataset.gvby) { GV.by = b.dataset.gvby; gvRender(); return; }
+        if (b.dataset.gvchip) { const k = b.dataset.gvchip; GV[k] = !GV[k]; gvRender(); return; }
+        if ('gvpause' in b.dataset) { const p = (GV.d && GV.d.progress) || {}; document.dispatchEvent(new CustomEvent('mbu-art-group-pause', { detail: JSON.stringify({ rg: GV.d.rg, paused: !p.paused }) })); return; }
+        if ('gvdl' in b.dataset) { GV.menu = !GV.menu; gvRender(); return; }
+        if (b.dataset.gvzip) { GV.menu = false; gvZip(b.dataset.gvzip); return; }
+        if ('gvpick' in b.dataset) { const k = b.closest('[data-gvk]').dataset.gvk; if (GV.sel.has(k)) GV.sel.delete(k); else GV.sel.add(k); gvRender(); return; }
+      }
+      const f = e.target.closest('[data-gvk]');
+      if (f) { const t = gvTile(f.dataset.gvk); if (t) gvOpen(t, +f.dataset.gvs); }
+    });
+    document.addEventListener('mousedown', e => { if (GV.menu && !e.target.closest('.as-gv-dlw')) { GV.menu = false; gvRender(); } });
+    slot.append(el);
+    return el;
+  }
+  document.addEventListener('mbu-art-group', e => {
+    if (e.defaultPrevented) return;
+    let d = null; try { d = JSON.parse(e.detail); } catch (x) { return; }
+    const slot = document.getElementById('as-gslot');
+    if (!d || !d.rg || !slot) return;
+    e.preventDefault();
+    if (!GV.d || GV.d.rg !== d.rg) { GV.sel.clear(); GV.menu = false; asLog.info(`Group gallery: ${d.rg}`); }
+    GV.d = d;
+    if (!GV.el || GV.el.parentNode !== slot) { GV.el = gvMount(slot); GV.html = ''; }
+    gvRender();
+  });
+  document.dispatchEvent(new CustomEvent('mbu-art-group-ask'));   // Event Horizon got there first: it sends the snapshot again
   if (VIEW_ONLY) return;
 
   // ── #248 add page: harvest images seeded into the native uploader ───────────────
