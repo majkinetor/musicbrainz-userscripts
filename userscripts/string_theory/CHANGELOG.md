@@ -1,5 +1,77 @@
 # String Theory Changelog
 
+## [2026.11.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.25)
+
+### Features
+
+1. Network log improvements ([#1115](https://github.com/majkinetor/musicbrainz-userscripts/issues/1115))
+1. Test suite optimization ([#1109](https://github.com/majkinetor/musicbrainz-userscripts/issues/1109))
+1. All requests via network gate ([#1103](https://github.com/majkinetor/musicbrainz-userscripts/issues/1103))
+
+### [Apollo Editor](../apollo_editor/README.md)
+
+#### Features
+
+1. Own recording suggestions instead of MusicBrainz's ([#1113](https://github.com/majkinetor/musicbrainz-userscripts/issues/1113))
+1. Request optimization ([#1112](https://github.com/majkinetor/musicbrainz-userscripts/issues/1112))
+
+#### Fixes
+
+1. Auto-match gives up early and searches by the typed artist name ([#1110](https://github.com/majkinetor/musicbrainz-userscripts/issues/1110))
+
+### [Art Station](../art_station/README.md)
+
+1. Small improvements
+
+### [Credit Hoarder](../credit_hoarder/README.md)
+
+1. Small improvements
+
+### [Event Horizon](../event_horizon/README.md)
+
+1. Small improvements
+
+### [Falcon](../falcon/README.md)
+
+1. Small improvements
+
+### [First Contact](../first_contact/README.md)
+
+#### Fixes
+
+1. "Add link only" does nothing ([#1105](https://github.com/majkinetor/musicbrainz-userscripts/issues/1105))
+
+### [Fusion](../fusion/README.md)
+
+1. Small improvements
+
+### [Fuzzy Logic](../fuzzy_logic/README.md)
+
+1. Small improvements
+
+### [Group Therapy](../group_therapy/README.md)
+
+1. Small improvements
+
+### [ISRC Scout](../isrc_scout/README.md)
+
+1. Small improvements
+
+### [Mammoth](../mammoth/README.md)
+
+1. Small improvements
+
+### [Mission Control](../mission_control/README.md)
+
+1. Small improvements
+
+### [Platform Check](../platform_check/README.md)
+
+#### Fixes
+
+1. Reporting links within MC doesn't work ([#1111](https://github.com/majkinetor/musicbrainz-userscripts/issues/1111))
+1. Entity links offered for withheld releases ([#1100](https://github.com/majkinetor/musicbrainz-userscripts/issues/1100))
+
 ## [2026.11.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.23)
 
 ### Features

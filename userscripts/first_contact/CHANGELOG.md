@@ -1,5 +1,11 @@
 # First Contact Changelog
 
+## [2026.11.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.25)
+
+### Fixes
+
+1. "Add link only" does nothing ([#1105](https://github.com/majkinetor/musicbrainz-userscripts/issues/1105))
+
 ## [2026.11.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.23)
 
 - Small improvements

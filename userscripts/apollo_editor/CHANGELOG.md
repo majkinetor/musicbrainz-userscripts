@@ -1,5 +1,16 @@
 # Apollo Editor Changelog
 
+## [2026.11.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.25)
+
+### Features
+
+1. Own recording suggestions instead of MusicBrainz's ([#1113](https://github.com/majkinetor/musicbrainz-userscripts/issues/1113))
+1. Request optimization ([#1112](https://github.com/majkinetor/musicbrainz-userscripts/issues/1112))
+
+### Fixes
+
+1. Auto-match gives up early and searches by the typed artist name ([#1110](https://github.com/majkinetor/musicbrainz-userscripts/issues/1110))
+
 ## [2026.11.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.23)
 
 - Small improvements

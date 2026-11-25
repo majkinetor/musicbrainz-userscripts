@@ -1,5 +1,12 @@
 # Platform Check Changelog
 
+## [2026.11.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.25)
+
+### Fixes
+
+1. Reporting links within MC doesn't work ([#1111](https://github.com/majkinetor/musicbrainz-userscripts/issues/1111))
+1. Entity links offered for withheld releases ([#1100](https://github.com/majkinetor/musicbrainz-userscripts/issues/1100))
+
 ## [2026.11.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.23)
 
 - Small improvements
