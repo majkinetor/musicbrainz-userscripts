@@ -50,6 +50,8 @@ node dev/test/suite-by-script.mjs > <scratch>/suite.log 2>&1      # run_in_backg
 
 ## 3. A failure: diagnose at once
 
+**Blocked failures are skipped** (maintainer, 2026-11-25): a failure whose `cause` annotation is a rate limit or the network (the ones the workflow counts as *blocked*, [dev/test/README](../../../dev/test/README.md)) gets no recheck and no fix; it says nothing about the script. Work only the failures caused by the test.
+
 When a `✘` appears, read the error from the log. Once that script is done, read its JSON report and the attachments (`log`, screenshots, trace). Then read the spec and the code it tests. Sort it:
 
 | Kind               | Signs                                                                                       | Do                                                                                                                                                                                                                          |
