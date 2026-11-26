@@ -23,13 +23,22 @@ var ST_GATE_CSS = ''
   + '#st-gate.full{top:0!important;left:0!important;right:0!important;bottom:0!important;border-radius:0;border:0;width:auto!important;height:auto!important;transform:none!important}'
   + 'html:has(#st-gate.full){overflow:hidden!important}#st-gate.full .mbu-logpop-h{cursor:default}#st-gate.full .mbu-logpop-grip{display:none}'
   // the gate's state, as chips
-  + '#st-gate-state{display:flex;flex-wrap:wrap;gap:6px;padding:8px 13px 0}'
-  + '#st-gate-state>span{white-space:nowrap;padding:2px 9px;border-radius:999px;background:var(--mbu-bg-hover);font-size:12px}'
-  + '#st-gate-state .k{color:var(--mbu-text-weak)}#st-gate-state b{font-weight:600}'
+  // the gate's state: Idle or Hold, then a chip for each state that is not idle
+  + '#st-gate-state{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:8px 13px 0;font-size:12px}'
+  + '#st-gate-state>span{white-space:nowrap}#st-gate-state .chip{padding:1px 9px;border-radius:999px;background:var(--mbu-bg-hover)}'
+  + '#st-gate-state .k,#st-gate-state .quiet{color:var(--mbu-text-weak)}#st-gate-state b{font-weight:600}'
   + '#st-gate-state .hot{background:var(--mbu-error-bg);color:var(--mbu-error)}'
+  + '#st-gate-state .gs{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:13px}#st-gate-state .gs i{width:8px;height:8px;border-radius:50%;background:var(--mbu-ok)}'
+  + '#st-gate-state .gs.hold{color:var(--mbu-error)}#st-gate-state .gs.hold i{background:var(--mbu-error);box-shadow:0 0 0 3px color-mix(in srgb,var(--mbu-error) 25%,transparent)}'
+  + '#st-gate-state .me{margin-left:auto;color:var(--mbu-text-weak)}#st-gate-state .me b{color:var(--mbu-accent-text)}'
   // the totals and the lanes
-  + '#st-gate-sum{padding:8px 13px 2px;color:var(--mbu-text-weak);font-size:12px}#st-gate-sum b{color:var(--mbu-text);font-weight:600}'
-  + '#st-gate-sum .bad b{color:var(--mbu-error)}#st-gate-sum .re b{color:var(--mbu-warn)}'
+  + '#st-gate-sum{display:flex;flex-direction:column;gap:6px;padding:8px 13px 2px;color:var(--mbu-text-weak);font-size:12px;font-variant-numeric:tabular-nums}#st-gate-sum b{color:var(--mbu-text);font-weight:600}'
+  + '.st-gate-sr{display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;min-width:0}.st-gate-big{font-size:20px;line-height:1}#st-gate-sum .st-gate-rate{line-height:1.25}'
+  + '.st-gate-spark{width:120px;height:22px;flex:none;display:block}.st-gate-spark .l{fill:none;stroke:var(--mbu-accent);stroke-width:1.5}.st-gate-spark .f{fill:color-mix(in srgb,var(--mbu-accent) 16%,transparent)}.st-gate-spark circle{fill:var(--mbu-accent)}'
+  + '.st-gate-bar{display:flex;gap:1px;height:8px;border-radius:4px;overflow:hidden;background:var(--mbu-divider);flex:1 1 200px;min-width:120px}.st-gate-bar i{display:block;height:100%}'
+  + '.st-gate-c-ok{background:var(--mbu-ok)}.st-gate-c-re{background:var(--mbu-warn)}.st-gate-c-bad{background:var(--mbu-error)}.st-gate-c-go{background:var(--mbu-info)}.st-gate-c-other{background:color-mix(in srgb,var(--mbu-text-weak) 45%,transparent)}'
+  + '.st-gate-leg{display:flex;flex-wrap:wrap;gap:4px 12px}.st-gate-leg>span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}.st-gate-leg i{width:8px;height:8px;border-radius:2px}#st-gate-sum .st-gate-leg .z b{color:var(--mbu-text-weak);font-weight:400}'
+  + '.st-gate-log{margin-left:auto;white-space:nowrap}'
   + '#st-gate-lanes{position:relative;flex:0 1 auto;min-height:60px;max-height:40vh;overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;margin:4px 13px 8px;padding-left:180px}'
   + '.st-gl-bands{position:absolute;top:0;bottom:16px;left:180px;right:0}'
   + '.st-gl-sub,.st-gl-bands{transform:translateX(var(--st-gl-dx,0px));will-change:transform}'
@@ -285,27 +294,47 @@ function stGateCount(groups) {
   groups.forEach(function (g) { if (g.sys) return; c.n++; if (c[g.cls] != null) c[g.cls]++; });
   return c;
 }
-// the totals line: every request kept, and those of the last span
+// the totals of the last span: the count and its rate, a curve of requests over the span, and a
+// bar that splits them by result; "other" is shared, cached, cancelled or cut off, so the bar adds up
+function stGateSpark(starts, now) {
+  var N = 30, w = 120, h = 22, b = [], i;
+  for (i = 0; i < N; i++) b.push(0);
+  starts.forEach(function (t) { var k = Math.floor((t - (now - ST_GATE_SPAN)) / ST_GATE_SPAN * N); if (k >= 0 && k < N) b[k]++; else if (k >= N) b[N - 1]++; });
+  var max = Math.max.apply(null, b) || 1, pts = b.map(function (y, j) { return [(j / (N - 1) * (w - 4) + 2).toFixed(1), (h - 3 - y / max * (h - 6)).toFixed(1)]; });
+  var d = pts.map(function (p, j) { return (j ? 'L' : 'M') + p[0] + ' ' + p[1]; }).join(' '), last = pts[N - 1];
+  return '<svg class="st-gate-spark" viewBox="0 0 ' + w + ' ' + h + '" data-tip="Requests over the last ' + stGateSpanTxt() + '\nThe newest are at the right"><path class="f" d="' + d + ' L' + last[0] + ' ' + h + ' L2 ' + h + ' Z"/><path class="l" d="' + d + '"/><circle cx="' + last[0] + '" cy="' + last[1] + '" r="2"/></svg>';
+}
 function stGateSumHtml(groups, now) {
   var all = stGateCount(groups), recent = groups.filter(function (g) { return now - g.t <= ST_GATE_SPAN; }), c = stGateCount(recent);
-  var starts = recent.filter(function (g) { return !g.sys && g.tries.length; }).map(function (g) { return g.tries[0].t; }).sort(function (a, b) { return a - b; });
+  var starts = recent.filter(function (g) { return !g.sys; }).map(function (g) { return g.tries.length ? g.tries[0].t : g.t; }).sort(function (a, b) { return a - b; });
   var gap = starts.length > 1 ? (starts[starts.length - 1] - starts[0]) / (starts.length - 1) : 0;
   var tabs = {}; recent.forEach(function (g) { tabs[g.tab] = 1; });
-  var n = Object.keys(tabs).length;
-  return '<b>' + all.n + '</b> request' + (all.n === 1 ? '' : 's') + ' in the log · last ' + stGateSpanTxt() + ': <b>' + c.n + '</b>'
-    + (gap ? ' (one every ' + stGateSec(gap) + ')' : '') + stGateSplit(recent).replace(/^ \((.*)\)$/, ' · $1').replace(/(\d+)/g, '<b>$1</b>') + ' · <b>' + c.ok + '</b> ok · <span class="re"><b>' + c.re + '</b> retried</span>'
-    + ' · <span class="bad"><b>' + c.bad + '</b> failed</span>' + (c.go ? ' · <b>' + c.go + '</b> on the way' : '') + ' · from ' + n + ' tab' + (n === 1 ? '' : 's');
+  var n = Object.keys(tabs).length, mb = 0, ext = 0;
+  recent.forEach(function (g) { if (!g.sys) { if (g.h) ext++; else mb++; } });
+  var parts = [['ok', 'ok', c.ok, 'Answered at the first try'], ['re', 'retried', c.re, 'Answered after MusicBrainz said it was busy'], ['bad', 'failed', c.bad, 'No answer, or an error'],
+    ['go', 'on the way', c.go, 'Waiting in the gate or not answered yet'], ['other', 'other', c.n - c.ok - c.re - c.bad - c.go, 'Shared, cached or cancelled\nNo request of its own, or its page left']];
+  var bar = c.n ? '<div class="st-gate-bar">' + parts.filter(function (p) { return p[2] > 0; }).map(function (p) { return '<i class="st-gate-c-' + p[0] + '" style="flex:' + p[2] + '" data-tip="' + p[2] + ' ' + p[1] + '\n' + p[3] + '"></i>'; }).join('') + '</div>' : '';
+  var leg = parts.filter(function (p) { return p[2] > 0 || p[0] === 'ok' || p[0] === 'bad'; }).map(function (p) {
+    return '<span class="' + (p[2] ? '' : 'z') + '" data-tip="' + p[3] + '"><i class="st-gate-c-' + p[0] + '"></i><b>' + p[2] + '</b> ' + p[1] + '</span>';
+  }).join('');
+  return '<div class="st-gate-sr"><b class="st-gate-big">' + c.n + '</b><span class="st-gate-rate">request' + (c.n === 1 ? '' : 's') + ' in ' + stGateSpanTxt() + (gap ? '<br>one every ' + stGateSec(gap) : '') + '</span>'
+    + stGateSpark(starts, now) + bar
+    + '<span><b>' + mb + '</b> MusicBrainz · <b>' + ext + '</b> external · <b>' + n + '</b> tab' + (n === 1 ? '' : 's') + '</span></div>'
+    + '<div class="st-gate-sr"><div class="st-gate-leg">' + leg + '</div><span class="st-gate-log" data-tip="Every request the log keeps, from every tab"><b>' + all.n + '</b> in the log</span></div>';
 }
+// the gate now: Idle, or the hold, then a chip only for what is not idle
 function stGateStateHtml(s, me) {
   var now = Date.now(), cool = (s.cool || 0) - now, q = Math.max(0, Math.round(((s.tat || 0) - now) / 1000)), iq = Math.max(0, Math.round(((s.itat || 0) - now) / 1000));
   var hot = now > (s.cool || 0) + 30000 ? 0 : (s.hot || 0), lead = s.lead && (s.leadUntil || 0) > now;
-  var f = function (k, v, cls, tip) { return '<span' + (cls ? ' class="' + cls + '"' : '') + (tip ? ' data-tip="' + tip + '"' : '') + '><span class="k">' + k + '</span> <b>' + v + '</b></span>'; };
-  return f('Hold', cool > 0 ? stGateSec(cool) + ' left' : 'none', cool > 0 ? 'hot' : '', 'Every tab waits\nMusicBrainz said it is busy')
-    + f('Hot', hot + (s.hot && !hot ? ' (stale ' + s.hot + ')' : ''), hot ? 'hot' : '', 'Busy answers in a row\nEach one makes the next hold longer')
-    + f('Background queue', q ? q + ' s ahead' : 'empty')
-    + f('Interactive queue', iq ? iq + ' s ahead' : 'empty')
-    + f('Lead', lead ? stEsc(String(s.lead).slice(0, 12)) + ', ' + stGateSec(s.leadUntil - now) + ' left' : 'none', '', 'A page being drawn goes first\nBackground requests wait for it')
-    + f('This tab', stEsc(me || 'no requests yet'));
+  var f = function (k, v, cls, tip) { return '<span class="chip' + (cls ? ' ' + cls : '') + '"' + (tip ? ' data-tip="' + tip + '"' : '') + '><span class="k">' + k + '</span> ' + v + '</span>'; };
+  var chips = (hot ? f('Hot', '<b>' + hot + '</b>', 'hot', 'Busy answers in a row\nEach one makes the next hold longer') : '')
+    + (q ? f('Background', '<b>' + q + ' s</b> ahead', '', 'The background queue is booked this far ahead') : '')
+    + (iq ? f('Interactive', '<b>' + iq + ' s</b> ahead', '', 'The queue of what you asked for is booked this far ahead') : '')
+    + (lead ? f('Lead', '<b>' + stEsc(String(s.lead).slice(0, 12)) + '</b> ' + stGateSec(s.leadUntil - now), '', 'A page being drawn goes first\nBackground requests wait for it') : '');
+  return (cool > 0 ? '<span class="gs hold" data-tip="Every tab waits\nMusicBrainz said it is busy"><i></i>Hold · ' + stGateSec(cool) + ' left</span>'
+    : '<span class="gs" data-tip="Nothing holds the gate\nRequests go out at the normal pace"><i></i>Idle</span>')
+    + (chips || '<span class="quiet">queues empty · no lead</span>')
+    + '<span class="me">This tab <b>' + stEsc(me || 'no requests yet') + '</b></span>';
 }
 // the span: one lane per tab, a bar per try (its wait weak, its flight in its result's colour),
 // and a band across every lane for each hold MusicBrainz asked for
