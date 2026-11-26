@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.26.174028
+// @version      2026.11.26.182626
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11345,6 +11345,13 @@ const rgaImgs = e => RGA_REL.has(e.id) ? RGA_REL.get(e.id) : null;
 const rgaWith = eds => eds.filter(e => e.caa && e.caa.count);
 const rgaBook = i => (i.types || []).some(t => RGA_BOOK.includes(t));
 const rgaPdf = i => /\.pdf$/i.test(i.image || '');
+// a release's images from its listing; none when the archive answers with another release's (one merged into it
+// there and not here, as on the sandbox): those images are that release's, and edited on it
+function rgaList(id, j) {
+    const own = j && String(j.release || '').split('/').pop();
+    if (own && own !== id) { LOG.info(`Group artwork: the archive answers release ${id} with ${own}'s images; left out`); return []; }
+    return ((j && j.images) || []).map(i => ({ ...i, image: (i.image || '').replace(/^http:/, 'https:') }));
+}
 const rgaRedraw = rgId => { if (data && ((data.kind === 'rg' && ((data.g && data.g.id === rgId) || data.id === rgId)) || (data.kind === 'rgart' && data.rgId === rgId))) { const y = scrollY; render(); keepY(y); } };
 // Pause holds the workers between two reads
 const rgaHold = async st => { while (st.paused) await new Promise(r => setTimeout(r, 300)); };
@@ -11360,7 +11367,7 @@ async function rgaScan(rgId, eds) {
         for (let e; (e = todo.shift());) {
             await rgaHold(st);
             const j = await caaJson('release', e.id);
-            RGA_REL.set(e.id, ((j && j.images) || []).map(i => ({ ...i, image: (i.image || '').replace(/^http:/, 'https:') })));
+            RGA_REL.set(e.id, rgaList(e.id, j));
             st.n++;
             if (performance.now() - last > 500) { last = performance.now(); rgaRedraw(rgId); }
         }
@@ -17045,7 +17052,7 @@ async function rgaRefresh() {
     for (const id of ids) {
         const key = 'release/' + id;
         CAA_JSON.delete(key); CAA_JSON_KEPT.delete(key); CAA_LIST.delete(key); CAA_CV.delete(key);
-        const j = await caaJson('release', id), im = ((j && j.images) || []).map(i => ({ ...i, image: (i.image || '').replace(/^http:/, 'https:') }));
+        const j = await caaJson('release', id), im = rgaList(id, j);
         RGA_REL.set(id, im);
         const e = (d.editions || []).find(x => x.id === id);
         if (e) e.caa = { ...(e.caa || {}), artwork: im.length > 0, count: im.length, front: im.some(i => i.front) };
