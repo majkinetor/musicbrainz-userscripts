@@ -42,7 +42,8 @@ test.describe('gate log', () => {
     await page.click('#st-gate-sum .st-gate-tl[data-sf=bad]');
     await attachShot(testInfo, page.locator('#st-gate-sum'), 'totals, failed on');
     const failedOnly = await page.$$eval('#st-gate .st-gate-pill', l => l.map(x => x.textContent));
-    check(failedOnly.length >= 1 && failedOnly.every(x => x === 'error'), `the failed count shows only the failed request (${failedOnly.join(', ')})`);
+    // the page's own requests can fail too ("no answer"), so only the answered ones must be gone
+    check(failedOnly.includes('error') && !failedOnly.some(x => /^OK/.test(x)), `the failed count shows only failed requests (${failedOnly.join(', ')})`);
     check(/shown \(failed\)/.test(await page.textContent('#st-gate .st-gate-n')), 'the title names the filter');
     await page.click('#st-gate-sum .st-gate-tl[data-sf=bad]');
     check(!/shown/.test(await page.textContent('#st-gate .st-gate-n')), 'a second click shows all again');
