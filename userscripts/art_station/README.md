@@ -96,6 +96,8 @@ Its keys are in [Shortcuts](#shortcuts). A zoomed image follows the mouse, or dr
 
 **↶ ↷** by **Download** turn the cover 90°. A new cover rotates in place; an existing one is staged as a rotated new copy with its type, comment and position, and the original is marked for removal. PNGs rotate losslessly, JPEGs are re-saved at high quality.
 
+**✂ Trim** crops the plain border around a cover, such as the white table around a photographed CD. A little JPEG noise or dust does not stop it. It stages the result as rotate does, and says so when there is no plain border.
+
 ## Release group artwork
 
 In [Event Horizon](../event_horizon/README.md), a release group's **Artwork** tab shows the art of all its releases. Images of a type that look alike are merged into one, shown by its largest copy and marked with how many releases have them; each release's booklet is one stack, marked with its page count, whether merging is on or not. A PDF booklet whose comment gives its pages (`44 pages`) is marked the same way. Group by release (as it opens), type or nothing; grouped, **Jump to** lists the groups and takes you to one, in **Edit** too. **Booklets only** and **PDF** narrow the view, and **Merge look-alikes** turns merging off; the count above the gallery says how many look-alikes were merged. An image whose removal is open for votes is marked **removal open**, and one the release no longer has says **Not on the release**. Select covers with right-click or right-drag, as in the main gallery, to download only those. **Pause** stops the reading.

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.26.190608
+// @version      2026.11.26.195253
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -5432,7 +5432,9 @@
   const bestLine = it => (it && it._bestOf > 1) ? `Art Station chose this as the best of ${it._bestOf} imported covers (highest resolution, then smallest file): ${it.w}×${it.h}${it.bytes ? ', ' + fmtBytes(it.bytes) : ''}` : '';
   // #678 a cover rotated from an existing one records, in its own add edit note, that it
   // replaces the original (the angle stays accurate through repeated rotations — see _rotDeg)
-  const rotLine = it => (it && it._rotatedFrom) ? `Rotated ${it._rotDeg || 90}° from this release's existing image ${it._rotatedFrom} (which this edit replaces)` : '';
+  // #1121 a trimmed copy (_trim) says so too, alone or after the rotation.
+  const xformDesc = (it, tail) => [(it._rotDeg || !it._trim) ? `rotated ${it._rotDeg || 90}°` : '', it._trim ? tail : ''].filter(Boolean).join(' and ');
+  const rotLine = it => (it && it._rotatedFrom) ? `${xformDesc(it, 'margins trimmed').replace(/^./, c => c.toUpperCase())} from this release's existing image ${it._rotatedFrom} (which this edit replaces)` : '';
   const editNoteFor = (m, it) => [m.note && m.note.trim(), sourceLine(it), bestLine(it), rotLine(it), ATTRIBUTION].filter(Boolean).join('\n\n');
   // #819 the new cover that takes a removed one's place: its rotated copy (#678), or the best front Mission Control
   // put in for the smaller one (#784)
@@ -5445,7 +5447,7 @@
     const id = nu._signed ? nu._signed.image_id : (dry ? '‹image_id›' : null);
     if (id == null) return '';
     const size = it => [it.w && it.h ? `${it.w}×${it.h}` : '', it.bytes ? fmtBytes(it.bytes) : ''].filter(Boolean).join(', ');
-    const how = nu._rotatedFrom === old.id ? `, this image rotated ${nu._rotDeg || 90}°` : '';
+    const how = nu._rotatedFrom === old.id ? `, this image ${xformDesc(nu, 'with its margins trimmed')}` : '';
     const who = (nu._provider && String(nu._provider).trim()) || '', page = (nu._provUrl && String(nu._provUrl).trim()) || '';
     const from = !how && (who || page) ? ` from ${who || 'an external provider'}${page ? ': ' + page : ''}` : '';
     const was = size(old);
@@ -6273,7 +6275,8 @@
         <div class="as-lb-bar"><div class="as-lb-caprow"><div class="as-lb-cap"></div>
           <div class="as-lb-dlwrap"><button class="as-lb-dl" data-tip="Download original">⬇ Download</button><button class="as-lb-dlcaret" data-tip="Other sizes">▾</button>
             <div class="as-lb-dlmenu"><button data-sz="original">Original</button><button data-sz="1200">1200 px</button><button data-sz="500">500 px</button><button data-sz="250">250 px</button></div></div>
-          <div class="as-lb-rotwrap"><button class="as-lb-rot" data-deg="-90" data-tip="Rotate left 90°">↶</button><button class="as-lb-rot" data-deg="90" data-tip="Rotate right 90°">↷</button></div></div>
+          <div class="as-lb-rotwrap"><button class="as-lb-rot" data-deg="-90" data-tip="Rotate left 90°">↶</button><button class="as-lb-rot" data-deg="90" data-tip="Rotate right 90°">↷</button><button class="as-lb-rot as-lb-trim" data-tip="Trim margins
+Crops the plain border around the cover, such as a photo's white background">✂ Trim</button></div></div>
           <div class="as-lb-cmtarea"></div></div>`;
       document.body.appendChild(ov);
       ov.querySelector('.as-lb-x').onclick = closeLightbox;
@@ -6283,7 +6286,8 @@
       ov.querySelector('.as-lb-dl').onclick = e => { e.stopPropagation(); dlMenu.classList.remove('open'); const it = byId(_lb); if (it) dlOne(it); };
       ov.querySelector('.as-lb-dlcaret').onclick = e => { e.stopPropagation(); dlMenu.classList.toggle('open'); };
       dlMenu.querySelectorAll('button').forEach(b => b.onclick = e => { e.stopPropagation(); dlMenu.classList.remove('open'); const it = byId(_lb); if (it) dlOne(it, b.dataset.sz); });
-      ov.querySelectorAll('.as-lb-rot').forEach(b => b.onclick = e => { e.stopPropagation(); rotateLbCover(+b.dataset.deg); });
+      ov.querySelectorAll('.as-lb-rot[data-deg]').forEach(b => b.onclick = e => { e.stopPropagation(); rotateLbCover(+b.dataset.deg); });
+      ov.querySelector('.as-lb-trim').onclick = e => { e.stopPropagation(); rotateLbCover(0, true); };
       // click anywhere outside the Download control closes its size menu (capture so it
       // fires regardless of stopPropagation). _dlJustClosed bridges the mousedown→click
       // gap so a backdrop click that dismisses the menu doesn't also close the viewer.
@@ -6541,14 +6545,56 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
       return out ? { blob: out, type: out.type || type, swap } : null;
     } finally { bmp.close && bmp.close(); }
   }
+  // #1121 trim a cover's plain margins (a photo of a CD on a white table, a scan with a border):
+  // each edge's colour is the median of its outermost line, and a line is margin while at
+  // most 2% of its pixels differ from that colour by more than TRIM_TOL in any channel,
+  // which lets JPEG noise and dust through. Returns { blob, type, w, h }, or { none: true }
+  // when there is nothing to trim or the rest would be under a tenth of the image.
+  const TRIM_TOL = 40, TRIM_MISS = 0.02;
+  async function trimImageBlob(blob) {
+    const bmp = await createImageBitmap(blob);
+    try {
+      const W = bmp.width, H = bmp.height;
+      const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+      const ctx = cv.getContext('2d', { willReadFrequently: true }); ctx.drawImage(bmp, 0, 0);
+      const d = ctx.getImageData(0, 0, W, H).data;
+      const px = (x, y) => (y * W + x) * 4;
+      const median = a => a.sort((p, q) => p - q)[a.length >> 1];
+      const refOf = pts => [0, 1, 2].map(c => median(pts.map(o => d[o + c])));
+      const line = (horiz, k, from, to) => { const o = []; for (let i = from; i < to; i++) o.push(horiz ? px(i, k) : px(k, i)); return o; };
+      const isMargin = (offs, ref) => {
+        let miss = 0; const max = offs.length * TRIM_MISS;
+        for (const o of offs) {
+          if (Math.abs(d[o] - ref[0]) > TRIM_TOL || Math.abs(d[o + 1] - ref[1]) > TRIM_TOL || Math.abs(d[o + 2] - ref[2]) > TRIM_TOL) { if (++miss > max) return false; }
+        }
+        return true;
+      };
+      let top = 0, bot = H, left = 0, right = W;
+      const rT = refOf(line(true, 0, 0, W)), rB = refOf(line(true, H - 1, 0, W));
+      while (top < bot - 1 && isMargin(line(true, top, 0, W), rT)) top++;
+      while (bot - 1 > top && isMargin(line(true, bot - 1, 0, W), rB)) bot--;
+      const rL = refOf(line(false, 0, top, bot)), rR = refOf(line(false, W - 1, top, bot));
+      while (left < right - 1 && isMargin(line(false, left, top, bot), rL)) left++;
+      while (right - 1 > left && isMargin(line(false, right - 1, top, bot), rR)) right--;
+      const w = right - left, h = bot - top;
+      if ((w === W && h === H) || w < W / 10 || h < H / 10) return { none: true };
+      const out = document.createElement('canvas'); out.width = w; out.height = h;
+      out.getContext('2d').drawImage(cv, left, top, w, h, 0, 0, w, h);
+      const type = blob.type === 'image/jpeg' ? 'image/jpeg' : 'image/png';
+      const b = await new Promise(res => out.toBlob(res, type, type === 'image/jpeg' ? 0.95 : undefined));
+      return b ? { blob: b, type: b.type || type, w, h } : null;
+    } finally { bmp.close && bmp.close(); }
+  }
   let _rotBusy = false;
-  async function rotateLbCover(deg) {
+  // trim: crop the margins (trimImageBlob) instead of rotating by deg
+  async function rotateLbCover(deg, trim) {
+    const what = trim ? 'Trim' : 'Rotate';
     if (VIEW_ONLY) return;
     if (_rotBusy) return;
     const it = byId(_lb); if (!it || it._pdf || it._sourcing) return;
     const ov = document.getElementById('as-lb');
     _rotBusy = true; if (ov) ov.classList.add('as-lb-rotbusy');
-    asLog.info(`Rotate: ${it._new ? 'new' : 'existing #' + it.id} by ${deg}° (${it._new ? 'in place' : 'replace'})`);
+    asLog.info(`${what}: ${it._new ? 'new' : 'existing #' + it.id}${trim ? '' : ` by ${deg}°`} (${it._new ? 'in place' : 'replace'})`);
     try {
       // source pixels: a staged new cover already holds its blob; an existing cover is
       // fetched full-resolution from CAA (same CORS path Download uses)
@@ -6556,8 +6602,11 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
       const srcUrl = (it._new ? it._file : (it._img || imgUrl(it.id))).replace(/^http:\/\//i, 'https://');
       const srcBlob = (it._new && it._fileObj) ? it._fileObj
         : await mbnLog(srcUrl).then(r => { if (!r.ok) throw new Error('fetch ' + r.status); return r.blob(); });
-      const r = await rotateImageBlob(srcBlob, deg);
-      if (!r) { toast('Rotate failed — the image could not be re-encoded'); return; }
+      const r = trim ? await trimImageBlob(srcBlob) : await rotateImageBlob(srcBlob, deg);
+      if (!r) { toast(`${what} failed — the image could not be re-encoded`); return; }
+      if (r.none) { toast('No plain margin to trim'); return; }
+      // the new size: the trimmed one, or the old one turned
+      const dims = (ow, oh) => trim ? [r.w, r.h] : (ow && oh) ? (r.swap ? [oh, ow] : [ow, oh]) : null;
       const ow = it.w, oh = it.h, ext = r.type === 'image/png' ? 'png' : 'jpg';
       if (it._new) {
         // #678 rotate the staged blob in place — nothing was ever on the release, so no replace
@@ -6567,29 +6616,33 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
         it._fileObj = new File([r.blob], name, { type: r.type });
         it.bytes = r.blob.size; it.fmt = fileFormat(r.type) || it.fmt;
         it._contentKey = await fileKey(it._fileObj);
-        if (it._rotatedFrom) it._rotDeg = (((it._rotDeg || 0) + deg) % 360 + 360) % 360;   // #678 further rotations of a staged replacement keep the note's angle accurate
-        if (ow && oh) { it.w = r.swap ? oh : ow; it.h = r.swap ? ow : oh; } else { it.w = 0; it.h = 0; measure(it); }
+        if (it._rotatedFrom) {   // #678 further changes to a staged replacement keep its note accurate
+          if (trim) it._trim = true; else it._rotDeg = (((it._rotDeg || 0) + deg) % 360 + 360) % 360;
+        }
+        const nd = dims(ow, oh);
+        if (nd) { it.w = nd[0]; it.h = nd[1]; } else { it.w = 0; it.h = 0; measure(it); }
         _imgCache.delete(String(it.id));
         resetZoom(); paintLightbox();
       } else {
         // #678 existing published cover: CAA images are immutable, so stage the rotated copy
         // as a NEW cover in the same slot (keeping its types + comment) and mark the original removed
-        const file = new File([r.blob], `${it.id}-rot.${ext}`, { type: r.type });
+        const file = new File([r.blob], `${it.id}-${trim ? 'trim' : 'rot'}.${ext}`, { type: r.type });
         const nu = newItem(file, { types: it.types.slice(), comment: it.comment, exactName: true });
         nu._contentKey = await fileKey(file);
-        nu._rotatedFrom = it.id; nu._rotDeg = ((deg % 360) + 360) % 360;
-        if (ow && oh) { nu.w = r.swap ? oh : ow; nu.h = r.swap ? ow : oh; }
+        nu._rotatedFrom = it.id; nu._rotDeg = ((deg % 360) + 360) % 360; if (trim) nu._trim = true;
+        const nd = dims(ow, oh);
+        if (nd) { nu.w = nd[0]; nu.h = nd[1]; }
         it._del = true; it._sel = false;
         const rest = MODEL.slice().sort((a, b) => a.order - b.order);
         rest.splice(rest.indexOf(it) + 1, 0, nu);
         MODEL = rest; MODEL.forEach((m, i) => m.order = i);
-        if (!(ow && oh)) measure(nu);
+        if (!nd) measure(nu);
         _lb = nu.id; _cursorId = nu.id; resetZoom(); paintLightbox();
-        toast('Rotated — staged as a replacement; the original is marked for removal');
+        toast(`${trim ? 'Trimmed' : 'Rotated'} — staged as a replacement; the original is marked for removal`);
       }
       render();
     } catch (e) {
-      logErr('Rotate failed', e); toast('Rotate failed — see the log');
+      logErr(`${what} failed`, e); toast(`${what} failed — see the log`);
     } finally {
       _rotBusy = false; if (ov) ov.classList.remove('as-lb-rotbusy');
     }
@@ -9749,6 +9802,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   .as-lb-rot:hover{background:rgba(255,255,255,.25)}
   .as-lb-rotwrap:hover .as-lb-rot{border-color:rgba(255,255,255,.28)}
   .as-lb-rotbusy .as-lb-rot{pointer-events:none;opacity:.45}
+  .as-lb-rot.as-lb-trim{font-size:13px;padding:0 10px}
   /* z-index:2 keeps the footer above a ZOOMED image — the image's transform makes a
      stacking context that would otherwise paint over the bar (it sits below in flow). */
   .as-lb-bar{margin-top:3px;display:flex;flex-direction:column;align-items:center;gap:8px;width:max-content;min-width:min(560px,84vw);max-width:84vw;position:relative;z-index:2;padding:11px 16px;border-radius:13px;box-sizing:content-box}   /* the focused bar's padding always: focusing it (the type picker, the comment) must not move the cover */
