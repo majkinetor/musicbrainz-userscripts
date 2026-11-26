@@ -94,29 +94,29 @@ mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify({ generated: new Date().toISOString(), items }) + '\n');
 
 // one page a post, news/<id>.html, for links pasted into chats and forums: a link preview never sees news.html's
-// #<id>, so it would show the page's title for every post. Each page carries its post's title, text and first image
-// in the preview tags and sends a reader on to news.html#<id>.
+// #<id>, so it would show the page's title for every post. Each page is news.html showing that post alone
+// (data-post), with the post's title, text and first image in the preview tags; <base> keeps its links working.
 const attr = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const text = (html) => html.replace(/<sub>\s*Issue:[\s\S]*?<\/sub>/gi, ' ').replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ').replace(/<[^>]+>/g, ' ')
   .replace(/&nbsp;/g, ' ').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
   .replace(/\s+/g, ' ').trim();
 const cut = (s, n) => s.length <= n ? s : s.slice(0, s.lastIndexOf(' ', n - 1) > n / 2 ? s.lastIndexOf(' ', n - 1) : n - 1) + '…';
+const page = readFileSync(dirname(OUT) + '/news.html', 'utf8');
 for (const i of items) {
-  const to = '../news.html#' + i.id, img = (/<img[^>]+src="([^"]+)"/i.exec(i.html) || [])[1] || '';
+  const img = (/<img[^>]+src="([^"]+)"/i.exec(i.html) || [])[1] || '';
   const title = i.title + ' · ' + i.script, desc = cut(text(i.html), 200);
-  writeFileSync(`${dir}/${i.id}.html`, `<!doctype html>
-<html lang="en"><head><meta charset="utf-8">
-<title>${attr(title)}</title>
-<meta name="description" content="${attr(desc)}">
+  const head = `<meta charset="utf-8">
+<base href="../">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="MusicBrainz userscripts">
 <meta property="og:title" content="${attr(title)}">
 <meta property="og:description" content="${attr(desc)}">
 <meta property="og:url" content="${attr(SITE + 'news/' + i.id)}">
 <meta property="article:published_time" content="${attr(i.at)}">
-${img ? `<meta property="og:image" content="${attr(img)}">\n<meta name="twitter:card" content="summary_large_image">` : '<meta name="twitter:card" content="summary">'}
-<meta http-equiv="refresh" content="0; url=${attr(to)}">
-</head><body><p><a href="${attr(to)}">${attr(i.title)}</a></p><script>location.replace(${JSON.stringify(to)})</script></body></html>
-`);
+${img ? `<meta property="og:image" content="${attr(img)}">\n<meta name="twitter:card" content="summary_large_image">` : '<meta name="twitter:card" content="summary">'}`;
+  const html = page.replace('<html lang="en">', `<html lang="en" data-post="${i.id}">`).replace('<meta charset="utf-8">', () => head)
+    .replace(/<title>[^<]*<\/title>/, () => `<title>${attr(title)}</title>`)
+    .replace(/<meta name="description" content="[^"]*">/, () => `<meta name="description" content="${attr(desc)}">`);
+  writeFileSync(`${dir}/${i.id}.html`, html);
 }
 console.log(`news: ${items.length} announcements (${posts.length - items.length} skipped) → ${OUT}, ${dir}/`);

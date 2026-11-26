@@ -93,7 +93,7 @@ function clean(html) {
 const icon = i => i.icon ? `<img src="${esc(i.icon)}" alt="">` : '';
 const REPO = 'https://github.com/majkinetor/musicbrainz-userscripts';
 function post(i) {
-  // the title links to the post's own page (news/<id>), whose link preview shows this post; a click stays here
+  // the title links to the post's own page (news/<id>), whose link preview shows this post; on the list a click stays there
   return `<article id="${i.id}" data-script="${esc(i.script)}"><h2>${icon(i)}<a href="./news/${i.id}" data-id="${i.id}" title="Link to this post">${esc(i.title)}</a></h2>`
     + `<div class="m"><span>${esc(i.script)}</span><time datetime="${esc(i.at)}">${esc(day(i.at))}</time>`
     + (i.channel ? `<span class="c" title="${i.channel === 'stable' ? 'In the official release' : 'On the latest version, not yet released'}">${esc(i.channel)}</span>` : '')
@@ -117,8 +117,17 @@ function filter(items) {
   bar.onclick = e => { const b = e.target.closest('button'); if (b) show(b.dataset.s); };
   if (pick) show(pick);
 }
+// news/<id>.html is this page with data-post="<id>" (dev/news/build.mjs writes it): it shows that post alone
+const one = document.documentElement.dataset.post;
 fetch('./news.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(j => {
-  const items = j.items || [], list = document.getElementById('list');
+  const list = document.getElementById('list');
+  if (one) {
+    const i = (j.items || []).find(x => String(x.id) === one);
+    document.getElementById('lede').innerHTML = `<a href="./news.html#${esc(one)}">All announcements</a>`;
+    list.innerHTML = i ? post(i) : '<p class="state">This announcement was removed.</p>';
+    return;
+  }
+  const items = j.items || [];
   list.innerHTML = items.length ? items.map(post).join('') : '<p class="state">No announcements yet.</p>';
   if (j.generated) { const d = day(j.generated); document.getElementById('lede').textContent += ' Updated ' + d + (/.$/.test(d) ? '' : '.'); }
   filter(items);
