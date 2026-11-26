@@ -3,7 +3,7 @@
 // there, so it makes no GitHub API calls. Every run is a full rebuild from GitHub's current state, so an edited
 // post carries its new text, and a deleted post, one moved out of Announcements or one labeled `skip changelog`
 // is gone. See README.md.
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readdirSync, readFileSync, existsSync } from 'node:fs';
 import { dirname } from 'node:path';
 
 const args = process.argv.slice(2);
@@ -44,10 +44,25 @@ for (let after = null; ;) {
   after = d.pageInfo.endCursor;
 }
 
+// the script a post is about, from its `area | <script>` label, for the site's page (String Theory works it out
+// itself): its @name and icon, a PNG where there is one (as the site's front page does)
+const RAW = 'https://raw.githubusercontent.com/' + OWNER + '/' + NAME + '/main/userscripts/';
+const scripts = {};
+for (const dir of existsSync('userscripts') ? readdirSync('userscripts') : []) {
+  let name = dir.replace(/_/g, ' ');
+  try { name = /^\/\/ @name\s+(.+)$/m.exec(readFileSync(`userscripts/${dir}/${dir}.user.js`, 'utf8'))[1].trim(); } catch { /* no script */ }
+  const icon = ['icon.png', 'icon.svg'].find((i) => existsSync(`userscripts/${dir}/${i}`));
+  scripts[dir.replace(/_/g, ' ')] = scripts[name.toLowerCase()] = { name, icon: icon ? RAW + dir + '/' + icon : '' };
+}
+const scriptOf = (labels) => {
+  for (const l of labels) { const m = /^area \| (.+)$/.exec(l); if (m) return scripts[m[1].toLowerCase()] || { name: m[1], icon: '' }; }
+  return scripts['string theory'] || { name: 'String Theory', icon: '' };
+};
+
 const items = posts.map((p) => {
-  const labels = p.labels.nodes.map((l) => l.name), m = /Issue:\s*#(\d+)/i.exec(p.body || '');
+  const labels = p.labels.nodes.map((l) => l.name), m = /Issue:\s*#(\d+)/i.exec(p.body || ''), s = scriptOf(labels);
   return { id: p.number, title: p.title, url: p.url, at: p.createdAt, edited: p.lastEditedAt || '', html: p.bodyHTML || '',
-    labels, issue: m ? +m[1] : 0, channel: '' };
+    labels, script: s.name, icon: s.icon, issue: m ? +m[1] : 0, channel: '' };
 }).filter((i) => !i.labels.includes('skip changelog'));
 
 // an issue with the `released` label is on stable, any other on latest; 50 issues a query

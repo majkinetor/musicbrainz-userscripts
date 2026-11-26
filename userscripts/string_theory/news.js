@@ -7,7 +7,7 @@
 // the viewer reads further back, page by page, as its list is scrolled to the end.
 var ST_NEWS_KEY = 'stNews', ST_NEWS_MAX = 20, ST_NEWS_DAY = 864e5, ST_NEWS_FIRST = 14 * ST_NEWS_DAY, ST_NEWS_EVERY = 36e5;
 var ST_NEWS_FILE = 'https://milic.info/musicbrainz-userscripts/news.json';
-var ST_NEWS_ALL = 'https://github.com/' + ST_REPO + '/discussions?discussions_q=category%3AAnnouncements+-label%3A%22skip+changelog%22';
+var ST_NEWS_ALL = 'https://milic.info/musicbrainz-userscripts/news.html';   // every announcement, on the project site
 var ST_NEWS_LOG = 'https://github.com/' + ST_REPO + '/blob/main/userscripts/string_theory/CHANGELOG.md';
 var ST_NEWS_API = 'https://api.github.com/repos/' + ST_REPO + '/discussions?per_page=100', ST_NEWS_FULL = 'application/vnd.github.full+json';
 var stNewsOv = null;

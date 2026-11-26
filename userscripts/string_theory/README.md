@@ -77,6 +77,8 @@ String Theory checks the project's [announcements](https://github.com/majkinetor
 
 The window lists the latest 20 posts and loads older ones as you scroll to the end, each with its script's name and icon. A post shows **stable** when its change is released and **latest** when it isn't yet.
 
+Every announcement is also on the [project site](https://milic.info/musicbrainz-userscripts/news.html), where you can show one script's posts. **All announcements** in the window's footer opens that page.
+
 ## Network log
 
 The scripts send their MusicBrainz requests through one shared queue, the gate. It spaces them out across all tabs, and when MusicBrainz answers 503 or 429, every script waits. If a request is asked again while the first one is still on its way, both share one answer (**join** in the log). If two waiting requests differ only in what extra data they ask for, the gate sends one request for both (**merge** in the log). Open **Network log** from the [command palette](#command-palette) to see what goes through it.

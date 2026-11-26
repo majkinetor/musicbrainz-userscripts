@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What's new — String Theory</title>
+<meta name="description" content="Announcements for String Theory and the scripts it bundles.">
+<!-- The Announcements discussions, from news.json beside this page (#1123). The pages workflow rebuilds
+     that file from GitHub on every change to an announcement; dev/news/README.md says how. -->
+<style>
+  :root{ --bg:#ffffff; --ink:#141618; --dim:#5f6469; --faint:#9ba1a6; --rule:#ececef; --soft:#f5f6f7; --accent:#1f6feb; }
+  @media (prefers-color-scheme: dark){ :root:not([data-t=light]){
+    --bg:#0d0f11; --ink:#e8eaec; --dim:#98a0a6; --faint:#666d73; --rule:#1b1f23; --soft:#15181b; --accent:#6ea8ff; } }
+  :root[data-t=dark]{ --bg:#0d0f11; --ink:#e8eaec; --dim:#98a0a6; --faint:#666d73; --rule:#1b1f23; --soft:#15181b; --accent:#6ea8ff; }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font:15.5px/1.68 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  .w{max-width:760px;margin:0 auto;padding:0 26px}
+  nav{display:flex;gap:22px;padding:22px 0 0;font-size:14.5px}
+  nav a{color:var(--dim);text-decoration:none}nav a:hover{color:var(--accent)}
+  h1{margin:36px 0 4px;font-size:34px;line-height:1.2;letter-spacing:-.02em}
+  .lede{margin:0;color:var(--dim);font-size:14.5px}
+  .bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0 8px}
+  .bar button{min-height:30px;padding:0 12px;border:1px solid var(--rule);border-radius:15px;background:none;color:var(--dim);font:inherit;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .bar button:hover{color:var(--ink);background:var(--soft)}
+  .bar button[aria-pressed=true]{color:var(--ink);border-color:var(--accent)}
+  .bar img{width:16px;height:16px;object-fit:contain}
+  article{padding:26px 0;border-top:1px solid var(--rule)}
+  article:first-of-type{border-top:0}
+  article h2{display:flex;align-items:center;gap:10px;margin:0;font-size:20px;line-height:1.35;letter-spacing:-.01em}
+  article h2 img{width:24px;height:24px;flex:0 0 auto;object-fit:contain}
+  article h2 a{color:inherit;text-decoration:none}article h2 a:hover{color:var(--accent)}
+  .m{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:4px 0 12px;color:var(--dim);font-size:13.5px}
+  .m .c{padding:0 7px;border:1px solid var(--rule);border-radius:10px;font-size:12.5px}
+  .m a{color:var(--dim)}.m a:hover{color:var(--accent)}
+  .b{overflow-wrap:anywhere}
+  .b>:first-child{margin-top:0}.b>:last-child{margin-bottom:0}
+  .b img{max-width:100%;height:auto}
+  .b h1,.b h2,.b h3{font-size:16px;margin:18px 0 6px}
+  .b code{padding:1px 5px;border-radius:4px;background:var(--soft);font-size:.9em}
+  .b pre{overflow:auto;padding:10px 12px;border-radius:6px;background:var(--soft);scrollbar-width:thin;scrollbar-color:var(--rule) transparent}.b pre code{padding:0;background:none}
+  .b blockquote{margin:10px 0;padding:0 14px;border-left:3px solid var(--rule);color:var(--dim)}
+  .b table{border-collapse:collapse;display:block;overflow:auto}.b th,.b td{padding:4px 10px;border:1px solid var(--rule)}
+  .b abbr{text-decoration:underline dotted;text-underline-offset:2px;cursor:help}
+  .b .anchor,.b .octicon{display:none}
+  .state{padding:30px 0;color:var(--dim)}
+  footer{display:flex;flex-wrap:wrap;gap:22px;margin:40px 0 0;padding:18px 0 40px;border-top:1px solid var(--rule);color:var(--faint);font-size:13.5px}
+  footer a{color:var(--dim)}
+  @media(max-width:620px){ .w{padding:0 16px} h1{font-size:28px} article h2{font-size:18px} }
+</style>
+</head>
+<body>
+<div class="w">
+  <nav><a href="./">String Theory</a><a href="https://github.com/majkinetor/musicbrainz-userscripts/discussions/categories/announcements">Discussions</a><a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/CHANGELOG.md">Changelog</a></nav>
+  <h1>What's new</h1>
+  <p class="lede" id="lede">Announcements for String Theory and the scripts it bundles.</p>
+  <div class="bar" id="bar" hidden></div>
+  <main id="list"><p class="state">Loading…</p></main>
+  <footer><span>MIT</span><a href="./privacy.html">Privacy</a><a href="./terms.html">Terms</a></footer>
+</div>
+<script>
+// short names in a post get a dotted underline and the full name as a tip, as in String Theory's viewer
+const ABBR = { AS: 'Art Station', BP: 'Bandcamp Player Enhanced', CH: 'Credit Hoarder', DC: 'Discogs Credits', EH: 'Event Horizon',
+  FC: 'First Contact', GT: 'Group Therapy', IS: 'ISRC Scout', MB: 'MusicBrainz', MC: 'Mission Control', MM: 'Mammoth', PC: 'Platform Check',
+  RG: 'Release group', ST: 'String Theory' };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const day = at => new Date(at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+// GitHub's rendered body, without what can run, and without the `Issue: #N` line (the header links the issue)
+function clean(html) {
+  const d = new DOMParser().parseFromString(html, 'text/html');
+  d.querySelectorAll('script,style,iframe,object,embed,form').forEach(e => e.remove());
+  d.querySelectorAll('*').forEach(e => {
+    [...e.attributes].forEach(a => { if (/^on/i.test(a.name) || /^\s*javascript:/i.test(a.value)) e.removeAttribute(a.name); });
+    if (e.tagName === 'A' && !/^#/.test(e.getAttribute('href') || '')) e.rel = 'noopener';
+  });
+  d.querySelectorAll('sub').forEach(e => { if (/^\s*Issue:/i.test(e.textContent)) e.remove(); });
+  const w = d.createTreeWalker(d.body, 4), nodes = [], re = /\b(?:AS|BP|CH|DC|EH|FC|GT|IS|MB|MC|MM|PC|RG|ST)\b/g;
+  for (let n; (n = w.nextNode());) if (!n.parentNode.closest('a,code,pre')) nodes.push(n);
+  nodes.forEach(t => {
+    const txt = t.nodeValue, frag = d.createDocumentFragment(); let last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(txt))) {
+      frag.append(txt.slice(last, m.index));
+      const a = d.createElement('abbr'); a.textContent = m[0]; a.title = ABBR[m[0]]; frag.append(a);
+      last = m.index + m[0].length;
+    }
+    if (!last) return;
+    frag.append(txt.slice(last)); t.replaceWith(frag);
+  });
+  return d.body.innerHTML;
+}
+const icon = i => i.icon ? `<img src="${esc(i.icon)}" alt="">` : '';
+const REPO = 'https://github.com/majkinetor/musicbrainz-userscripts';
+function post(i) {
+  return `<article id="${i.id}" data-script="${esc(i.script)}"><h2>${icon(i)}<a href="#${i.id}">${esc(i.title)}</a></h2>`
+    + `<div class="m"><span>${esc(i.script)}</span><time datetime="${esc(i.at)}">${esc(day(i.at))}</time>`
+    + (i.channel ? `<span class="c" title="${i.channel === 'stable' ? 'In the official release' : 'On the latest version, not yet released'}">${esc(i.channel)}</span>` : '')
+    + (i.issue ? `<a href="${REPO}/issues/${i.issue}">Issue #${i.issue}</a>` : '')
+    + `<a href="${esc(i.url)}">Discuss</a></div><div class="b">${clean(i.html)}</div></article>`;
+}
+// the filter: one button per script that has posts, kept in the address as ?script=<name>
+function filter(items) {
+  const bar = document.getElementById('bar'), names = [...new Set(items.map(i => i.script))].sort();
+  if (names.length < 2) return;
+  const pick = new URLSearchParams(location.search).get('script') || '';
+  bar.innerHTML = `<button type="button" data-s="" aria-pressed="${!pick}">All</button>`
+    + names.map(n => `<button type="button" data-s="${esc(n)}" aria-pressed="${n === pick}">${icon(items.find(i => i.script === n))}${esc(n)}</button>`).join('');
+  bar.hidden = false;
+  const show = s => {
+    bar.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === s));
+    document.querySelectorAll('article').forEach(a => { a.hidden = !!s && a.dataset.script !== s; });
+    const u = new URL(location.href); if (s) u.searchParams.set('script', s); else u.searchParams.delete('script');
+    history.replaceState(null, '', u);
+  };
+  bar.onclick = e => { const b = e.target.closest('button'); if (b) show(b.dataset.s); };
+  if (pick) show(pick);
+}
+fetch('./news.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(j => {
+  const items = j.items || [], list = document.getElementById('list');
+  list.innerHTML = items.length ? items.map(post).join('') : '<p class="state">No announcements yet.</p>';
+  if (j.generated) { const d = day(j.generated); document.getElementById('lede').textContent += ' Updated ' + d + (/.$/.test(d) ? '' : '.'); }
+  filter(items);
+  // a link to one post (news.html#1122) lands on it once the posts are drawn
+  if (location.hash) { const a = document.getElementById(location.hash.slice(1)); if (a) { a.hidden = false; a.scrollIntoView(); } }
+}).catch(() => {
+  document.getElementById('list').innerHTML = `<p class="state">The announcements could not be loaded. Read them <a href="${REPO}/discussions/categories/announcements">on GitHub</a>.</p>`;
+});
+</script>
+</body>
+</html>
