@@ -65,7 +65,11 @@ test('the button drags anywhere, each platform keeps its own place, Reset puts i
     await page.mouse.up();
   };
   await drag();
-  const inCorner = b => Math.abs(b.x + b.width - (corner.x + corner.width)) < 3 && Math.abs(b.y - corner.y) < 3;
+  // each platform's own corner: Deezer's page has a scrollbar, so its corner is a scrollbar's width left of Bandcamp's
+  const inCornerOf = c => b => Math.abs(b.x + b.width - (c.x + c.width)) < 3 && Math.abs(b.y - c.y) < 3;
+  const inCorner = inCornerOf(corner);
+  // a Reset restacks the corner in the next frame (ce0635477), so it is waited for
+  const settlesInCorner = (ok = inCorner) => until(box, ok, { timeout: 3000 });
 
   // majkinetor: "Reset: all | this one"; and the link was "not visible" on the dark panel
   await open(BC);
@@ -86,14 +90,15 @@ test('the button drags anywhere, each platform keeps its own place, Reset puts i
   // majkinetor: "also fix dark help": ? Help was the deep accent, unreadable on the dark panel
   check(reset.help >= 4.5, `? Help reads on the dark panel (contrast ${reset.help}:1)`);
   await page.locator('#fc-panel .fc-reset-pos').click();
-  check(inCorner(await box()), 'this one: back in the corner on Bandcamp');
+  check(inCorner(await settlesInCorner()), 'this one: back in the corner on Bandcamp');
   await open(BC);
   check(inCorner(await box()), 'and it stays there after a reload');
   await open(DZ);
-  check(!inCorner(await box()), 'Deezer keeps its own place');
+  check(!inCornerOf(dz)(await box()), 'Deezer keeps its own place');
   await page.locator('#fc-root .fc-more').click();
   await page.locator('#fc-panel .fc-reset-all').click();
-  check(inCorner(await box()), 'all: back in the corner on Deezer');
+  const dzBack = await settlesInCorner(inCornerOf(dz));
+  check(inCornerOf(dz)(dzBack), `all: back in the corner on Deezer (${JSON.stringify(dzBack)}, its corner ${JSON.stringify(dz)})`);
   await open(BC);
   check(inCorner(await box()), 'and on Bandcamp');
 });
@@ -205,8 +210,9 @@ test('Moved button scrolls with the page is per platform, and the old setting ca
   await page.locator('#fc-panel .fc-reset-pos').click();
   check(JSON.stringify(await gm('fc.scroll')) === JSON.stringify({ Deezer: true }), `Reset this one clears it on Bandcamp only: ${JSON.stringify(await gm('fc.scroll'))}`);
   // the button was on the page, scrolled away: Reset brings it back on the screen, in its corner
-  const back = await box(), vp = page.viewportSize();
-  check(back && back.y + back.height > vp.height - 40 && back.x + back.width > vp.width - 40, `this one: back in the corner on the screen (${JSON.stringify(back)})`);
+  const vp = page.viewportSize(), cornered = b => b && b.y + b.height > vp.height - 40 && b.x + b.width > vp.width - 40;
+  const back = await until(box, cornered, { timeout: 3000 });   // restacked in the next frame (ce0635477)
+  check(cornered(back), `this one: back in the corner on the screen (${JSON.stringify(back)})`);
   await page.locator('#fc-root .fc-more').click();
   await page.locator('#fc-panel .fc-reset-all').click();
   check(JSON.stringify(await gm('fc.scroll')) === '{}', `Reset all clears it everywhere: ${JSON.stringify(await gm('fc.scroll'))}`);
