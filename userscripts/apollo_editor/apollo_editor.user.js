@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.26.093018
+// @version      2026.11.26.103135
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -2536,8 +2536,23 @@
 
   /* ── search + siblings ── */
   const _cache = new Map();
-  // resolve an MBID to a full entity (incl. the numeric id needed for the credit write-back)
-  async function fetchEntity(gid, kind) {
+  // resolve an MBID to a full entity (incl. the numeric id needed for the credit write-back).
+  // Every track's credit resolves its own artist, so a release with one artist on 13 tracks asked
+  // 13 times in a second: one answer per artist is shared, a call made while it is on its way included.
+  // It is kept for 10 minutes, and dropped by any edit (mbnEditEpoch). A failure or an empty answer is
+  // not kept. Each caller gets its own copy, since callers change the entity they get.
+  const _entMemo = new Map();   // kind|gid → { p, at, ep }
+  function fetchEntity(gid, kind) {
+    const k = (kind || 'artist') + '|' + gid, ep = mbnEditEpoch(), m = _entMemo.get(k);
+    let p = m && m.ep === ep && Date.now() - m.at < 600000 ? m.p : null;
+    if (!p) {
+      p = fetchEntityOnce(gid, kind);
+      _entMemo.set(k, { p, at: Date.now(), ep });
+      p.then(j => { if (!j && _entMemo.get(k) && _entMemo.get(k).p === p) _entMemo.delete(k); });
+    }
+    return p.then(j => j && structuredClone(j));
+  }
+  async function fetchEntityOnce(gid, kind) {
     try { const j = await mbWebFetch(`${ORIGIN}/ws/js/entity/${gid}`, { headers: { Accept: 'application/json' } }, { reason: kind === 'label' ? 'label' : 'credit', entity: kind || 'artist' }).then(r => r.json());
       // return the WHOLE entity (like a search hit) so the credit write-back has every field it needs
       if (j && j.gid) { if (!j.entityType) j.entityType = kind || 'artist'; return j; } }
@@ -7975,8 +7990,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           });
       });
   }
-  async function mbaSaveWithKeys(url, keys, log, follow) {
-      const auth = keys.key + ':' + keys.secret, wait = 180000;
+  async function mbaSaveWithKeys(url, keys, log) {
+      const auth = keys.key + ':' + keys.secret;
       const body = new URLSearchParams({ url, if_not_archived_within: '30d', capture_screenshot: '1' }).toString();
       const r = await mbaRequest('POST', 'https://web.archive.org/save', auth, body);
       log.debug(`archive: POST /save ${url} → HTTP ${r.status} ${r.text.slice(0, 300)}`);
@@ -7989,23 +8004,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           return;
       }
       log.info(`archive: ${url} queued as job ${job}`);
-      if (!follow) return;
-      const t0 = Date.now();
-      while (Date.now() - t0 < wait) {
-          await new Promise(res => setTimeout(res, 6000));
-          const st = await mbaRequest('GET', 'https://web.archive.org/save/status/' + encodeURIComponent(job), auth);
-          const j = st.json || {};
-          log.debug(`archive: job ${job} → HTTP ${st.status}, ${j.status || '?'}`);
-          if (j.status === 'pending') continue;
-          if (j.status === 'success') log.ok(`archive: saved ${url} → https://web.archive.org/web/${j.timestamp}/${j.original_url || url}${j.screenshot ? ', screenshot ' + j.screenshot : ''} (${Date.now() - t0} ms)`);
-          else log.warn(`archive: job ${job} for ${url} ended ${j.status || 'HTTP ' + st.status}: ${j.message || j.status_ext || st.text.slice(0, 200)}`);
-          return;
-      }
-      log.info(`archive: job ${job} for ${url} still running after ${wait / 60000} minutes; archive.org finishes it on its side`);
   }
-  async function mbaSave(url, log, follow) {
+  async function mbaSave(url, log) {
       const keys = mbaKeys();
-      try { await (keys ? mbaSaveWithKeys(url, keys, log, follow) : mbaSaveAnon(url, log)); } catch (e) { log.warn(`archive: ${url}: ${e && e.message || e}`); }
+      try { await (keys ? mbaSaveWithKeys(url, keys, log) : mbaSaveAnon(url, log)); } catch (e) { log.warn(`archive: ${url}: ${e && e.message || e}`); }
   }
   function mbaKeysState(k, s) {
       k = String(k || '').trim(); s = String(s || '').trim();
@@ -15945,7 +15947,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (!send.length) { log.debug('archive: no links to save'); return; }
     log.info(`archive: sending ${send.length} URL(s) to the Internet Archive (${keys ? 'Save Page Now 2 with your keys' : 'anonymous'}): ${send.join(', ')}`);
     if (!keys && send.length > 3) log.info('archive: anonymous saves are limited per connection, so some of these may be refused; archive.org keys in the settings raise the limit');
-    for (const u of send) { _arSent.add(u); mbaSave(u, log, false); }
+    for (const u of send) { _arSent.add(u); mbaSave(u, log); }
   }
 
   /* ── #736: the Internet Archive menu by each external link in an entity page's sidebar ── */

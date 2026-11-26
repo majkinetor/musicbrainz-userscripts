@@ -95,9 +95,10 @@ function mbaRequest(method, url, auth, body) {
 }
 
 /** Save Page Now 2 with the user's keys: higher limits, a screenshot, and a snapshot from the last
- *  30 days is reused. Starts a job; with `follow`, polls it for the log (nothing waits for it). */
-async function mbaSaveWithKeys(url, keys, log, follow) {
-    const auth = keys.key + ':' + keys.secret, wait = 180000;
+ *  30 days is reused. Starts a job and leaves it to archive.org: nothing asks for its status, so no
+ *  status requests are sent and the next save does not wait for this one to end. */
+async function mbaSaveWithKeys(url, keys, log) {
+    const auth = keys.key + ':' + keys.secret;
     const body = new URLSearchParams({ url, if_not_archived_within: '30d', capture_screenshot: '1' }).toString();
     const r = await mbaRequest('POST', 'https://web.archive.org/save', auth, body);
     log.debug(`archive: POST /save ${url} → HTTP ${r.status} ${r.text.slice(0, 300)}`);
@@ -110,25 +111,12 @@ async function mbaSaveWithKeys(url, keys, log, follow) {
         return;
     }
     log.info(`archive: ${url} queued as job ${job}`);
-    if (!follow) return;
-    const t0 = Date.now();
-    while (Date.now() - t0 < wait) {
-        await new Promise(res => setTimeout(res, 6000));
-        const st = await mbaRequest('GET', 'https://web.archive.org/save/status/' + encodeURIComponent(job), auth);
-        const j = st.json || {};
-        log.debug(`archive: job ${job} → HTTP ${st.status}, ${j.status || '?'}`);
-        if (j.status === 'pending') continue;
-        if (j.status === 'success') log.ok(`archive: saved ${url} → https://web.archive.org/web/${j.timestamp}/${j.original_url || url}${j.screenshot ? ', screenshot ' + j.screenshot : ''} (${Date.now() - t0} ms)`);
-        else log.warn(`archive: job ${job} for ${url} ended ${j.status || 'HTTP ' + st.status}: ${j.message || j.status_ext || st.text.slice(0, 200)}`);
-        return;
-    }
-    log.info(`archive: job ${job} for ${url} still running after ${wait / 60000} minutes; archive.org finishes it on its side`);
 }
 
 /** Save one URL, with the keys when they're set. Never throws. */
-async function mbaSave(url, log, follow) {
+async function mbaSave(url, log) {
     const keys = mbaKeys();
-    try { await (keys ? mbaSaveWithKeys(url, keys, log, follow) : mbaSaveAnon(url, log)); } catch (e) { log.warn(`archive: ${url}: ${e && e.message || e}`); }
+    try { await (keys ? mbaSaveWithKeys(url, keys, log) : mbaSaveAnon(url, log)); } catch (e) { log.warn(`archive: ${url}: ${e && e.message || e}`); }
 }
 
 /** The archive.org keys part of a settings panel: a heading with where to get them, and the two

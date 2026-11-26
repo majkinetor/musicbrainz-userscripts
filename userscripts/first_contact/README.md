@@ -410,7 +410,7 @@ First Contact hands every credited artist's platform link, the release's and eac
 
 On every import, First Contact has the Internet Archive's [Wayback Machine](https://web.archive.org/) save the album page, so anyone can later check what it showed; the snapshot is found by the page's address.
 
-- The import doesn't wait for the save; the [log](#settings) says how it went.
+- The import doesn't wait for the save; the [log](#settings) says whether the Internet Archive took it.
 - Deezer and Apple Music build their pages in the browser, so a saved page shows little. For these, the album data First Contact read is saved too.
 - Discogs refuses the Internet Archive, so its release data is saved instead.
 - Spotify, Tidal and YouTube Music also build their pages in the browser, and their data can't be saved. For these, add your archive.org keys: the save then also takes a screenshot of the page.

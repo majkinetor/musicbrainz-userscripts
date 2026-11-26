@@ -205,6 +205,7 @@ function stGateTryTip(st) { return st == null ? 'On its way' : st === -1 ? 'Netw
 // a try still open this long is lost: MusicBrainz answers in seconds, and a lost start used to draw
 // a solid "on its way" bar up to now for a whole minute
 var ST_GATE_LOST = 30000;
+var ST_GATE_TRY_MAX = 45000;   // the gate gives a try up at 40 s (mb-gate.mjs, "no answer in 40s")
 
 // The events, grouped into requests. An event with an id (mbnRid) belongs to that request. One
 // without (an older event, or a caller that gives none) goes by the run of events with the same
@@ -230,8 +231,13 @@ function stGateGroups(all, now) {
         // retried as a new request, ended at that 429 (it shows "429, gave up")
         var waits = o.tries.some(function (y) { return y.st == null; });
         if (!waits && o.pend) { done(o, 'gave up'); return; }
-        o.tries.forEach(function (y) { if (y.st == null) { y.st = -2; y.end = ev.t; } });
-        o.end = Math.max(o.end, ev.t); o.pend = 0; done(o, 'page left');
+        // the gate ends every try within ST_GATE_TRY_MAX: one open longer lost its answer in the trace, not on
+        // the way (an Event Horizon lookup showed 459 s, up to its tab's next page). It ends as "no answer", a tick
+        // only a ws/2 read has that limit: its path in the log has no leading slash and no host
+        var capped = !o.h && !/^\//.test(String(o.u || o.l || '')), over = function (y) { return capped && y.st == null && ev.t - y.t > ST_GATE_TRY_MAX; };
+        var lost = o.tries.some(over);
+        o.tries.forEach(function (y) { if (y.st == null) { if (over(y)) { y.st = -3; y.end = y.t + 1000; } else { y.st = -2; y.end = ev.t; } } });
+        o.end = Math.max(o.end, ev.t); o.pend = 0; done(o, lost ? 'no answer' : 'page left');
       });
       return;
     }
@@ -770,11 +776,11 @@ function stGateRowHtml(g, me, isOpen, now) {
   var flight = g.tries.reduce(function (n, x) { return n + (x.end ? x.end - x.t : 0); }, 0);
   var row = '<tr class="rq' + (g.m && g.m !== 'GET' ? ' wr' : '') + (g.tab === me ? ' me' : '') + (isOpen ? ' open' : '') + (stGateSel[g.id] ? ' sel' : '') + '" data-id="' + stEsc(g.id) + '"><td class="t">' + stGateTime(g.t) + '</td>' + tab
     + '<td class="s">' + stEsc(g.s || '') + (g.b === 0 ? ' <span class="i" data-tip="Interactive: a click or a search\nIt goes ahead of background work">(i)</span>' : '') + '</td>'
-    + '<td class="v">' + stEsc(g.m || '') + '</td><td class="r">' + stEsc(g.r || '') + '</td><td class="e">' + stGateEntHtml(g) + '</td><td class="i">' + stEsc(stGateSite(g)) + '</td><td class="l"' + (g.u || g.h ? ' data-tip="' + stEsc((g.h ? g.h : '') + (g.u || '')) + '"' : '') + '>' + stGateLabelHtml(g) + '</td><td><span class="st-gate-tries">' + tries + '</span></td>'
+    + '<td class="v">' + stEsc(g.m || '') + '</td><td class="r">' + stEsc(g.r || '') + '</td><td class="e">' + stGateEntHtml(g) + '</td><td class="i">' + stEsc(stGateSite(g)) + '</td><td class="l"' + (stGateFull(g) ? ' data-tip="' + stEsc(stGateFull(g)) + '"' : '') + '>' + stGateLabelHtml(g) + '</td><td><span class="st-gate-tries">' + tries + '</span></td>'
     + '<td><span class="st-gate-pill ' + g.cls + '">' + stEsc(g.label) + '</span></td>'
     + '<td class="w" data-tip="Waited in the gate + on the way">' + stGateSec(g.wait) + (flight ? ' + ' + stGateSec(flight) : '') + '</td><td>' + meter + '</td><td></td></tr>';
   if (!isOpen) return row;
-  var full = (g.h || '') + (g.u || (stGateAlias(g.l) !== g.l ? g.l : ''));
+  var full = stGateFull(g);
   var qs = String(g.u || g.l || ''), qps = stGateQuery(qs), facts = [];
   if (g.bs != null) facts.push('body ' + stGateBytes(g.bs)); else if (g.m && g.m !== 'GET') facts.push('body size unknown');
   if (g.rs != null) facts.push('response ' + stGateBytes(g.rs));
@@ -788,6 +794,14 @@ function stGateRowHtml(g, me, isOpen, now) {
   }).join('') + '</ol></td></tr>';
 }
 // a short name for a raw URL or path: "ws/2 url lookup (24)", "ws/2 release by release-group"
+// The request's path as shown: the gate keeps a ws/2 path without "/ws/2/" (its label reads "ws/2 …" anyway),
+// a script that names its own path keeps it whole, and a row whose label is the path carried none. Every MB
+// path is shown from its first "/", so the same request reads the same from every script.
+function stGateFull(g) {
+  var u = g.u || (stGateAlias(g.l) !== g.l ? String(g.l || '').replace(/^(GET|POST|PUT|PATCH|DELETE|HEAD) +/, '') : '');
+  if (u && !g.h && !/^(\/|https?:)/.test(u)) u = '/ws/2/' + u.replace(/^ws\/2\//, '');
+  return (g.h || '') + u;
+}
 function stGateAlias(l) {
   l = String(l || '').replace(/^(GET|POST|PUT|PATCH|DELETE|HEAD) +(?=\/|https?:)/, '');   // Fusion's labels start with the verb
   if (!/^(https?:|\/|ws\/)/.test(l) && l.indexOf('?') < 0) return l;
@@ -907,7 +921,7 @@ function stGateMarkdown(all, me, only) {
     if (g.sys) { out.push('| ' + stGateTime(g.t) + ' | ' + tab + ' | ' + cell(g.s) + ' |  |  |  |  | ' + cell(stGateWhat(g.evs[0])) + ' |  | ' + cell(g.label) + ' |  |  |'); return; }
     var flight = (g.tries || []).reduce(function (n, x) { return n + (x.end ? x.end - x.t : 0); }, 0), a = g.ans;
     out.push('| ' + stGateTime(g.t) + ' | ' + tab + ' | ' + cell(g.s) + (g.b === 0 ? ' (i)' : '') + ' | ' + cell(g.m) + ' | ' + cell(g.r)
-      + ' | ' + cell((stGateEntity(g) || '').replace(/_/g, ' ')) + ' | ' + cell(stGateSite(g)) + ' | ' + cell(stGateAlias(g.l)) + (stGateDetail(g) ? ' · ' + cell(stGateDetail(g)) : '') + ((g.h || g.u) ? ' (' + cell((g.h || '') + (g.u || '')) + ')' : '')
+      + ' | ' + cell((stGateEntity(g) || '').replace(/_/g, ' ')) + ' | ' + cell(stGateSite(g)) + ' | ' + cell(stGateAlias(g.l)) + (stGateDetail(g) ? ' · ' + cell(stGateDetail(g)) : '') + (stGateFull(g) ? ' (' + cell(stGateFull(g)) + ')' : '')
       + ' | ' + (g.tries || []).length + ' | ' + cell(g.label) + ' | ' + stGateSec(g.wait) + (flight ? ' + ' + stGateSec(flight) : '')
       + ' | ' + (a && a.lim && a.rem != null ? a.rem + '/' + a.lim + (a.who ? ' (' + cell(a.who) + ')' : '') : '') + ' |');
   });
