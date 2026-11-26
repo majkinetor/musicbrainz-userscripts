@@ -57,15 +57,32 @@ export async function install(url, again = true) {
   await tap(/^Script installed/, { wait: 10000 }).catch(() => {});
   return 'installed ' + url;
 }
-// restarts Android, waits until it booted, and links the server's port again
-export async function reboot(port = 8777) {
+// the ports linked to the computer with adb reverse, for example ['tcp:8777']
+export const ports = () => adb('reverse', '--list').split('\n').map(l => (l.match(/\s(tcp:\d+)\s/) || [])[1]).filter(Boolean);
+// restarts Android, waits until it booted, and links again every port that was linked before (8777 at least)
+export async function reboot() {
+  const linked = [...new Set(['tcp:8777', ...ports()])];
   adb('reboot'); await sleep(10000); adb('wait-for-device');   // the old boot's state answers until Android goes down
   const up = () => { try { return sh('getprop sys.boot_completed').trim() === '1' && !/not found/.test(sh('service check activity')); } catch (e) { return false; } };
   for (let i = 0; i < 100 && !up(); i++) await sleep(3000);
-  adb('reverse', `tcp:${port}`, `tcp:${port}`);
+  for (const p of linked) adb('reverse', p, p);
   await sleep(8000);   // Firefox's add-ons start after the boot
 }
-export const tapAt =(x, y) => sh(`input tap ${x} ${y}`);
+// one user at a time: a session takes the lock before it uses the emulator and frees it after. The lock is a file on
+// the device, so every checkout and every agent sees the same one. A lock older than two hours counts as left behind
+const LOCK = '/data/local/tmp/emu-lock';
+const held = () => { const m = sh('cat ' + LOCK + ' 2>/dev/null; true').trim().match(/^(\d+) (.*)$/); return m ? { at: +m[1], who: m[2] } : null; };
+export function lock(who) {
+  who = (who || '').replace(/[^\w #.,:/()-]/g, '').trim();
+  if (!who) throw new Error('lock needs a name: who you are and what you test');
+  const old = held();
+  if (old && old.who !== who && Date.now() - old.at < 2 * 3600e3) throw new Error('the emulator is in use: ' + old.who + ', since ' + new Date(old.at).toLocaleTimeString());
+  sh("echo '" + Date.now() + ' ' + who + "' > " + LOCK);
+  return 'locked for ' + who;
+}
+export const unlock = () => { sh('rm -f ' + LOCK); return 'unlocked'; };
+export const who = () => { const h = held(); return h ? h.who + ', since ' + new Date(h.at).toLocaleTimeString() : 'free'; };
+export const tapAt = (x, y) => sh(`input tap ${x} ${y}`);
 export const shot = file => writeFileSync(file, execFileSync(ADB, ['exec-out', 'screencap', '-p'], { maxBuffer: 64 << 20 }));
 
 // Firefox's media session as Android sees it: is it active, its state, its actions and the track's title
@@ -91,7 +108,7 @@ export const playing = () => audio().some(p => p.state === 'started');
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const [cmd, ...a] = process.argv.slice(2);
-  const out = { ui: () => ui().filter(n => n.text || n.desc), tap: () => tap(/^\/.*\/$/.test(a[0]) ? new RegExp(a[0].slice(1, -1)) : a.join(' ')), shot: () => shot(a[0] || 'shot.png'), media, audio, install: () => install(a[0]), reboot: () => reboot(), key: () => key(a[0]), open: () => open(a[0]), sh: () => sh(a.join(' ')) }[cmd];
-  if (!out) { console.log('helpers: ui, tap <text|/regex/>, shot <file>, media, audio, install <url>, reboot, key <code>, open <url>, sh <cmd>'); process.exit(1); }
+  const out = { ui: () => ui().filter(n => n.text || n.desc), tap: () => tap(/^\/.*\/$/.test(a[0]) ? new RegExp(a[0].slice(1, -1)) : a.join(' ')), shot: () => shot(a[0] || 'shot.png'), media, audio, install: () => install(a[0]), reboot: () => reboot(), ports, lock: () => lock(a.join(' ')), unlock, who, key: () => key(a[0]), open: () => open(a[0]), sh: () => sh(a.join(' ')) }[cmd];
+  if (!out) { console.log('helpers: ui, tap <text|/regex/>, shot <file>, media, audio, install <url>, reboot, ports, lock <who>, unlock, who, key <code>, open <url>, sh <cmd>'); process.exit(1); }
   const r = await out(); if (r !== undefined) console.log(typeof r === 'string' ? r : JSON.stringify(r, null, 1));
 }

@@ -16,6 +16,9 @@
     // #ehsrc=<source key> (ytmusic, archive, bandcamp…): the source a track plays from when it has it, as a remembered choice
     const q = new URLSearchParams(location.hash.slice(1)), yt = q.get('ehyt'), bc = q.get('ehbc'), mbid = q.get('ehrel'), src = q.get('ehsrc');
     if (src) { ply.pref = src; document.addEventListener('click', () => { ply.pref = src; }, true); }
+    // who closed the player: the calls that led to it
+    const plyCloseOrig = plyClose;
+    plyClose = function (...a) { post('/log', 'eh test: closed by ' + (new Error().stack || '').split('\n').slice(1, 6).map(s => s.replace(/@.*?(\d+:\d+)$/, '@$1')).join(' < ')); return plyCloseOrig.apply(this, a); };
     // the test widget script (control/yt-visible.user.js) sends its lines here
     window.addEventListener('message', ev => { if (ev.data && typeof ev.data.ehTestLog === 'string') post('/log', ev.data.ehTestLog); });
     // YouTube's state words as the page gets them

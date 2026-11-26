@@ -21,6 +21,7 @@ You can run both scripts again: each step skips what is already there.
 | `bg-check.mjs` | plays a page, sends Firefox to the background, and reports every few seconds what plays |
 | `eh-test.js` | the test add-on that the server puts into its copy of EH |
 | `control/index.html` | a page with no EH code that plays like EH: a YouTube embed or an `<audio>` element |
+| `control/st-off.user.js` | an empty String Theory that does nothing. Install it over a String Theory copy so that its scripts do not run beside a test copy |
 | `control/yt-visible.user.js` | a test userscript for the YouTube embed: it hides the page's visibility from embeds that EH did not make, and logs every embed's address, video events, errors and first messages from the page |
 
 The device uses the plain Google APIs image, not the Play Store image, because it allows root access. The setup gets Firefox from `archive.mozilla.org`. The version is the current release from Mozilla's product details.
@@ -28,6 +29,28 @@ The device uses the plain Google APIs image, not the Play Store image, because i
 `EH_AVD` changes the device name in both PowerShell scripts.
 
 The emulator starts with `-audio none` and the `swiftshader_indirect` GPU. With the computer's sound on, the emulator's log filled with DirectSound errors and `screencap` stopped. Android still plays and counts audio with no sound device, so the tests see playback.
+
+## Sharing the emulator
+
+There is one emulator on this computer, with one Firefox and one Violentmonkey. Agents in other checkouts use it for other scripts too. These rules keep one test from breaking another.
+
+1. Before you start, run `node adb.mjs who`. If it prints a name, wait or ask the maintainer. Do not take the emulator from another session.
+2. Take the lock: `node adb.mjs lock "<who you are>, <what you test>"`, for example `lock "EH #1104 agent, phone playback"`. The lock is a file on the device, so every checkout sees it. A lock older than 2 hours counts as left behind, and the next `lock` takes it.
+3. When you finish, run `node adb.mjs unlock`. Also unlock when you stop because of an error.
+
+Before a test, read Violentmonkey's list of scripts in the emulator. Two copies of one script fight. For example, a String Theory copy and the test copy of EH both run EH, and one player closes the other. If you find a copy that you did not install, do not delete it. Install `control/st-off.user.js` over a String Theory copy instead, and tell the maintainer. The maintainer or the agent that owns the copy can install it again from a normal link.
+
+When you finish, leave the emulator as you found it:
+
+- Remove the test copies of scripts that you installed, or put back the copy that was there before.
+- Close the panels and windows that your script opened. A script can keep them open in its saved state, and the next test then starts with them on the screen.
+- Leave Firefox with no prompt on the screen. `install` stops Firefox first for this reason.
+
+Ports: `server.mjs` owns port 8777. If your test needs its own server, give it another port and link it with `adb reverse tcp:<port> tcp:<port>`. `reboot` links every linked port again, so your link stays after a restart. Do not stop a `server.mjs` that you did not start: another session can use it. If port 8777 is taken, the server that runs is already there for you, from any checkout. It serves EH from the checkout that started it.
+
+A changed hash alone does not load a page again in Firefox. If you open the same page with a new hash, add a new query too, for example `?r=2`.
+
+If the test copy of EH closes its player and you do not know why, read the server's log. The add-on logs `eh test: closed by` with the calls that led to it.
 
 ## The server
 
@@ -52,7 +75,11 @@ The commands run from `dev/android`, for example `node adb.mjs install http://lo
 | `ui` | prints the controls on the screen, with their text and place. Web pages show here too |
 | `tap <text>` | taps the control with that text |
 | `shot <file>` | saves a screenshot |
-| `reboot` | restarts Android, waits for the boot, and links port 8777 again |
+| `reboot` | restarts Android, waits for the boot, and links every port again that was linked before, 8777 at least |
+| `ports` | prints the ports that `adb reverse` links to the computer |
+| `lock <who>` | takes the emulator for you. It fails when another session holds it. See [Sharing the emulator](#sharing-the-emulator) |
+| `unlock` | frees the emulator |
+| `who` | prints who holds the emulator and since when, or `free` |
 | `media` | prints Android's media sessions: the state, the position and the title |
 | `audio` | prints the audio players that Android counts |
 | `key <keycode>` | sends a key, for example `KEYCODE_HOME` |
