@@ -109,9 +109,9 @@ test.describe('with archive.org keys', () => {
     pageErrors: 'ignore',
   });
 
-  test('Save Page Now 2: a job with a screenshot, followed until it finishes', { tag: ['@web', '@sandbox', '@login'] }, async ({ page, context, inject }) => {
+  // 70280347a: a job is left to archive.org, so no status request is sent and the next save does not wait
+  test('Save Page Now 2: a job with a screenshot, left to archive.org', { tag: ['@web', '@sandbox', '@login'] }, async ({ page, context, inject }) => {
     const calls = [];
-    let polls = 0;
     answerGm(context, ({ url, method, headers, data }) => {
       if (!/^https:\/\/web\.archive\.org\//.test(url)) return null;
       calls.push({ url, method, headers, data });
@@ -119,9 +119,7 @@ test.describe('with archive.org keys', () => {
         const target = new URLSearchParams(data).get('url');
         return { status: 200, body: JSON.stringify({ url: target, job_id: 'spn2-' + calls.length }) };
       }
-      polls++;
-      const job = url.split('/').pop();
-      return { status: 200, body: JSON.stringify(polls % 2 ? { status: 'pending', job_id: job } : { status: 'success', job_id: job, timestamp: '20261002120917', original_url: PAGE, screenshot: 'http://web.archive.org/screenshot/' + PAGE }) };
+      return { status: 404, body: '{}' };
     });
     const { seed } = await importToEditor({ page, context, inject });
     const moved = await page.evaluate(() => ({ shared: GM_getValue('mbu.archive'), fc: GM_getValue('fc.settings') }));
@@ -138,7 +136,7 @@ test.describe('with archive.org keys', () => {
     check(body.get('url') === ALBUM && body.get('capture_screenshot') === '1' && body.get('if_not_archived_within') === '30d', `the page, with a screenshot, not again within 30 days: ${p1 && p1.data}`);
     check(p2 && new URLSearchParams(p2.data).get('url') === API, 'then the API data');
     const statusCalls = calls.filter(c => c.method === 'GET');
-    check(statusCalls.length >= 2 && statusCalls.every(c => /^https:\/\/web\.archive\.org\/save\/status\/spn2-\d+$/.test(c.url)), `each job followed through /save/status (${statusCalls.map(c => c.url).join(', ')})`);
+    check(statusCalls.length === 0, `no job is followed through /save/status (${statusCalls.map(c => c.url).join(', ')})`);
   });
 });
 
