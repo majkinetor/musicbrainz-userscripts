@@ -1,0 +1,86 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Playback control</title>
+<style>
+  body { font: 16px sans-serif; margin: 16px; }
+  button { font-size: 18px; padding: 12px 20px; margin: 4px 0; display: block; width: 100%; }
+  iframe { width: 100%; height: 200px; border: 0; }
+  #log { font: 12px monospace; white-space: pre-wrap; }
+</style>
+<!-- A page with no EH code that plays the way EH does: a YouTube embed driven by postMessage, or an <audio>
+     element. It reports its state to server.mjs every second, so a test can tell what plays in the background. -->
+<button id="go">Play</button>
+<div id="box"></div>
+<div id="log"></div>
+<script>
+const q = new URLSearchParams(location.search);
+const kind = q.get('kind') || 'youtube';                 // youtube | audio
+const yt = (q.get('yt') || 'jNQXAC9IVRw,dQw4w9WgXcQ').split(',');
+const audio = (q.get('audio') || '').split(',').filter(Boolean);
+// yt=<id>@<seconds> starts that video at that second, so a test reaches the end of a long song soon
+const vid = k => yt[k % yt.length].split('@')[0], from = k => +(yt[k % yt.length].split('@')[1] || 0);
+const adv = q.get('adv') || 'frame';                     // frame | load: how the next YouTube video starts
+const wake = q.get('wake') === '1';                      // the near-silent loop EH plays beside the source
+let i = 0, frame = null, el = null, state = 'idle', pos = 0, ended = 0;
+const log = (...a) => { navigator.sendBeacon('/log', 'page ' + a.join(' ')); document.getElementById('log').textContent = a.join(' ') + '\n' + document.getElementById('log').textContent.slice(0, 3000); };
+const report = () => fetch('/state', { method: 'POST', body: JSON.stringify({ kind, i, state, pos, ended, vis: document.visibilityState, t: Date.now() }) }).catch(() => {});
+setInterval(report, 1000);
+document.addEventListener('visibilitychange', () => { log('visibility', document.visibilityState); report(); });
+
+function ytLoad(k) {
+  i = k; frame?.remove();
+  frame = document.createElement('iframe');
+  frame.allow = 'autoplay; encrypted-media';
+  frame.src = `https://www.youtube-nocookie.com/embed/${vid(i)}?autoplay=1&start=${from(i)}&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
+  frame.onload = () => frame.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*');
+  document.getElementById('box').append(frame);
+}
+window.addEventListener('message', ev => {
+  if (ev.data && ev.data.ehTestLog) { navigator.sendBeacon('/log', ev.data.ehTestLog); return; }
+  if (!frame || ev.source !== frame.contentWindow) return;
+  let m; try { m = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data; } catch (e) { return; }
+  const st = m.event === 'onStateChange' ? m.info : m.event === 'infoDelivery' && m.info ? m.info.playerState : undefined;
+  if (m.event === 'infoDelivery' && m.info && typeof m.info.currentTime === 'number') pos = m.info.currentTime;
+  if (st === undefined) return;
+  const name = { '-1': 'unstarted', 0: 'ended', 1: 'playing', 2: 'paused', 3: 'buffering', 5: 'cued' }[st] || String(st);
+  if (name !== state) log('youtube', i, name);
+  state = name;
+  if (st === 0) {
+    ended++;
+    // adv=load: the same frame loads the next video; otherwise a new frame plays it, as EH does today
+    if (adv === 'load') { i++; frame.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'loadVideoById', args: [vid(i), from(i)], id: 1, channel: 'widget' }), '*'); log('youtube load', i); }
+    else ytLoad(i + 1);
+  }
+});
+
+function audioLoad(k) {
+  i = k;
+  if (!el) {
+    el = document.createElement('audio'); el.controls = true; document.getElementById('box').append(el);
+    for (const e of ['play', 'pause', 'ended', 'playing']) el.addEventListener(e, () => { state = e === 'playing' ? 'playing' : e; log('audio', i, e); });
+    el.addEventListener('timeupdate', () => { pos = el.currentTime; });
+    el.addEventListener('ended', () => { ended++; audioLoad(i + 1); });
+  }
+  el.src = audio[i % audio.length];
+  el.play().catch(e => log('play refused', e.message));
+  // art=<url>: the phone's card gets a title and this cover, to tell whether Android shows a page's cover at all
+  if (q.get('art')) navigator.mediaSession.metadata = new MediaMetadata({ title: 'Control ' + i, artist: 'EH test', album: 'Control', artwork: [{ src: q.get('art'), sizes: '500x500', type: 'image/jpeg' }] });
+}
+
+let wakeEl = null;
+function wakeOn() {
+  const n = 8000 * 6, b = new Uint8Array(44 + n), v = new DataView(b.buffer), w = (o, t) => { for (let k = 0; k < t.length; k++) b[o + k] = t.charCodeAt(k); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n, true); w(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); w(36, 'data'); v.setUint32(40, n, true);
+  b.fill(128, 44); for (let k = 44; k < b.length; k += 2) b[k] = 129;
+  wakeEl = new Audio(URL.createObjectURL(new Blob([b], { type: 'audio/wav' }))); wakeEl.loop = true; wakeEl.volume = 0.01;
+  wakeEl.play().then(() => log('wake on'), e => log('wake refused', e.message));
+}
+
+document.getElementById('go').onclick = () => {
+  if (wake && !wakeEl) wakeOn();
+  if (kind === 'audio') audioLoad(0); else ytLoad(0);
+};
+log('ready', kind, wake ? 'wake' : '');
+</script>
