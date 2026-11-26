@@ -61,6 +61,26 @@
   #lb .cap a{color:#cfc6f5}
   body.lb{overflow:hidden}
   @media (pointer:coarse){ #lb{padding:0} #lb img{max-width:100vw;max-height:100vh;border-radius:0;box-shadow:none} #lb .nav{display:none} #lb .cap{position:fixed;bottom:max(14px,env(safe-area-inset-bottom));padding:4px 12px;border-radius:12px;background:rgba(15,12,28,.7)} }
+  /* the contents: every post shown, by title; beside the posts on a wide screen, folded above them on a narrow one */
+  #toc{margin:6px 0 4px;font-size:13.5px}
+  #toc summary{display:inline-flex;align-items:center;min-height:30px;color:var(--dim);cursor:pointer;user-select:none}
+  #toc summary:hover{color:var(--ink)}
+  #toc summary::-webkit-details-marker{display:none}
+  #toc summary::before{content:'\25B8';width:14px;font-size:12px}#toc[open] summary::before{content:'\25BE'}
+  #toc ol{list-style:none;margin:6px 0 10px;padding:0;border-left:1px solid var(--rule)}
+  #toc li[hidden]{display:none}
+  #toc a{display:flex;align-items:baseline;gap:8px;padding:3px 0 3px 12px;margin-left:-1px;border-left:2px solid transparent;color:var(--dim);text-decoration:none;line-height:1.4}
+  #toc a:hover{color:var(--ink)}
+  #toc a.on{color:var(--ink);border-left-color:var(--accent)}
+  #toc a img{width:14px;height:14px;flex:0 0 auto;object-fit:contain;align-self:center}
+  #toc a span{flex:1 1 auto;min-width:0}
+  #toc time{flex:0 0 auto;color:var(--faint);font-size:12px}
+  @media (min-width:1260px){
+    #toc{position:fixed;top:24px;left:calc(50% + 400px);width:min(290px,calc(50% - 420px));max-height:calc(100vh - 48px);margin:0;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--rule) transparent}
+    #toc summary{min-height:0;margin-bottom:2px;pointer-events:none;list-style:none;color:var(--faint);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+    #toc summary::before{content:none}
+    #toc ol{margin:4px 0 0}
+  }
   footer{display:flex;flex-wrap:wrap;gap:22px;margin:40px 0 0;padding:18px 0 40px;border-top:1px solid var(--rule);color:var(--faint);font-size:13.5px}
   footer a{color:var(--dim)}
   @media(max-width:620px){ .w{padding:0 16px} h1{font-size:28px} article h2{font-size:18px} }
@@ -72,6 +92,7 @@
   <h1>What's new</h1>
   <p class="lede" id="lede">Announcements for String Theory and the scripts it bundles.</p>
   <div class="bar" id="bar" hidden></div>
+  <details id="toc" hidden><summary>Contents</summary><ol></ol></details>
   <main id="list"><p class="state">Loading…</p></main>
   <footer><span>MIT</span><a href="./privacy.html">Privacy</a><a href="./terms.html">Terms</a></footer>
 </div>
@@ -129,6 +150,7 @@ function filter(items) {
   const show = s => {
     bar.querySelectorAll('button[data-s]').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === s));
     document.querySelectorAll('article').forEach(a => { a.hidden = !!s && a.dataset.script !== s; });
+    tocSync();
     const u = new URL(location.href); if (s) u.searchParams.set('script', s); else u.searchParams.delete('script');
     history.replaceState(null, '', u);
   };
@@ -138,6 +160,49 @@ function filter(items) {
     else show(b.dataset.s);
   };
   if (pick) show(pick);
+}
+// the contents: one line a post, its icon, title and date; it follows the filter and marks the post being read
+const toc = document.getElementById('toc'), wide = matchMedia('(min-width:1260px)');
+function tocBuild(items) {
+  if (items.length < 2) return;
+  toc.querySelector('ol').innerHTML = items.map(i => `<li data-id="${i.id}"><a href="#${i.id}" title="${esc(i.script)}">${icon(i)}<span>${esc(i.title)}</span>`
+    + `<time datetime="${esc(i.at)}">${esc(new Date(i.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }))}</time></a></li>`).join('');
+  toc.hidden = false;
+  const fit = () => { toc.open = wide.matches; };
+  fit(); wide.addEventListener('change', fit);
+  toc.querySelector('summary').onclick = e => { if (wide.matches) e.preventDefault(); };
+  toc.querySelector('ol').onclick = e => {
+    const a = e.target.closest('a'); if (!a || e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    const art = document.getElementById(a.getAttribute('href').slice(1)); if (!art) return;
+    history.replaceState(null, '', location.pathname + location.search + '#' + art.id);
+    if (!wide.matches) toc.open = false;
+    art.scrollIntoView();
+  };
+  let busy = false;
+  addEventListener('scroll', () => { if (!busy) { busy = true; requestAnimationFrame(() => { busy = false; tocMark(); }); } }, { passive: true });
+  tocSync();
+}
+function tocSync() {
+  if (toc.hidden) return;
+  let n = 0;
+  toc.querySelectorAll('li').forEach(li => { const art = document.getElementById(li.dataset.id); li.hidden = !art || art.hidden; if (!li.hidden) n++; });
+  toc.querySelector('summary').textContent = 'Contents (' + n + ')';
+  tocMark();
+}
+// the post being read is the last one whose top is above the upper third of the window
+function tocMark() {
+  let cur = null;
+  for (const a of document.querySelectorAll('#list article:not([hidden])')) { if (a.getBoundingClientRect().top <= innerHeight / 3) cur = a; else break; }
+  if (!cur) cur = document.querySelector('#list article:not([hidden])');
+  toc.querySelectorAll('a.on').forEach(a => { if (!cur || a.getAttribute('href') !== '#' + cur.id) a.classList.remove('on'); });
+  const on = cur && toc.querySelector(`a[href="#${cur.id}"]`);
+  if (!on || on.classList.contains('on')) return;
+  on.classList.add('on');
+  if (wide.matches) {   // keep the marked line inside the panel when the list is longer than the window
+    const r = on.getBoundingClientRect(), p = toc.getBoundingClientRect();
+    if (r.top < p.top + 30 || r.bottom > p.bottom - 10) toc.scrollTop += r.top - p.top - p.height / 3;
+  }
 }
 // a click on a post's image opens the full view, as Art Station's: the post's images in order; ←/→ or a swipe move,
 // the wheel or ↑/↓ zoom, a drag pans, Esc or a swipe down or a click beside the image closes
@@ -239,6 +304,7 @@ fetch('./news.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : Promise.
   const items = j.items || [];
   list.innerHTML = items.length ? items.map(post).join('') : '<p class="state">No announcements yet.</p>';
   if (j.generated) { const d = day(j.generated); document.getElementById('lede').textContent += ' Updated ' + d + (/.$/.test(d) ? '' : '.'); }
+  tocBuild(items);
   filter(items);
   list.onclick = e => {
     const a = e.target.closest('h2 a[data-id]');

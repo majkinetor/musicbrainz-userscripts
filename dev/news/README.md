@@ -2,7 +2,7 @@
 
 Writes the project's Announcements discussions into one file, `news.json`, for the project site. String Theory's *What's new* reads that file, so it makes no GitHub API calls and never meets GitHub's limit of 60 anonymous requests an hour ([#1123](https://github.com/majkinetor/musicbrainz-userscripts/issues/1123)). You manage the announcements on GitHub only.
 
-[`.github/workflows/pages.yml`](../../.github/workflows/pages.yml) runs it and deploys `docs/` with the file to GitHub Pages, at <https://milic.info/musicbrainz-userscripts/news.json>. The site's [`news.html`](../../docs/news.html) shows every announcement from that file, at <https://milic.info/musicbrainz-userscripts/news.html>, with a filter by script (`?script=Falcon`) and a link to each post (`news.html#1122`).
+[`.github/workflows/pages.yml`](../../.github/workflows/pages.yml) runs it and deploys `docs/` with the file to GitHub Pages, at <https://milic.info/musicbrainz-userscripts/news.json>. The site's [`news.html`](../../docs/news.html) shows every announcement from that file, at <https://milic.info/musicbrainz-userscripts/news.html>, with a contents list of the posts, a filter by script (`?script=Falcon`) and a link to each post (`news.html#1122`).
 
 A link preview in a chat or a forum never sees the `#1122` part, so the script also writes one small page for each post, `news/<id>.html`. Each page is a copy of `news.html` that shows that post alone, with an *All announcements* link. It carries the post's title, the start of its text and its first image in the preview tags. A post's title on `news.html` links to that page, so the link a reader copies is <https://milic.info/musicbrainz-userscripts/news/1122>. `--site` sets the site address in the preview tags.
 
