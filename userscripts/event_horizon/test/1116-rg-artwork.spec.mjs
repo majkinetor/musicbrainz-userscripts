@@ -102,6 +102,16 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   await until(() => as.locator('.as-card').count(), n => n > 0);
   check(!(await gv.locator('.as-gv-body').isVisible()) && await as.locator('.as-toolbar, .as-commit').count() > 0, "Edit opens Art Station's gallery in place of the tiles");
   check(!(await as.locator('.as-add').isVisible()) && !(await as.locator('.as-src').isVisible()), 'adding and sourcing are left out');
+  // scrolled down, the group's bar stays at the top and Art Station's toolbar right under it; each card's size line fills in
+  await as.locator('.as-card').nth(20).scrollIntoViewIfNeeded();
+  await page.mouse.wheel(0, 600);
+  await until(() => gv.locator('.as-gv-head').boundingBox().then(b => b && b.y), y => Math.abs(y) < 2);
+  const hb = await gv.locator('.as-gv-head').boundingBox(), tb = await as.locator('.as-bar').boundingBox();
+  check(Math.abs(hb.y) < 2 && Math.abs(tb.y - (hb.y + hb.height)) < 3, `the bars are pinned (bar at ${hb.y}, toolbar at ${tb.y} under ${hb.height})`);
+  await attachShot(testInfo, page, 'pinned');
+  const dims = await until(() => as.locator('.as-card .as-dim-px').count(), n => n > 0, { timeout: 30000 });
+  check(dims > 0, `the cards in view show their dimensions (${dims})`);
+  await page.evaluate(() => window.scrollTo(0, 0));
   const cards = as.locator('.as-card');
   const select2 = async () => { for (const i of [0, 1]) if (!/\bsel\b/.test(await cards.nth(i).getAttribute('class'))) await cards.nth(i).click({ button: 'right' }); };
   await select2();

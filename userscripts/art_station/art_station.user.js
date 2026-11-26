@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.26.161456
+// @version      2026.11.26.162051
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -2150,6 +2150,7 @@
     fitTypePills();    // show as many types as the pill width allows
     fitFooters();      // hide a comment that can't fit even a few chars (no ugly sliver)
     fitToolbar();      // icon-only buttons if the toolbar would otherwise wrap
+    if (_grp) grpMeasure();
     if (window.scrollY !== y) window.scrollTo(0, y);
   }
   // #234: a grid card's type pill shows as many of its types as fit on one line;
@@ -9932,6 +9933,10 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   /* #1116 a release group's gallery, in Event Horizon's Artwork tab */
   .as-gv{font-family:var(--mbu-font);color:var(--mbu-text);margin-top:10px}
   .as-gv-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+  /* pinned as Art Station's toolbar is; while editing, that toolbar pins under it */
+  .as-gv-head{position:sticky;top:0;z-index:var(--mbu-z-panel);background:var(--mbu-bg);padding:6px 0 4px}
+  .as-gv.editing #as-root .as-bar{top:var(--as-gv-headh,0px)}
+  .as-gv.editing .as-gv-head{padding-bottom:8px}
   .as-gv-lbl{font-size:12px;color:var(--mbu-text-dim)}
   .as-gv-seg{display:inline-flex;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden}
   .as-gv-seg button{font:12px var(--mbu-font);padding:4px 10px;border:0;background:transparent;color:var(--mbu-text);cursor:pointer}
@@ -10103,6 +10108,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   // shows it too
   function grpModel() {
     const d = GV.d, done = _grp.done, sel = new Set(MODEL.filter(x => x._sel).map(x => x.id)), out = [];
+    const was = new Map(MODEL.map(x => [String(x.id), x]));   // what is measured stays measured
     _grp.rels = new Map(); _gvCaa = new Map();
     for (const r of d.releases || []) {
       const ids = (r.images || []).map(i => String(i.id));
@@ -10122,19 +10128,20 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
         // the archive the listing names (the sandbox's differs from production's), from a thumbnail's or the image's URL
         const th = im.thumbnails || {}, u = th['250'] || th.small || image;
         _gvCaa.set(id, /\/release\/[0-9a-f-]{36}\/[^/]+$/i.test(u) ? u.replace(/\/[^/]+$/, '').replace(/^http:/, 'https:') : 'https://coverartarchive.org/release/' + r.id);
-        out.push({ id, types, comment, order: out.length, w: 0, h: 0, fmt: fileFormat(image), _del: false, _new: false, _pending: false,
+        const p = was.get(id) || {};
+        out.push({ id, types, comment, order: out.length, w: p.w || 0, h: p.h || 0, _noDim: p._noDim, bytes: SIZES.get(id) || 0, fmt: FORMATS.get(id) || fileFormat(image), _del: false, _new: false, _pending: false,
           _pdf: /\.pdf(\?|$)/i.test(image), _img: image, _origTypes: types.slice(), _origComment: comment, _origOrder: out.length,
           _rel: r.id, _R: '/release/' + r.id, _relLabel: gvRelLabel(r), _sel: sel.has(id) });
       }
     }
-    MODEL = out; _grp.sig = grpSig(d);   // no measure(): it would load every original
+    MODEL = out; _grp.sig = grpSig(d);   // measured as the cards come into view (grpMeasure): there are many originals
     asLog.debug(`Group gallery: ${MODEL.length} images on ${_grp.rels.size} releases in the gallery`);
   }
   function grpEnter() {
     if (!GV.d || _grp) return;
     if (_embedded && opsCount()) { toast(`The release's gallery has changes staged: submit or drop them first`, 8000); return; }
     if (_lb) closeLightbox();
-    _grp = { done: { rm: new Map(), ed: new Map(), ord: new Map() }, rels: new Map(), sig: '',
+    _grp = { done: { rm: new Map(), ed: new Map(), ord: new Map() }, rels: new Map(), sig: '', sized: new Set(),
       was: { MBID, ENT, R, CAA, MODEL, VIEW_ONLY, QUIET, _embedded, _mounted, PAGE_DOC, _dropZone, _loadingArt } };
     VIEW_ONLY = QUIET = _embedded = _dropZone = _loadingArt = false;
     PAGE_DOC = document.implementation.createHTMLDocument('');
@@ -10143,7 +10150,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     grpModel();
     GV.edit = true; GV.menu = false;
     asLog.info(`Group gallery: editing on, ${MODEL.length} images`);
-    gvRender(); render();
+    gvRender(); render(); grpSizes();
   }
   // false when the person keeps their staged changes
   function grpExit(force) {
@@ -10154,6 +10161,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     for (const it of MODEL) _imgCache.delete(String(it.id));   // the group's image nodes
     ({ MBID, ENT, R, CAA, MODEL, VIEW_ONLY, QUIET, _embedded, _mounted, PAGE_DOC, _dropZone, _loadingArt } = _grp.was);
+    if (_grpIO) _grpIO.disconnect();
     _grp = null; _gvCaa = null; _cursorId = null;
     document.documentElement.removeAttribute('data-as-grp');
     root.remove();
@@ -10163,10 +10171,41 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     if (_embedded && document.getElementById('as-slot')) render();   // the release's gallery goes back to its slot
     return true;
   }
+  // the size line under each card, as on a release's page: the dimensions from the original, read as the card comes
+  // into view (a group has hundreds), and the file sizes from one archive.org read per release
+  let _grpIO = null;
+  function grpMeasure() {
+    if (!_grpIO) _grpIO = new IntersectionObserver(es => {
+      for (const e of es) if (e.isIntersecting) { _grpIO.unobserve(e.target); const it = byId(e.target.dataset.id); if (it && !it.w) measure(it); }
+    }, { rootMargin: '400px' });
+    _grpIO.disconnect();
+    root.querySelectorAll('.as-card[data-id]').forEach(c => { const it = byId(c.dataset.id); if (it && !it.w && !it._noDim && !it._pdf) _grpIO.observe(c); });
+  }
+  async function grpSizes() {
+    const g = _grp; if (!g) return;
+    const rels = [...g.rels.keys()].filter(r => !g.sized.has(r)); let i = 0;
+    rels.forEach(r => g.sized.add(r));
+    const one = async () => {
+      for (let rid; _grp === g && (rid = rels[i++]);) {
+        try {
+          const j = await mbnLog(`https://archive.org/metadata/mbid-${rid}`, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000) }, { entity: 'release' }).then(r => r.ok ? r.json() : null);
+          for (const f of (j && j.files) || []) {
+            if (f.source !== 'original' || !f.size) continue;
+            const m = String(f.name).match(/-(\d+)\.[a-z0-9]+$/i);
+            if (m) { SIZES.set(m[1], +f.size); if (fileFormat(f.name)) FORMATS.set(m[1], fileFormat(f.name)); }
+          }
+          if (_grp !== g) return;
+          MODEL.filter(it => it._rel === rid).forEach(it => { const b = SIZES.get(String(it.id)), t = FORMATS.get(String(it.id)); if (t) it.fmt = t; if (b) it.bytes = b; if (b || t) refreshDim(it); });
+        } catch (e) { asLog.debug(`Group gallery: archive.org sizes of ${rid} unavailable: ${(e && e.message) || e}`); }
+      }
+    };
+    await Promise.all([one(), one(), one()]);
+    if (_grp === g && rels.length) asLog.debug(`Group gallery: file sizes of ${rels.length} release${rels.length === 1 ? '' : 's'} read`);
+  }
   // a new snapshot: the gallery reads it when nothing is staged (else it would undo the person's work)
   function grpSnapshot() {
     if (!_grp) return;
-    if (grpSig(GV.d) !== _grp.sig && !opsCount()) { grpModel(); render(); return; }
+    if (grpSig(GV.d) !== _grp.sig && !opsCount()) { grpModel(); render(); grpSizes(); return; }
     const host = GV.el && GV.el.querySelector('.as-gv-as'); if (host && root.parentNode !== host) render();
   }
   // removals, edits, and a reorder per release whose order changed; each label says the release
@@ -10425,6 +10464,8 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
     document.addEventListener('mouseup', e => { if (e.button === 2) { paint = null; rmb = false; } });
     window.addEventListener('blur', () => { rmb = false; });
     document.addEventListener('mousedown', e => { if (GV.menu && !e.target.closest('.as-gv-dlw')) { GV.menu = false; gvRender(); } });
+    // the toolbar pins under the bar, whose height changes as it wraps
+    new ResizeObserver(() => { const h = el.querySelector('.as-gv-head'); if (h) el.style.setProperty('--as-gv-headh', h.offsetHeight + 'px'); }).observe(el);
     slot.append(el);
     return el;
   }
