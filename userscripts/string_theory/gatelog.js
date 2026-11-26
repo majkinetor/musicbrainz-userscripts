@@ -39,6 +39,13 @@ var ST_GATE_CSS = ''
   + '.st-gate-c-ok{background:var(--mbu-ok)}.st-gate-c-re{background:var(--mbu-warn)}.st-gate-c-bad{background:var(--mbu-error)}.st-gate-c-go{background:var(--mbu-info)}.st-gate-c-other{background:color-mix(in srgb,var(--mbu-text-weak) 45%,transparent)}'
   + '.st-gate-leg{display:flex;flex-wrap:wrap;gap:4px 12px;margin:0 18px 0 -4px}.st-gate-leg>span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}.st-gate-leg i{width:8px;height:8px;border-radius:2px}#st-gate-sum .st-gate-leg .z b{color:var(--mbu-text-weak);font-weight:400}'
   + '.st-gate-log{white-space:nowrap}'
+  // the counts: flat buttons, the number over its label, tinted while their filter is on
+  + '.st-gate-tls{display:flex;flex-wrap:wrap;gap:2px}'
+  + '#st-gate-sum .st-gate-tl{--c:var(--mbu-text);all:unset;box-sizing:border-box;display:inline-flex;flex-direction:column;align-items:flex-start;gap:1px;padding:3px 9px 4px;border-radius:var(--mbu-radius);cursor:pointer;filter:none!important;white-space:nowrap}'
+  + '#st-gate-sum .st-gate-tl b{font-size:16px;line-height:1.1;color:var(--c)}#st-gate-sum .st-gate-tl span{font-size:11px;color:var(--mbu-text-weak)}'
+  + '#st-gate-sum .st-gate-tl:hover{background:var(--mbu-bg-hover)}#st-gate-sum .st-gate-tl:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:1px}'
+  + '#st-gate-sum .st-gate-tl[aria-pressed=true]{background:color-mix(in srgb,var(--c) 18%,transparent)}#st-gate-sum .st-gate-tl.z b{color:var(--mbu-text-weak);font-weight:400}'
+  + '.st-gate-tc-ok{--c:var(--mbu-ok)!important}.st-gate-tc-re{--c:var(--mbu-warn)!important}.st-gate-tc-bad{--c:var(--mbu-error)!important}.st-gate-tc-go{--c:var(--mbu-info)!important}.st-gate-tc-mb{--c:var(--mbu-accent-text)!important}.st-gate-tc-ext{--c:var(--mbu-info)!important}'
   + '#st-gate-lanes{position:relative;flex:0 1 auto;min-height:60px;max-height:40vh;overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;margin:4px 13px 8px;padding-left:180px}'
   + '.st-gl-bands{position:absolute;top:0;bottom:16px;left:180px;right:0}'
   + '.st-gl-sub,.st-gl-bands{transform:translateX(var(--st-gl-dx,0px));will-change:transform}'
@@ -312,23 +319,32 @@ function stGateSpark(starts, now) {
   var d = pts.map(function (p, j) { return (j ? 'L' : 'M') + p[0] + ' ' + p[1]; }).join(' '), last = pts[N - 1];
   return '<svg class="st-gate-spark" viewBox="0 0 ' + w + ' ' + h + '" data-tip="Requests over the last ' + stGateSpanTxt() + '\nThe newest are at the right"><path class="f" d="' + d + ' L' + last[0] + ' ' + h + ' L2 ' + h + ' Z"/><path class="l" d="' + d + '"/><circle cx="' + last[0] + '" cy="' + last[1] + '" r="2"/></svg>';
 }
-function stGateSumHtml(groups, now) {
-  var all = stGateCount(groups), recent = groups.filter(function (g) { return now - g.t <= ST_GATE_SPAN; }), c = stGateCount(recent);
+// each count is a button that filters the table: f has the filters on (mode, hosts, tab) and every
+// site's groups, so a site's count stays when the site filter hides it
+function stGateSumHtml(groups, now, f) {
+  f = f || { mode: 'all', hosts: { mb: true, ext: true }, tab: false, groups: groups };
+  var all = stGateCount(f.groups), recent = groups.filter(function (g) { return now - g.t <= ST_GATE_SPAN; }), c = stGateCount(recent);
   var starts = recent.filter(function (g) { return !g.sys; }).map(function (g) { return g.tries.length ? g.tries[0].t : g.t; }).sort(function (a, b) { return a - b; });
   var gap = starts.length > 1 ? (starts[starts.length - 1] - starts[0]) / (starts.length - 1) : 0;
   var tabs = {}; recent.forEach(function (g) { tabs[g.tab] = 1; });
   var n = Object.keys(tabs).length, mb = 0, ext = 0;
-  recent.forEach(function (g) { if (!g.sys) { if (g.h) ext++; else mb++; } });
+  f.groups.forEach(function (g) { if (!g.sys && now - g.t <= ST_GATE_SPAN) { if (g.h) ext++; else mb++; } });
+  var tile = function (k, cls, num, label, tip, on) {
+    return '<button type="button" class="st-gate-tl ' + cls + (num ? '' : ' z') + '" data-sf="' + k + '" aria-pressed="' + !!on + '" data-tip="' + tip + '"><b>' + num + '</b><span>' + label + '</span></button>';
+  };
+  var only = function (h) { return f.hosts[h] && !f.hosts[h === 'mb' ? 'ext' : 'mb']; };
   var parts = [['ok', 'ok', c.ok, 'Answered at the first try'], ['re', 'retried', c.re, 'Answered after MusicBrainz said it was busy'], ['bad', 'failed', c.bad, 'No answer, or an error'],
     ['go', 'on the way', c.go, 'Waiting in the gate or not answered yet'], ['other', 'other', c.n - c.ok - c.re - c.bad - c.go, 'Shared, cached or cancelled\nNo request of its own, or its page left']];
   var bar = c.n ? '<div class="st-gate-bar">' + parts.filter(function (p) { return p[2] > 0; }).map(function (p) { return '<i class="st-gate-c-' + p[0] + '" style="flex:' + p[2] + '" data-tip="' + p[2] + ' ' + p[1] + '\n' + p[3] + '"></i>'; }).join('') + '</div>' : '';
   var leg = parts.filter(function (p) { return p[2] > 0 || p[0] === 'ok' || p[0] === 'bad'; }).map(function (p) {
-    return '<span class="' + (p[2] ? '' : 'z') + '" data-tip="' + p[3] + '"><i class="st-gate-c-' + p[0] + '"></i><b>' + p[2] + '</b> ' + p[1] + '</span>';
+    return tile(p[0], 'st-gate-tc-' + p[0], p[2], p[1], p[3] + '\nClick to show only these, again to show all', f.mode === p[0]);
   }).join('');
   return '<div class="st-gate-sr"><b class="st-gate-big">' + c.n + '</b><span class="st-gate-rate">request' + (c.n === 1 ? '' : 's') + ' in ' + stGateSpanTxt() + (gap ? '<br>one every ' + stGateSec(gap) : '') + '</span>'
-    + stGateSpark(starts, now) + bar + '<div class="st-gate-leg">' + leg + '</div>'
-    + '<span><b>' + mb + '</b> MusicBrainz · <b>' + ext + '</b> external · <b>' + n + '</b> tab' + (n === 1 ? '' : 's') + ' · '
-    + '<span class="st-gate-log" data-tip="Every request the log keeps, from every tab"><b>' + all.n + '</b> in the log</span></span></div>';
+    + stGateSpark(starts, now) + bar + '<div class="st-gate-tls">' + leg + '</div><div class="st-gate-tls">'
+    + tile('mb', 'st-gate-tc-mb', mb, 'MusicBrainz', 'Requests to MusicBrainz\nClick to show only these, again to show all', only('mb'))
+    + tile('ext', 'st-gate-tc-ext', ext, 'external', 'Requests to other sites\nClick to show only these, again to show all', only('ext'))
+    + tile('tab', '', n, 'tab' + (n === 1 ? '' : 's'), 'Tabs that sent requests\nClick to show only this tab, again to show all', f.tab)
+    + tile('clear', 'st-gate-log', all.n, 'in the log', 'Every request the log keeps, from every tab\nClick to clear every filter', false) + '</div></div>';
 }
 // the gate now: Idle, or the hold, then a chip only for what is not idle
 function stGateStateHtml(s, me) {
@@ -1234,7 +1250,7 @@ function stGateBuild() {
     $('.st-gate-n').textContent = n + ' request' + (n === 1 ? '' : 's');
     if (pop.classList.contains('min')) return;
     $('#st-gate-state').innerHTML = stGateStateHtml(stGateState(), me);
-    $('#st-gate-sum').innerHTML = stGateSumHtml(inHost, now);
+    $('#st-gate-sum').innerHTML = stGateSumHtml(inHost, now, { mode: mode, hosts: hosts, tab: act >= 0 && sels[act].me, groups: groups });
     if (!lanesHeld) {   // held still under the mouse, so a tip stays put
       stGatePatch($('#st-gate-lanes'), stGateLanesHtml(inHost, all, stGatePausedAt || now, me, $('#st-gate-lanes')));
       stGateDrift($('#st-gate-lanes'), now, ST_GATE_SPAN, !stGatePausedAt && !stGateVw);
@@ -1247,12 +1263,14 @@ function stGateBuild() {
       if (act >= 0 && sels[act].ids.indexOf(g.id) < 0) return false;
       if (mode === 'bad' && g.cls !== 'bad') return false;
       if (mode === 're' && (g.sys || g.tries.length < 2)) return false;
+      if ((mode === 'ok' || mode === 'go') && g.cls !== mode) return false;
+      if (mode === 'other' && (g.sys || /^(ok|re|bad|go)$/.test(g.cls))) return false;
       return true;
     });
     tabsDraw(n, hostIds);
     shownIds = shown.filter(function (g) { return !g.sys; }).map(function (g) { return g.id; });
     if (shownIds.length < n) {   // a filter hides some: say how many are left, and which filter
-      var why = [!hosts.mb && 'no MusicBrainz', !hosts.ext && 'no other sites', mode === 'bad' && 'failed', mode === 're' && 'retried'].concat(Object.keys(cf).concat(Object.keys(cft)).map(function (k) { return { tab: 'tab', s: 'script', m: 'verb', rq: 'request', n: 'tries', res: 'result', wt: 'wait', rl: 'rate limit' }[k] || k; })).filter(Boolean).join(', ');
+      var why = [!hosts.mb && 'no MusicBrainz', !hosts.ext && 'no other sites', mode === 'bad' && 'failed', mode === 're' && 'retried', mode === 'ok' && 'ok', mode === 'go' && 'on the way', mode === 'other' && 'other', act >= 0 && sels[act].me && 'this tab'].concat(Object.keys(cf).concat(Object.keys(cft)).map(function (k) { return { tab: 'tab', s: 'script', m: 'verb', rq: 'request', n: 'tries', res: 'result', wt: 'wait', rl: 'rate limit' }[k] || k; })).filter(Boolean).join(', ');
       $('.st-gate-n').textContent = shownIds.length + ' of ' + n + ' requests shown' + (why ? ' (' + why + ')' : '');
     }
     // the funnel of every column that filters stands out
@@ -1474,6 +1492,23 @@ function stGateBuild() {
     if (tr) tr.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   };
   document.addEventListener('click', openFromLanes);
+  // a count in the totals filters the table to what it counts; a second click shows all again
+  pop.querySelector('#st-gate-sum').addEventListener('click', function (e) {
+    var b = e.target.closest('.st-gate-tl'); if (!b) return;
+    var k = b.dataset.sf, on = b.getAttribute('aria-pressed') === 'true';
+    if (k === 'clear') { mode = 'all'; hosts = { mb: true, ext: true }; cf = {}; cft = {}; act = -1; }
+    else if (k === 'mb' || k === 'ext') hosts = on ? { mb: true, ext: true } : { mb: k === 'mb', ext: k === 'ext' };
+    else if (k === 'tab') {
+      if (on) act = -1;
+      else {
+        var me1 = stGateTab(), i = sels.findIndex(function (x) { return x.me; });
+        if (i >= 0) sels.splice(i, 1);
+        sels.push({ name: 'This tab', me: true, ids: lastGroups.filter(function (g) { return !g.sys && g.tab === me1; }).map(function (g) { return g.id; }) });
+        act = sels.length - 1;
+      }
+    } else mode = on ? 'all' : k;
+    srcSeg(); stGateRemember({ mode: mode, hosts: hosts }); sig = ''; draw();
+  });
   lanes.addEventListener('mouseenter', function () { lanesHeld = true; });
   lanes.addEventListener('mouseleave', function () { lanesHeld = false; draw(); });
   var zmBtn = pop.querySelector('.st-gate-zm'), zmRedraw = function () { lanesHeld = false; sig = ''; draw(); lanesHeld = true; zmBtn.classList.toggle('on', !!stGateVw); };

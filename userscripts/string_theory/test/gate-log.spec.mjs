@@ -38,6 +38,14 @@ test.describe('gate log', () => {
     const pills = await page.$$eval('#st-gate .st-gate-pill', l => l.map(x => x.textContent));
     check(pills.includes('OK ↻2'), `the retried request is one row (${pills.join(', ')})`);
     check(pills.includes('error'), 'the failed request shows its error');
+    // a count in the totals filters the table to what it counts; a second click shows all again
+    await page.click('#st-gate-sum .st-gate-tl[data-sf=bad]');
+    await attachShot(testInfo, page.locator('#st-gate-sum'), 'totals, failed on');
+    const failedOnly = await page.$$eval('#st-gate .st-gate-pill', l => l.map(x => x.textContent));
+    check(failedOnly.length >= 1 && failedOnly.every(x => x === 'error'), `the failed count shows only the failed request (${failedOnly.join(', ')})`);
+    check(/shown \(failed\)/.test(await page.textContent('#st-gate .st-gate-n')), 'the title names the filter');
+    await page.click('#st-gate-sum .st-gate-tl[data-sf=bad]');
+    check(!/shown/.test(await page.textContent('#st-gate .st-gate-n')), 'a second click shows all again');
     // a request's own row: a run of like requests has a header row (tr.rq.grp), which opens the run, not steps
     await page.click('#st-gate tr.rq:not(.grp)');
     check(await page.$('#st-gate tr.steps'), 'a click shows the steps');
