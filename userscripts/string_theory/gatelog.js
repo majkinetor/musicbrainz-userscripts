@@ -1150,6 +1150,16 @@ function stGateBuild() {
   document.documentElement.appendChild(pop);   // outside the body, which Event Horizon swaps
   var $ = function (s) { return pop.querySelector(s); };
   var body = $('tbody'), scroller = $('#st-gate-body');
+  // brings the selected row and its open details into view, under the sticky header, at once: a smooth
+  // scroll stops wherever the next redraw finds it, and 'nearest' left an opened row's details below the edge
+  var reveal = function () {
+    var tr = body.querySelector('tr.rq.sel'); if (!tr) return;
+    var hd = scroller.querySelector('thead'), s = scroller.getBoundingClientRect(), r = tr.getBoundingClientRect();
+    var nx = tr.nextElementSibling, end = nx && nx.classList.contains('steps') ? nx.getBoundingClientRect().bottom : r.bottom;
+    var lim = s.top + (hd ? hd.offsetHeight : 0) + 4;
+    if (r.top < lim) scroller.scrollTop -= lim - r.top;
+    else if (end > s.bottom - 4) scroller.scrollTop += Math.min(end - s.bottom + 4, r.top - lim);
+  };
   var srcSeg = function () { Array.prototype.forEach.call(pop.querySelectorAll('.st-gate-hosts button'), function (b) { b.setAttribute('aria-pressed', String(!!hosts[b.dataset.v])); }); };
   var colSeg = function () {
     ST_GATE_COLS.forEach(function (c) { pop.classList.toggle('hc' + c[0], hide.indexOf(c[0]) >= 0); });
@@ -1311,9 +1321,7 @@ function stGateBuild() {
       var hd = st.previousElementSibling;
       if (!hd || !hd.dataset.id) return;
       stGateSel = {}; stGateSel[hd.dataset.id] = 1; sig = '';
-      draw();
-      var nh = body.querySelector('tr.rq.sel');
-      if (nh) nh.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      draw(); reveal();
       return;
     }
     if (!tr) return;
@@ -1339,7 +1347,7 @@ function stGateBuild() {
     }
     if (opened[id]) delete opened[id]; else opened[id] = 1;
     stGateSel = {}; stGateSel[id] = 1;
-    draw();
+    draw(); reveal();
   });
   // a right click on a row opens every row, or closes them all when every one is open
   body.addEventListener('contextmenu', function (e) {
@@ -1489,8 +1497,7 @@ function stGateBuild() {
     stGateSel = {};
     ids.forEach(function (x) { opened[x] = 1; stGateSel[x] = 1; });
     lanesHeld = false; sig = ''; draw();   // a selection alone leaves the signature as it was
-    var tr = body.querySelector('tr.rq.sel');   // the topmost selected row, whatever order the table sorts in
-    if (tr) tr.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    reveal();   // the topmost selected row, whatever order the table sorts in
   };
   document.addEventListener('click', openFromLanes);
   // a count in the totals filters the table to what it counts; a second click shows all again
