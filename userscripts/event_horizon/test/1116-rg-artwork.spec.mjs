@@ -22,6 +22,7 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   check(some < all, `Has booklet narrows the rows (${all} → ${some})`);
   const cells = await until(() => page.locator('#app .ed-art').count(), n => n > 0);
   check(cells > 0, `the table has an Art column (${cells} cells)`);
+  check(await page.locator('#app .ed-art').first().evaluate(b => getComputedStyle(b.closest('td')).display) === 'table-cell', 'the Art cell is a table cell, centred with its row')
   await page.locator('#app [data-edbook]').click();
   // the header's Artwork opens the tab in place; Event Horizon alone draws its own card
   await page.locator(`#app a[href$="/release-group/${RG}/artwork"]`).first().click();
