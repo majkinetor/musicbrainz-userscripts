@@ -134,6 +134,8 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   await gv.locator('[data-gvtoc]').click();
   const jumps = gv.locator('.as-gv-tocm [data-gvjump]'), nj = await jumps.count();
   check(nj > 1, `Jump to lists the sections (${nj})`);
+  const hidden = await gv.locator('.as-gv-tocm').evaluate(m => [...m.querySelectorAll('button')].filter(b => { const r = b.getBoundingClientRect(), y = r.top + r.height / 2; return y > m.getBoundingClientRect().top && y < Math.min(innerHeight, m.getBoundingClientRect().bottom) && !m.contains(document.elementFromPoint(r.left + 20, y)); }).length);
+  check(hidden === 0, `Jump to's menu opens over Art Station's toolbar (${hidden} entries covered)`);
   if (nj > 1) {
     const name = await jumps.last().locator('span').first().textContent();
     await jumps.last().click();
