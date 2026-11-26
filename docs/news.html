@@ -45,6 +45,21 @@
   .b abbr{text-decoration:underline dotted;text-underline-offset:2px;cursor:help}
   .b .anchor,.b .octicon{display:none}
   .state{padding:30px 0;color:var(--dim)}
+  /* the full view of a post's images, as Art Station's: dark in both themes */
+  .b img:not(.emoji){cursor:zoom-in}
+  #lb{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:30px;background:rgba(15,12,28,.92);color:#eee;user-select:none;touch-action:none}
+  #lb[hidden]{display:none}
+  #lb img{max-width:92vw;max-height:84vh;object-fit:contain;border-radius:4px;box-shadow:0 8px 40px rgba(0,0,0,.6);background:#fff;transition:opacity .15s;cursor:default}
+  #lb img.z{cursor:grab}#lb img.loading{opacity:.35}
+  #lb button{position:fixed;display:flex;align-items:center;justify-content:center;padding:0;border:0;background:none;color:#fff;font:inherit;cursor:pointer}
+  #lb button:hover{background:rgba(255,255,255,.25)}
+  #lb .x{top:16px;right:20px;width:42px;height:42px;border-radius:8px;font-size:24px}
+  #lb .nav{top:50%;transform:translateY(-50%);width:54px;height:54px;border-radius:50%;font-size:42px;line-height:1;z-index:2}
+  #lb .prev{left:18px}#lb .next{right:18px}#lb .nav[hidden]{display:none}
+  #lb .cap{position:relative;z-index:2;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px;max-width:84vw;font-size:13px;text-align:center}
+  #lb .cap a{color:#cfc6f5}
+  body.lb{overflow:hidden}
+  @media (pointer:coarse){ #lb{padding:0} #lb img{max-width:100vw;max-height:100vh;border-radius:0;box-shadow:none} #lb .nav{display:none} #lb .cap{position:fixed;bottom:max(14px,env(safe-area-inset-bottom));padding:4px 12px;border-radius:12px;background:rgba(15,12,28,.7)} }
   footer{display:flex;flex-wrap:wrap;gap:22px;margin:40px 0 0;padding:18px 0 40px;border-top:1px solid var(--rule);color:var(--faint);font-size:13.5px}
   footer a{color:var(--dim)}
   @media(max-width:620px){ .w{padding:0 16px} h1{font-size:28px} article h2{font-size:18px} }
@@ -117,6 +132,79 @@ function filter(items) {
   bar.onclick = e => { const b = e.target.closest('button'); if (b) show(b.dataset.s); };
   if (pick) show(pick);
 }
+// a click on a post's image opens the full view, as Art Station's: the post's images in order; ←/→ or a swipe move,
+// the wheel or ↑/↓ zoom, a drag pans, Esc or a swipe down or a click beside the image closes
+const lb = { el: null, imgs: [], i: 0, z: { s: 1, x: 0, y: 0 } };
+function lbZoom() { const m = lb.el.querySelector('img'); m.style.transform = `translate(${lb.z.x}px,${lb.z.y}px) scale(${lb.z.s})`; m.classList.toggle('z', lb.z.s > 1); }
+function lbScale(f, cx, cy) {
+  const m = lb.el.querySelector('img'), r = m.getBoundingClientRect(), s = Math.min(8, Math.max(1, lb.z.s * f));
+  if (s === lb.z.s) return;
+  const ox = r.left + r.width / 2 - lb.z.x, oy = r.top + r.height / 2 - lb.z.y, rx = (cx ?? ox) - ox, ry = (cy ?? oy) - oy;
+  lb.z.x = rx - s * (rx - lb.z.x) / lb.z.s; lb.z.y = ry - s * (ry - lb.z.y) / lb.z.s; lb.z.s = s;
+  if (s === 1) lb.z.x = lb.z.y = 0;
+  lbZoom();
+}
+function lbShow(i) {
+  lb.i = (i + lb.imgs.length) % lb.imgs.length;
+  const src = lb.imgs[lb.i], m = lb.el.querySelector('img'), n = lb.imgs.length;
+  // moving on, the image shown dims until the next one is in (a big image takes seconds); a fresh open just draws it
+  const done = () => m.classList.remove('loading');
+  m.onload = m.onerror = done; m.classList.toggle('loading', !!m.getAttribute('src')); m.src = src; if (m.complete) done();
+  lb.el.querySelectorAll('.nav').forEach(b => { b.hidden = n < 2; });
+  lb.el.querySelector('.cap').innerHTML = (n > 1 ? `<span>${lb.i + 1} / ${n}</span>` : '') + `<a href="${esc(src)}" target="_blank" rel="noopener">Open original</a>`;
+}
+function lbClose() { lb.el.hidden = true; document.body.classList.remove('lb'); lb.el.querySelector('img').removeAttribute('src'); }
+function lbOpen(imgs, i) {
+  if (!lb.el) {
+    const el = lb.el = document.createElement('div'); el.id = 'lb'; el.hidden = true;
+    el.innerHTML = '<button class="x" type="button" title="Close (Esc)">✕</button><button class="nav prev" type="button" title="Previous (←)">‹</button>'
+      + '<img alt=""><button class="nav next" type="button" title="Next (→)">›</button><div class="cap"></div>';
+    document.body.append(el);
+    el.querySelector('.x').onclick = lbClose;
+    el.querySelector('.prev').onclick = () => lbShow(lb.i - 1);
+    el.querySelector('.next').onclick = () => lbShow(lb.i + 1);
+    let down = null;   // a click on the backdrop closes, a drag that ends there does not
+    el.addEventListener('mousedown', e => { down = e.target === el ? [e.clientX, e.clientY] : null; });
+    el.addEventListener('click', e => { if (e.target === el && down && Math.hypot(e.clientX - down[0], e.clientY - down[1]) < 6) lbClose(); });
+    el.addEventListener('wheel', e => { e.preventDefault(); lbScale(e.deltaY < 0 ? 1.2 : 1 / 1.2, e.clientX, e.clientY); }, { passive: false });
+    const m = el.querySelector('img');
+    m.addEventListener('mousedown', e => {
+      if (lb.z.s <= 1) return; e.preventDefault();
+      const sx = e.clientX, sy = e.clientY, ox = lb.z.x, oy = lb.z.y;
+      const mv = ev => { lb.z.x = ox + ev.clientX - sx; lb.z.y = oy + ev.clientY - sy; lbZoom(); };
+      const up = () => { removeEventListener('mousemove', mv); removeEventListener('mouseup', up); };
+      addEventListener('mousemove', mv); addEventListener('mouseup', up);
+    });
+    m.addEventListener('dblclick', () => { lb.z = { s: 1, x: 0, y: 0 }; lbZoom(); });
+    // touch: a swipe left or right moves, a swipe down closes; pinching is the browser's own zoom
+    let t0 = null;
+    el.addEventListener('touchstart', e => { t0 = e.touches.length === 1 ? [e.touches[0].clientX, e.touches[0].clientY] : null; }, { passive: true });
+    el.addEventListener('touchend', e => {
+      if (!t0 || e.touches.length) return;
+      const dx = e.changedTouches[0].clientX - t0[0], dy = e.changedTouches[0].clientY - t0[1]; t0 = null;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.3 && lb.imgs.length > 1) lbShow(lb.i + (dx < 0 ? 1 : -1));
+      else if (dy > 80 && dy > Math.abs(dx) * 1.3) lbClose();
+    }, { passive: true });
+    addEventListener('keydown', e => {
+      if (lb.el.hidden) return;
+      const k = { Escape: lbClose, ArrowLeft: () => lbShow(lb.i - 1), ArrowRight: () => lbShow(lb.i + 1), ArrowUp: () => lbScale(1.2), ArrowDown: () => lbScale(1 / 1.2) }[e.key];
+      if (k) { e.preventDefault(); k(); }
+    });
+  }
+  lb.imgs = imgs; lb.z = { s: 1, x: 0, y: 0 }; lbZoom();
+  lb.el.hidden = false; document.body.classList.add('lb');
+  lbShow(i);
+}
+// GitHub wraps each uploaded image in a link to the file itself: that link opens the full view instead
+document.addEventListener('click', e => {
+  const img = e.target.closest('.b img:not(.emoji)'); if (!img || e.button || e.ctrlKey || e.metaKey || e.shiftKey) return;
+  const a = img.closest('a');
+  if (a && a.href !== img.src && !/user-attachments|githubusercontent/.test(a.href)) return;   // an image that links elsewhere keeps its link
+  e.preventDefault();
+  const all = [...img.closest('.b').querySelectorAll('img:not(.emoji)')];
+  lbOpen(all.map(x => x.currentSrc || x.src), all.indexOf(img));
+});
+
 // news/<id>.html is this page with data-post="<id>" (dev/news/build.mjs writes it): it shows that post alone
 const one = document.documentElement.dataset.post;
 fetch('./news.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(j => {
