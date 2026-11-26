@@ -125,7 +125,7 @@ test('an empty collection retains its quick links and loads others by default', 
     const path = `/collection/${id}/open_edits`;
     await page.goto(`${mb}/collection/${id}`);
     await inject('event_horizon');
-    const open = page.locator('#app .u-tabs a[href*="/open_edits"]');
+    const open = page.locator('#app .col-nav a[href*="/open_edits"]');
     await expect(open).toHaveAttribute('href', mb + path + '?hide_own=1');
     const load = page.waitForRequest(r => r.method() === 'GET' && r.url().includes(path + '?hide_own=1'));
     await open.click();
