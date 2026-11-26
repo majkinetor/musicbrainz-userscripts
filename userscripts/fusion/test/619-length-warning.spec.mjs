@@ -9,9 +9,11 @@
 // FUSION_SRC=<old build> to watch it stay silent.
 import { test, check, requireLogin, mbJson, until, frames } from '../../../dev/test/harness.mjs';
 
-test.use({ viewport: { width: 1500, height: 1000 }, deviceScaleFactor: 2, gm: { name: 'Fusion' } });
+// The chip row is about 530px wide, so at 1500px it already reaches the length column, and at 1200px the
+// header overflows (the title collapses to 0, the chips run under the buttons): 1800 and 1500 keep the two cases apart.
+test.use({ viewport: { width: 1800, height: 1000 }, deviceScaleFactor: 2, gm: { name: 'Fusion' } });
 
-test('lengths outside tolerance warn in the chip, the badge, the row and the tooltip', { tag: ['@sandbox', '@login', '@quarantine'] }, async ({ page, inject }) => {
+test('lengths outside tolerance warn in the chip, the badge, the row and the tooltip', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   // four sandbox recordings (their lengths are set in the page), all audio: other specs flag
   // sandbox recordings as videos, and a video never groups with audio, whatever the lengths
   const gids = (await mbJson('https://test.musicbrainz.org/ws/2/recording?query=arid:c321a13a-1c52-43c0-b60a-3a454cb7f9a2&limit=25&fmt=json')).recordings.filter(x => !x.video).map(x => x.id).slice(0, 4);
@@ -88,11 +90,11 @@ test('lengths outside tolerance warn in the chip, the badge, the row and the too
 
   // a narrower window: the length column slides under the chips, so the badge must fall back
   // beside the title rather than sit on the title, the chips or the buttons. (Much narrower —
-  // ~900px — and the header itself overflows: the title track collapses to 0 and the buttons
+  // ~1200px — and the header itself overflows: the title track collapses to 0 and the buttons
   // spill out of the card, with or without this badge. Nothing to assert there.)
-  await page.setViewportSize({ width: 1200, height: 1000 });
+  await page.setViewportSize({ width: 1500, height: 1000 });
   await frames(page);   // ResizeObserver → rAF → placeLenBadges
   const gn = await geo();
   console.log('narrow    :', JSON.stringify(gn));
-  check(gn && gn.inHdr && !gn.clash, `narrower window (1200px) → badge still clear of title/chips/buttons (col=${gn && gn.col})`);
+  check(gn && gn.inHdr && !gn.clash, `narrower window (1500px) → badge still clear of title/chips/buttons (col=${gn && gn.col})`);
 });
