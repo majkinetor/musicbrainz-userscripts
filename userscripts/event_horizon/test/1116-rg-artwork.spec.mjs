@@ -64,6 +64,8 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   await gv.locator('[data-gvby="release"]').click();
   const byRel = await until(() => gv.locator('.as-gv-sec').count(), n => n > byType.length);
   check(byRel > byType.length, `grouped by release, one section each (${byRel})`);
+  const across = await gv.locator('.as-gv-sec .as-gv-n').evaluateAll(es => es.filter(e => /^×/.test(e.textContent)).length);
+  check(across === 0, `grouped by release, no image is merged with another release's (${across})`);
   // each release's heading has a pencil to its cover-art page; returning to the tab reads that release again
   const pen = gv.locator('.as-gv-sec h3 a.as-gv-edit');
   check(await pen.count() === byRel, `every release heading has the pencil (${await pen.count()} of ${byRel})`);
