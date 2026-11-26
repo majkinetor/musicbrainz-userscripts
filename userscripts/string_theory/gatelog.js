@@ -1465,6 +1465,8 @@ function stGateBuild() {
       addSel((bt === stGateTab() ? 'This tab' : String(bt).slice(0, 8)) + (t0 ? ' ' + stGateTime(t0.t).slice(0, 8) : ''), ids);
       return;
     }
+    // a row the open tab leaves out: switch to a tab that has it, else to All
+    if (act >= 0 && sels[act].ids.indexOf(ids[0]) < 0) act = sels.findIndex(function (x) { return x.ids.indexOf(ids[0]) >= 0; });
     stGateSel = {};
     ids.forEach(function (x) { opened[x] = 1; stGateSel[x] = 1; });
     lanesHeld = false; sig = ''; draw();   // a selection alone leaves the signature as it was
