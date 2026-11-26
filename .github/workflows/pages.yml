@@ -30,14 +30,13 @@ permissions:
 # one build at a time; a newer event replaces a queued one, and each build reads the whole state anyway
 concurrency: { group: pages, cancel-in-progress: false }
 jobs:
-  deploy:
+  # two jobs, as GitHub's starter workflow: deploy-pages in the job that uploaded the site sometimes
+  # found no artifact yet ("No artifacts named github-pages"); a later job always sees it
+  build:
     # an issue label other than `released` changes no channel
     if: github.event_name != 'issues' || github.event.label.name == 'released'
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
         with: { ref: main }
@@ -51,5 +50,13 @@ jobs:
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with: { path: docs }
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
       - id: deploy
         uses: actions/deploy-pages@v4
