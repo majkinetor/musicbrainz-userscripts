@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { test, check, until, idle, attachShot } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Event Horizon' } });
@@ -99,7 +100,11 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   check(await gv.locator('.as-gv-t.on').count() === 1, 'right-click selects the tile');
   await gv.locator('[data-gvdl]').click();
   check(/Selected \(1\)/.test(await gv.locator('[data-gvzip="sel"]').textContent()), 'Download zip offers the selected one');
-  await gv.locator('[data-gvdl]').click();   // close the menu (an outside click is swallowed)
+  // the zip names a file as a release's own download does: "NN types comment", NN its place in the release
+  const [dl] = await Promise.all([page.waitForEvent('download', { timeout: 120000 }), gv.locator('[data-gvzip="sel"]').click()]);
+  const zip = fs.readFileSync(await dl.path()).toString('latin1'), names = [...zip.matchAll(/PK\x01\x02[\s\S]{42}([^\x00]*?\.(?:jpg|png|gif|pdf|webp))/g)].map(m => m[1]);
+  console.log('zip entries', names);
+  check(names.length === 1 && /\/\d{2,} [a-z,]+[^/]*\.\w+$/.test(names[0]), `the zip names the file as a release's download does (${names[0]})`);
   await gv.locator('.as-gv-t').first().click({ button: 'right' });   // unselect
   // editing the whole group: a type and a comment on two covers, a removal, and (by release) a move; a dry run sends nothing
   const posts = [];
