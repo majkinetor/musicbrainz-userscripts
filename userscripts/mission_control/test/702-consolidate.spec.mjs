@@ -128,6 +128,8 @@ test.describe('the consolidation page', () => {
     if (m.differ) {
       const tog = page.locator('#mcc-root [data-cc="differ"]');
       const openRows = () => page.evaluate(() => { const m = window.__mccTest.model(); return m.tracks.rows.filter(r => r.versions.length > 1 && document.querySelector('#mcc-root tr.ver[data-r="' + r.id + '"]')).length; });
+      // the chip closes them when all are open: with one row that differs, the click above left it open
+      for (let i = 0; i < 2 && await openRows(); i++) await tog.click();
       await tog.click();
       check(await openRows() === m.differ, `the differ chip opens all ${m.differ} rows that differ`);
       await info.attach('differ-open', { body: await page.screenshot(), contentType: 'image/png' });

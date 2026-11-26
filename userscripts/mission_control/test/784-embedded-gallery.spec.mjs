@@ -81,7 +81,13 @@ test('#784: the gallery shows in the card, scrolls with it and goes full screen'
   const scrollerAt = () => page.evaluate(() => { let n = document.getElementById('mc-as-slot').parentElement; while (n && n.scrollHeight <= n.clientHeight) n = n.parentElement; return n ? { top: n.scrollTop, max: n.scrollHeight - n.clientHeight } : { top: -1, max: -1 }; });
   const scroller = async () => (await scrollerAt()).top;
   const at = await scrollerAt(), before = at.top;
-  await page.mouse.move(g.slot[0] + 40, Math.max(g.slot[1], 0) + 40);
+  // the middle of the gallery's visible part: scrolled down, its top edge can sit under the step bar (.mc-steps),
+  // and a wheel there scrolls nothing. Take all in repaints the card, so the slot is read again.
+  const gw = await until(geo, v => v.frame.join() === v.slot.join());
+  const vh = page.viewportSize().height, vTop = Math.max(gw.frame[1], 0), vBottom = Math.min(gw.frame[1] + gw.frame[3], vh);
+  const px = gw.frame[0] + Math.round(gw.frame[2] / 2), py = Math.round((vTop + vBottom) / 2);
+  check(await page.evaluate(([x, y]) => (document.elementFromPoint(x, y) || {}).tagName === 'IFRAME', [px, py]), `the mouse is over the gallery (${px}, ${py})`);
+  await page.mouse.move(px, py);
   await page.mouse.wheel(0, at.max - at.top >= 100 ? 200 : -200);
   const after = await until(scroller, v => v !== before);
   check(after !== before, `the wheel over the gallery scrolls the card (${before} → ${after})`);
