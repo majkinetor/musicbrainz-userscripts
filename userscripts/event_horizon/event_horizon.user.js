@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.26.100049
+// @version      2026.11.26.172303
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2033,6 +2033,14 @@ function mbRestackCornerNow(corner) {
             if (window.ResizeObserver && document.body) {
                 var bodyW = -1;
                 new window.ResizeObserver(function (es) { var w = es[0] && es[0].contentRect.width; if (w === bodyW) return; bodyW = w; again(); }).observe(document.body);
+                // MusicBrainz's body keeps its 780px min-width when pinned, so on a phone only the layout viewport
+                // shrinks to the screen (780×1594 → 414×846), with no event and no change of the body's width.
+                // A fixed element over the whole layout viewport has its size, so its resize is that change.
+                var lv = document.createElement('div'), lvSize = '';
+                lv.id = 'mbu-corner-lv';
+                lv.style.cssText = 'position:fixed;inset:0;visibility:hidden;pointer-events:none;z-index:-1';
+                html.appendChild(lv);
+                new window.ResizeObserver(function (es) { var r = es[0] && es[0].contentRect, s = r ? r.width + 'x' + r.height : ''; if (s === lvSize) return; var first = !lvSize; lvSize = s; if (!first) again(); }).observe(lv);
             }
             window.addEventListener('resize', again);
         }
