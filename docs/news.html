@@ -26,6 +26,7 @@
   .bar button:hover{color:var(--ink);background:var(--soft)}
   .bar button[aria-pressed=true]{color:var(--ink);border-color:var(--accent)}
   .bar img{width:16px;height:16px;object-fit:contain}
+  .bar .gal{margin-left:auto}
   article{padding:26px 0;border-top:1px solid var(--rule)}
   article:first-of-type{border-top:0}
   article h2{display:flex;align-items:center;gap:10px;margin:0;font-size:20px;line-height:1.35;letter-spacing:-.01em}
@@ -118,23 +119,34 @@ function post(i) {
 // the filter: one button per script that has posts, kept in the address as ?script=<name>
 function filter(items) {
   const bar = document.getElementById('bar'), names = [...new Set(items.map(i => i.script))].sort();
-  if (names.length < 2) return;
-  const pick = new URLSearchParams(location.search).get('script') || '';
-  bar.innerHTML = `<button type="button" data-s="" aria-pressed="${!pick}">All</button>`
-    + names.map(n => `<button type="button" data-s="${esc(n)}" aria-pressed="${n === pick}">${icon(items.find(i => i.script === n))}${esc(n)}</button>`).join('');
+  const pick = new URLSearchParams(location.search).get('script') || '', many = names.length > 1;
+  // the gallery button: every image of the posts shown, so a script filter narrows it too
+  const gal = document.querySelector('#list .b img:not(.emoji)') ? '<button type="button" class="gal" title="Every image in the posts shown, full screen">All images</button>' : '';
+  if (!many && !gal) return;
+  bar.innerHTML = (many ? `<button type="button" data-s="" aria-pressed="${!pick}">All</button>`
+    + names.map(n => `<button type="button" data-s="${esc(n)}" aria-pressed="${n === pick}">${icon(items.find(i => i.script === n))}${esc(n)}</button>`).join('') : '') + gal;
   bar.hidden = false;
   const show = s => {
-    bar.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === s));
+    bar.querySelectorAll('button[data-s]').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === s));
     document.querySelectorAll('article').forEach(a => { a.hidden = !!s && a.dataset.script !== s; });
     const u = new URL(location.href); if (s) u.searchParams.set('script', s); else u.searchParams.delete('script');
     history.replaceState(null, '', u);
   };
-  bar.onclick = e => { const b = e.target.closest('button'); if (b) show(b.dataset.s); };
+  bar.onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.classList.contains('gal')) { const all = shots(document.querySelectorAll('#list article:not([hidden]) .b')); if (all.length) lbOpen(all, 0, true); }
+    else show(b.dataset.s);
+  };
   if (pick) show(pick);
 }
 // a click on a post's image opens the full view, as Art Station's: the post's images in order; ←/→ or a swipe move,
 // the wheel or ↑/↓ zoom, a drag pans, Esc or a swipe down or a click beside the image closes
-const lb = { el: null, imgs: [], i: 0, z: { s: 1, x: 0, y: 0 } };
+const lb = { el: null, imgs: [], i: 0, all: false, z: { s: 1, x: 0, y: 0 } };
+// the images of the given post bodies, each with its post
+const shots = bodies => [...bodies].flatMap(b => [...b.querySelectorAll('img:not(.emoji)')].map(x => {
+  const art = b.closest('article'), a = art && art.querySelector('h2 a');
+  return { src: x.currentSrc || x.src, el: x, id: art ? art.id : '', title: a ? a.textContent : '' };
+}));
 function lbZoom() { const m = lb.el.querySelector('img'); m.style.transform = `translate(${lb.z.x}px,${lb.z.y}px) scale(${lb.z.s})`; m.classList.toggle('z', lb.z.s > 1); }
 function lbScale(f, cx, cy) {
   const m = lb.el.querySelector('img'), r = m.getBoundingClientRect(), s = Math.min(8, Math.max(1, lb.z.s * f));
@@ -146,21 +158,30 @@ function lbScale(f, cx, cy) {
 }
 function lbShow(i) {
   lb.i = (i + lb.imgs.length) % lb.imgs.length;
-  const src = lb.imgs[lb.i], m = lb.el.querySelector('img'), n = lb.imgs.length;
+  const it = lb.imgs[lb.i], src = it.src, m = lb.el.querySelector('img'), n = lb.imgs.length;
   // moving on, the image shown dims until the next one is in (a big image takes seconds); a fresh open just draws it
   const done = () => m.classList.remove('loading');
   m.onload = m.onerror = done; m.classList.toggle('loading', !!m.getAttribute('src')); m.src = src; if (m.complete) done();
   lb.el.querySelectorAll('.nav').forEach(b => { b.hidden = n < 2; });
-  lb.el.querySelector('.cap').innerHTML = (n > 1 ? `<span>${lb.i + 1} / ${n}</span>` : '') + `<a href="${esc(src)}" target="_blank" rel="noopener">Open original</a>`;
+  lb.el.querySelector('.cap').innerHTML = (n > 1 ? `<span>${lb.i + 1} / ${n}</span>` : '')
+    + (lb.all && it.id ? `<a href="#${esc(it.id)}" class="go" title="Close and go to this post">${esc(it.title)}</a>` : '')
+    + `<a href="${esc(src)}" target="_blank" rel="noopener">Open original</a>`;
 }
 function lbClose() { lb.el.hidden = true; document.body.classList.remove('lb'); lb.el.querySelector('img').removeAttribute('src'); }
-function lbOpen(imgs, i) {
+function lbOpen(imgs, i, all) {
   if (!lb.el) {
     const el = lb.el = document.createElement('div'); el.id = 'lb'; el.hidden = true;
     el.innerHTML = '<button class="x" type="button" title="Close (Esc)">✕</button><button class="nav prev" type="button" title="Previous (←)">‹</button>'
       + '<img alt=""><button class="nav next" type="button" title="Next (→)">›</button><div class="cap"></div>';
     document.body.append(el);
     el.querySelector('.x').onclick = lbClose;
+    // in the all-images gallery, the post's title closes it and goes to the post
+    el.querySelector('.cap').addEventListener('click', e => {
+      const a = e.target.closest('a.go'); if (!a) return;
+      e.preventDefault(); lbClose();
+      const art = document.getElementById(a.getAttribute('href').slice(1));
+      if (art) { history.replaceState(null, '', location.pathname + location.search + '#' + art.id); art.scrollIntoView(); }
+    });
     el.querySelector('.prev').onclick = () => lbShow(lb.i - 1);
     el.querySelector('.next').onclick = () => lbShow(lb.i + 1);
     let down = null;   // a click on the backdrop closes, a drag that ends there does not
@@ -191,7 +212,7 @@ function lbOpen(imgs, i) {
       if (k) { e.preventDefault(); k(); }
     });
   }
-  lb.imgs = imgs; lb.z = { s: 1, x: 0, y: 0 }; lbZoom();
+  lb.imgs = imgs; lb.all = !!all; lb.z = { s: 1, x: 0, y: 0 }; lbZoom();
   lb.el.hidden = false; document.body.classList.add('lb');
   lbShow(i);
 }
@@ -201,8 +222,8 @@ document.addEventListener('click', e => {
   const a = img.closest('a');
   if (a && a.href !== img.src && !/user-attachments|githubusercontent/.test(a.href)) return;   // an image that links elsewhere keeps its link
   e.preventDefault();
-  const all = [...img.closest('.b').querySelectorAll('img:not(.emoji)')];
-  lbOpen(all.map(x => x.currentSrc || x.src), all.indexOf(img));
+  const all = shots([img.closest('.b')]);
+  lbOpen(all, all.findIndex(x => x.el === img));
 });
 
 // news/<id>.html is this page with data-post="<id>" (dev/news/build.mjs writes it): it shows that post alone
