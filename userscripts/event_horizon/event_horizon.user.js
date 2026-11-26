@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.26.182626
+// @version      2026.11.26.184140
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -17044,7 +17044,9 @@ const RGA_EDITED = new Set();
 document.addEventListener('mbu-art-group-edit', e => {
     let x = {}; try { x = JSON.parse(e.detail || '{}'); } catch (_) {}
     if (x.release) { RGA_EDITED.add(x.release); LOG.info(`Group artwork: editing release ${x.release}; read again on return`); }
-    if (x.release && x.now) rgaRefresh();   // edited from the gallery itself: read it again now
+    // edited from the gallery itself: read it again now, and a few times after, as the archive rewrites its listing
+    // a while after the edit (a read at once can still list a removed image)
+    if (x.release && x.now) { rgaRefresh(); for (const s of [20, 60, 180]) setTimeout(() => { RGA_EDITED.add(x.release); rgaRefresh(); }, s * 1000); }
 });
 async function rgaRefresh() {
     if (!RGA_EDITED.size || !data || data.kind !== 'rgart') return;
@@ -17052,7 +17054,9 @@ async function rgaRefresh() {
     for (const id of ids) {
         const key = 'release/' + id;
         CAA_JSON.delete(key); CAA_JSON_KEPT.delete(key); CAA_LIST.delete(key); CAA_CV.delete(key);
-        const j = await caaJson('release', id), im = rgaList(id, j);
+        const sig = l => JSON.stringify((l || []).map(i => [i.id, i.types, i.comment]));
+        const was = sig(RGA_REL.get(id)), j = await caaJson('release', id), im = rgaList(id, j);
+        if (RGA_REL.has(id) && sig(im) === was) { LOG.debug(`Group artwork: release ${id} read again, unchanged`); continue; }
         RGA_REL.set(id, im);
         const e = (d.editions || []).find(x => x.id === id);
         if (e) e.caa = { ...(e.caa || {}), artwork: im.length > 0, count: im.length, front: im.some(i => i.front) };
