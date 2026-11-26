@@ -5,7 +5,7 @@ test.use({ gm: { name: 'Event Horizon' } });
 
 // From a release's overview Edit annotation opens in the tab, without a page load (the player plays on), and Apollo
 // builds its editor on the fetched form; Back returns to the overview and takes the editor's page styles with it.
-test('the annotation editor opens from the overview without a page load', { tag: '@sandbox' }, async ({ page, inject }) => {
+test('the annotation editor opens from the overview without a page load', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
   await page.goto(`https://test.musicbrainz.org/release/${RELEASE}`, { waitUntil: 'domcontentloaded' });
   await idle(page);
   await inject('event_horizon');
@@ -26,7 +26,7 @@ test('the annotation editor opens from the overview without a page load', { tag:
   await tab().evaluate(a => a.click());
   await expect(page.locator('#eh-anno #tc-anno-wrap')).toBeVisible({ timeout: 30000 });
   expect(await page.evaluate(() => window.__stay)).toBe(1);
-  await page.screenshot({ path: process.env.SHOT || 'ann.png' });
+  await page.screenshot({ path: process.env.SHOT || testInfo.outputPath('ann.png') });
 });
 
 // #1085 moved another entity's Annotation into the tab too: Apollo must be asked to build its editor there as well

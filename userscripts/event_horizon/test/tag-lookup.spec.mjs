@@ -1,7 +1,7 @@
 import { test, expect, idle } from '../../../dev/test/harness.mjs';
 test.use({ gm: { name: 'Event Horizon' } });
 
-test('a tag lookup shows its fields in a pinned bar over the results', async ({ page, inject }) => {
+test('a tag lookup shows its fields in a pinned bar over the results', async ({ page, inject }, testInfo) => {
   await page.goto('https://musicbrainz.org/taglookup/index?tag-lookup.artist=Swayzak&tag-lookup.release=Dirty+Dancing&tag-lookup.tracknum=10');
   await idle(page); await inject('event_horizon');
   const bar = page.locator('#app form.tl-bar');
@@ -9,7 +9,7 @@ test('a tag lookup shows its fields in a pinned bar over the results', async ({ 
   await expect(bar.locator('[name="tag-lookup.release"]')).toHaveValue('Dirty Dancing');
   await expect(page.locator('#app .hm-srch')).toHaveCount(1);   // the standard toolbar stays, so the page reads as MusicBrainz
   await expect(page.locator('#app .sr-t tbody tr').first()).toBeVisible({ timeout: 30_000 });
-  await page.screenshot({ path: process.env.SHOT || 'tl.png' });
+  await page.screenshot({ path: process.env.SHOT || testInfo.outputPath('tl.png') });
 });
 
 test("Picard's bare fields (artist=, release=) open the same view", async ({ page, inject }) => {
