@@ -74,8 +74,12 @@ test('an open edit takes your vote and a note in place, and your votes open as a
   await ed.locator('.hvote button.' + pick).click();
   check(await until(() => ed.locator('.hvote button.' + pick).getAttribute('aria-checked'), v => v === 'true') === 'true', 'the vote button lights');
   const note = 'EH test note ' + Date.now();
-  await ed.locator('summary .hty').hover();
-  await ed.locator('summary .hnico').click();   // the note icon beside the date opens the form
+  // the note icon beside the date opens the form. It shows only under the mouse, and the vote can mount the row
+  // again a moment later: the new row is not hovered until the mouse moves, so hover and click again until it opens
+  await until(async () => {
+    await ed.locator('summary .hty').hover();
+    return ed.locator('summary .hnico').click({ timeout: 2000 }).then(() => ed.locator('.hnadd textarea').isVisible(), () => false);
+  }, Boolean);
   await ed.locator('.hnadd textarea').fill(note);
   await ed.locator('.hnadd > button[type="submit"]').click();
   check(await until(() => ed.locator('.hnote', { hasText: note }).count(), n => n > 0) > 0, 'the note shows under the edit');
