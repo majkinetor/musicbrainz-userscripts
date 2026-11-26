@@ -97,10 +97,30 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   // editing the whole group: a type and a comment on two covers, a removal, and (by release) a move; a dry run sends nothing
   const posts = [];
   await page.route('**/*', r => { if (r.request().method() === 'POST') { posts.push(r.request().url()); return r.abort(); } return r.continue(); });
+  // Edit keeps in view the image that was at the top
+  const tiles = gv.locator('.as-gv-body .as-gv-t[data-gvid]'), ti = Math.min(3, await tiles.count() - 1), aid = await tiles.nth(ti).getAttribute('data-gvid');
+  await tiles.nth(ti).evaluate(e => { const h = document.querySelector('.as-gv-head').getBoundingClientRect().bottom; window.scrollBy(0, e.getBoundingClientRect().top - h - 10); });
+  const ay = (await tiles.nth(ti).boundingBox()).y;
   await gv.locator('[data-gvedmode]').click();
   const as = gv.locator('.as-gv-as #as-root');
   await until(() => as.locator('.as-card').count(), n => n > 0);
+  const card = as.locator(`.as-card[data-id="${aid}"]`).first(), cy = (await card.boundingBox()).y, tbot = await as.locator('.as-bar').evaluate(e => e.getBoundingClientRect().bottom);
+  console.log('anchor', aid, 'read y', ay, 'edit y', cy, 'toolbar bottom', tbot);
+  check(cy >= tbot - 1 && cy < tbot + Math.max(60, ay - tbot + 20), `Edit keeps image ${aid} at the top of the view (${Math.round(ay)} → ${Math.round(cy)})`);
   check(!(await gv.locator('.as-gv-body').isVisible()) && await as.locator('.as-toolbar, .as-commit').count() > 0, "Edit opens Art Station's gallery in place of the tiles");
+  // Jump to: a section's heading lands just under the pinned bars
+  await gv.locator('[data-gvtoc]').click();
+  const jumps = gv.locator('.as-gv-tocm [data-gvjump]'), nj = await jumps.count();
+  check(nj > 1, `Jump to lists the sections (${nj})`);
+  if (nj > 1) {
+    const name = await jumps.last().locator('span').first().textContent();
+    await jumps.last().click();
+    const hy = await as.locator('.as-sec, .as-grow').filter({ visible: true }).last().evaluate(e => e.getBoundingClientRect().top);
+    const tb = await as.locator('.as-bar').evaluate(e => e.getBoundingClientRect().bottom);
+    const maxY = await page.evaluate(() => window.scrollY >= document.documentElement.scrollHeight - innerHeight - 2);
+    console.log('jump', name, 'heading', hy, 'toolbar bottom', tb, 'page end', maxY);
+    check(!(await gv.locator('.as-gv-tocm').isVisible()) && (Math.abs(hy - tb - 8) < 4 || (maxY && hy > tb)), `Jump to "${name}" puts its heading under the toolbar (${Math.round(hy)} vs ${Math.round(tb)})`);
+  }
   check(!(await as.locator('.as-add').isVisible()) && !(await as.locator('.as-src').isVisible()), 'adding and sourcing are left out');
   // scrolled down, the group's bar stays at the top and Art Station's toolbar right under it; each card's size line fills in
   await as.locator('.as-card').nth(20).scrollIntoViewIfNeeded();
@@ -111,7 +131,7 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   console.log('pinned header', ph);
   check(Math.abs(hb.y - ph) < 2 && Math.abs(tb.y - (hb.y + hb.height)) < 3, `the bars are pinned (bar at ${hb.y}, toolbar at ${tb.y} under ${hb.height})`);
   await attachShot(testInfo, page, 'pinned');
-  const dims = await until(() => as.locator('.as-card .as-dim-px').count(), n => n > 0, { timeout: 30000 });
+  const dims = await until(() => as.locator('.as-card .as-dim-px').count(), n => n > 0, { timeout: 90000 });   // the originals in view, read once they stay there
   check(dims > 0, `the cards in view show their dimensions (${dims})`);
   await page.evaluate(() => window.scrollTo(0, 0));
   const cards = as.locator('.as-card');
@@ -150,6 +170,7 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   const done = await until(() => page.evaluate(() => [...document.querySelectorAll('#as-commit .as-cm-op .as-cm-st')].every(e => e.textContent === '👁')), Boolean, { timeout: 60000 });
   check(done, 'Dry run previews every operation');
   await attachShot(testInfo, page.locator('#as-commit .as-cm-box'), 'group dry run');
+  check(await page.locator('#as-commit .as-cm-rel').count() > 0 && !/: (Edit|Remove)/.test(await page.locator('#as-commit .as-cm-lb').first().textContent()), 'the commit window gives the release its own line');
   check(!posts.length, `nothing was submitted (${posts.length} POSTs)`);
   await page.click('#as-commit .as-cm-x');
   check(+(((await as.locator('.as-commit').textContent()).match(/\d+/) || [0])[0]) === nOps, 'a dry run keeps the staged changes');

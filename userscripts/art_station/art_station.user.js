@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.26.163344
+// @version      2026.11.26.165455
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -5797,7 +5797,7 @@
     ov.innerHTML = `<div class="as-cm-box">
       <div class="as-cm-h"><span class="as-cm-h-t" data-tip="Each change is applied as a MusicBrainz edit">Apply ${plan.length} change${plan.length===1?'':'s'}</span><a class="as-cm-hist" href="${ART_EDITS_URL}" target="_blank" rel="noopener noreferrer" data-tip="Your ${ENT.noun} edits on MusicBrainz">🕓 My edits</a><button type="button" class="as-cm-x" data-tip="Close\nDuring a run, it cancels the run">✕</button></div>
       <div class="as-cm-prog" hidden><div class="as-cm-prog-track"><div class="as-cm-prog-fill"></div></div><span class="as-cm-prog-txt"></span></div>
-      <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><div class="as-cm-line"><span class="as-cm-st">○</span><span class="as-cm-th">${opThumb(o)}</span><div class="as-cm-main"><div class="as-cm-ttl"><span class="as-cm-lb">${esc(o.label)}</span>${o.id ? ` <span class="as-cm-id">#${esc(o.id)}</span>` : ''}${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}</div><span class="as-cm-bar"><span class="as-cm-bfill"></span></span></div></div><div class="as-cm-payload"></div></div>`).join('')}</div>
+      <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><div class="as-cm-line"><span class="as-cm-st">○</span><span class="as-cm-th">${opThumb(o)}</span><div class="as-cm-main"><div class="as-cm-ttl"><span class="as-cm-lb">${esc(o.what || o.label)}</span>${o.id ? ` <span class="as-cm-id">#${esc(o.id)}</span>` : ''}${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}</div>${o.rel ? `<div class="as-cm-rel" title="${esc(o.rel)}">${esc(o.rel)}</div>` : ''}<span class="as-cm-bar"><span class="as-cm-bfill"></span></span></div></div><div class="as-cm-payload"></div></div>`).join('')}</div>
       <div class="as-cm-nb">
         <div class="as-cm-ns" role="button" tabindex="0" data-tip="The edit note added to each edit\nClick: show or hide it"><span class="as-cm-ni">📝</span><b>Note</b><span class="as-cm-nl"></span><span class="as-cm-np"></span><span class="as-cm-nc">▸</span></div>
         <div class="as-cm-nbody"><textarea class="as-cm-note edit-note" rows="2" placeholder="optional edit note shown on each edit"></textarea></div>
@@ -9330,6 +9330,9 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
      scroll-anchoring would then nudge the page on every right-click select. Disable
      anchoring so the scrollbar stays put (Art Station owns this page's scroll). */
   html{overflow-anchor:none}
+  /* a release group's gallery fills in the size lines of hundreds of cards, above the view too (a line can wrap):
+     anchoring keeps the view still while they grow */
+  html[data-as-grp]{overflow-anchor:auto}
   #as-root{font:14px/1.4 var(--mbu-font);color:var(--mbu-text);margin:0 0 18px}
   .as-ia{margin:0 0 8px;padding:9px 13px;border-radius:8px;font-size:13px;line-height:1.45;border:1px solid}
   .as-ia-warn{background:var(--mbu-warn-bg);border-color:var(--mbu-warn-border);color:var(--mbu-warn)}
@@ -9894,6 +9897,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   .as-cm-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:5px}
   .as-cm-ttl{display:flex;align-items:center;gap:6px;min-width:0}
   .as-cm-st{display:inline-block;min-width:18px;white-space:nowrap;text-align:center;flex:none}
+  .as-cm-rel{font-size:11.5px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
   .as-cm-lb{flex:0 1 auto;min-width:0;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-height:1.25;overflow-wrap:anywhere}
   .as-cm-skip{font-size:11px;color:var(--mbu-text-weak);margin-left:6px;background:var(--mbu-bg-sunken);border-radius:var(--mbu-radius-lg);padding:1px 7px;flex:none}
   .as-cm-payload{white-space:pre-wrap;font:11px/1.4 ui-monospace,Consolas,monospace;color:var(--mbu-text-dim);margin:4px 0 2px 82px;display:none}
@@ -9935,7 +9939,13 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   .as-gv-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
   /* pinned as Art Station's toolbar is, under Event Horizon's pinned header (--eh-pin-h); while editing, that toolbar pins under it */
   .as-gv-head{position:sticky;top:var(--eh-pin-h,0px);transition:top .18s;z-index:var(--mbu-z-panel);background:var(--mbu-bg);padding:6px 0 4px}
-  .as-gv.editing #as-root .as-bar{top:calc(var(--eh-pin-h,0px) + var(--as-gv-headh,0px));transition:top .18s}
+  .as-gv.editing #as-root .as-bar{top:calc(var(--eh-pin-h,0px) + var(--as-gv-headh,0px) - 1px);transition:top .18s;box-shadow:0 -12px 0 var(--mbu-bg),var(--mbu-shadow)}
+  /* Jump to: the sections, for a group of many releases */
+  .as-gv-toc{position:relative}
+  .as-gv-tocm{left:0;right:auto;min-width:240px;max-width:min(460px,80vw);max-height:60vh;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
+  .as-gv-tocm button{display:flex;gap:12px;align-items:baseline}
+  .as-gv-tocm button span:first-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .as-gv-tocm button span+span{color:var(--mbu-text-dim);font-size:11.5px}
   .as-gv.editing .as-gv-head{padding-bottom:8px}
   .as-gv-lbl{font-size:12px;color:var(--mbu-text-dim)}
   .as-gv-seg{display:inline-flex;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden}
@@ -10137,10 +10147,30 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     MODEL = out; _grp.sig = grpSig(d);   // measured as the cards come into view (grpMeasure): there are many originals
     asLog.debug(`Group gallery: ${MODEL.length} images on ${_grp.rels.size} releases in the gallery`);
   }
+  // the image at the top of the view, below the pinned bars, so Edit and back keep it in place
+  function grpTop() {
+    const head = GV.el && GV.el.querySelector('.as-gv-head'), bar = GV.edit && root.isConnected && root.querySelector('.as-bar');
+    return Math.max(head ? head.getBoundingClientRect().bottom : 0, bar ? bar.getBoundingClientRect().bottom : 0);
+  }
+  function grpAnchor(sel) {
+    const top = grpTop();
+    const els = [...document.querySelectorAll(sel)].filter(e => e.offsetParent);
+    const e = els.find(x => x.getBoundingClientRect().top >= top - 1) || els.find(x => x.getBoundingClientRect().bottom > top);
+    return e && { id: e.dataset.gvid || e.dataset.id, y: e.getBoundingClientRect().top };
+  }
+  function grpRestore(a, sel, again = true) {
+    if (!a) return;
+    if (again) requestAnimationFrame(() => grpRestore(a, sel, false));   // once more when the layout has settled
+    const e = [...document.querySelectorAll(sel)].find(x => (x.dataset.gvid || x.dataset.id) === String(a.id) && x.offsetParent);
+    if (!e) { asLog.debug(`Group gallery: image ${a.id} not in the new view, scroll left as is`); return; }
+    window.scrollBy(0, e.getBoundingClientRect().top - Math.max(a.y, grpTop() + 4));   // not under a bar that wasn't there
+  }
+  const GRP_READ = '.as-gv-body .as-gv-t[data-gvid]', GRP_EDIT = '.as-gv-as #as-root .as-card[data-id]';
   function grpEnter() {
     if (!GV.d || _grp) return;
     if (_embedded && opsCount()) { toast(`The release's gallery has changes staged: submit or drop them first`, 8000); return; }
     if (_lb) closeLightbox();
+    const at = grpAnchor(GRP_READ);
     _grp = { done: { rm: new Map(), ed: new Map(), ord: new Map() }, rels: new Map(), sig: '', sized: new Set(),
       was: { MBID, ENT, R, CAA, MODEL, VIEW_ONLY, QUIET, _embedded, _mounted, PAGE_DOC, _dropZone, _loadingArt } };
     VIEW_ONLY = QUIET = _embedded = _dropZone = _loadingArt = false;
@@ -10148,9 +10178,9 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     MODEL = [];
     document.documentElement.setAttribute('data-as-grp', '');
     grpModel();
-    GV.edit = true; GV.menu = false;
+    GV.edit = true; GV.menu = GV.toc = false;
     asLog.info(`Group gallery: editing on, ${MODEL.length} images`);
-    gvRender(); render(); grpSizes();
+    gvRender(); render(); grpRestore(at, GRP_EDIT); grpSizes();
   }
   // false when the person keeps their staged changes
   function grpExit(force) {
@@ -10158,6 +10188,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     const n = opsCount();
     if (n && !force && !confirm(`Drop ${n} unsubmitted change${n === 1 ? '' : 's'}?`)) return false;
     if (_lb) closeLightbox();
+    const at = grpAnchor(GRP_EDIT);
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     for (const it of MODEL) _imgCache.delete(String(it.id));   // the group's image nodes
     ({ MBID, ENT, R, CAA, MODEL, VIEW_ONLY, QUIET, _embedded, _mounted, PAGE_DOC, _dropZone, _loadingArt } = _grp.was);
@@ -10167,7 +10198,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     root.remove();
     GV.edit = false; GV.bar = null; GV.html = '';
     asLog.info(`Group gallery: editing off${n ? `, ${n} change${n === 1 ? '' : 's'} dropped` : ''}`);
-    gvRender();
+    gvRender(); grpRestore(at, GRP_READ);
     if (_embedded && document.getElementById('as-slot')) render();   // the release's gallery goes back to its slot
     return true;
   }
@@ -10222,18 +10253,18 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   // removals, edits, and a reorder per release whose order changed; each label says the release
   function grpPlan() {
     const plan = [];
-    for (const it of MODEL.filter(x => x._del)) plan.push({ label: `${it._relLabel}: Remove ${it._origTypes[0] || ITEM}`, id: it.id, kind: 'remove', _it: it, _rid: it._rel, build: m => buildRemove(it, m) });
+    for (const it of MODEL.filter(x => x._del)) plan.push({ label: `${it._relLabel}: Remove ${it._origTypes[0] || ITEM}`, what: `Remove ${it._origTypes[0] || ITEM}`, rel: it._relLabel, id: it.id, kind: 'remove', _it: it, _rid: it._rel, build: m => buildRemove(it, m) });
     for (const it of MODEL.filter(x => !x._del && (x.comment !== x._origComment || x.types.join('|') !== x._origTypes.join('|')))) {
       const ch = [];
       if (it.types.join('|') !== it._origTypes.join('|')) ch.push(`type → ${it.types.join(', ') || '(none)'}`);
       if (it.comment !== it._origComment) ch.push(`comment → ${it.comment ? `“${it.comment}”` : '(cleared)'}`);
-      plan.push({ label: `${it._relLabel}: Edit ${it._origTypes[0] || ITEM}: ${ch.join(', ')}`, id: it.id, kind: 'edit', _it: it, _rid: it._rel, build: m => buildEdit(it, m) });
+      plan.push({ label: `${it._relLabel}: Edit ${it._origTypes[0] || ITEM}: ${ch.join(', ')}`, what: `Edit ${it._origTypes[0] || ITEM}: ${ch.join(', ')}`, rel: it._relLabel, id: it.id, kind: 'edit', _it: it, _rid: it._rel, build: m => buildEdit(it, m) });
     }
     for (const r of _grp.rels.values()) {
       const ex = MODEL.filter(it => it._rel === r.id && !it._del);
       if (ex.length < 2) continue;
       const now = ex.slice().sort((a, b) => a.order - b.order).map(it => it.id).join(','), orig = ex.slice().sort((a, b) => a._origOrder - b._origOrder).map(it => it.id).join(',');
-      if (now !== orig) plan.push({ label: `${gvRelLabel(r)}: Reorder ${ITEMS}`, kind: 'reorder', _rid: r.id, build: m => buildReorder(m, r.id) });
+      if (now !== orig) plan.push({ label: `${gvRelLabel(r)}: Reorder ${ITEMS}`, what: `Reorder ${ITEMS}`, rel: gvRelLabel(r), kind: 'reorder', _rid: r.id, build: m => buildReorder(m, r.id) });
     }
     return plan;
   }
@@ -10299,7 +10330,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
       : GV.by === 'type' ? (t.n > 1 ? `${t.n} releases` : gvRelLabel(it.r)) + (it.comment ? ' · ' + it.comment : '')
       : it.types.join(', ') + (it.comment ? ' · ' + it.comment : '');
     const pic = t.kind === 'pdf' ? `<span class="as-gv-doc">${GV_SVG.pdf}<b>PDF</b></span>` : `<img loading="lazy" draggable="false" alt="" src="${esc(it.thumb)}"${it.pdf || it.thumb === it.image ? '' : ` data-full="${esc(it.image)}" onerror="this.onerror=null;this.src=this.dataset.full"`}>`;
-    return `<figure class="as-gv-t${t.kind === 'stack' ? ' stk' : ''}" data-gvk="${esc(t.key)}" data-gvs="${si}">
+    return `<figure class="as-gv-t${t.kind === 'stack' ? ' stk' : ''}" data-gvk="${esc(t.key)}" data-gvid="${esc(it.id)}" data-gvs="${si}">
       <div class="as-gv-im">${pic}${t.n > 1 ? `<span class="as-gv-n">×${t.n}</span>` : ''}${t.kind === 'stack' ? `<span class="as-gv-n">${t.items.length} page${t.items.length === 1 ? "" : "s"}</span>` : ''}<span class="as-selmark">✓</span></div>
       <figcaption>${esc(cap)}</figcaption></figure>`;
   }
@@ -10322,7 +10353,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     const seg = (v, l) => `<button type="button" data-gvby="${v}" aria-pressed="${GV.by === v}" class="${GV.by === v ? 'on' : ''}">${l}</button>`;
     const chip = (k, l) => `<button type="button" class="as-gv-chip${GV[k] ? ' on' : ''}" data-gvchip="${k}" aria-pressed="${GV[k]}">${l}</button>`;
     const nb = tiles.filter(t => t.kind === 'stack').length, np = tiles.filter(t => t.kind === 'pdf').length;
-    const bar = `<div class="as-gv-bar"><span class="as-gv-lbl">Group by</span><div class="as-gv-seg">${seg('type', 'Type')}${seg('release', 'Release')}${seg('none', 'None')}</div>
+    const bar = `<div class="as-gv-bar"><span class="as-gv-lbl">Group by</span><div class="as-gv-seg">${seg('type', 'Type')}${seg('release', 'Release')}${seg('none', 'None')}</div>${GV.by === 'none' ? '' : `<div class="as-gv-toc"><button type="button" class="as-gv-chip${GV.toc ? ' on' : ''}" data-gvtoc aria-expanded="${!!GV.toc}" data-tip="Jump to a ${GV.by === 'release' ? 'release' : 'type'}">${GV_TOC_SVG} Jump to</button><div class="as-gv-menu as-gv-tocm${GV.toc ? ' open' : ''}"></div></div>`}
       ${GV.edit ? '' : chip('merge', 'Merge look-alikes') + chip('book', 'Booklets only' + (nb ? ' ' + nb : ''))}${np && !GV.edit ? chip('pdf', 'PDF ' + np) : ''}
       <button type="button" class="as-gv-chip as-gv-edc${GV.edit ? ' on' : ''}" data-gvedmode aria-pressed="${GV.edit}"${GV.edit || (!d.wait && !(p.read < p.total)) ? '' : ' disabled'} data-tip="${GV.edit ? `Stop editing
 Staged changes are dropped (it asks first)` : `Edit every release's art here, in Art Station's gallery
@@ -10335,11 +10366,36 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
     // the bar and the tiles are written apart: a progress note or the menu never redraws the images
     // .as-gv-as holds Art Station's gallery while editing (grpEnter), in place of the tiles
     if (!el.firstChild) el.innerHTML = '<div class="as-gv-head"></div><div class="as-gv-as"></div><div class="as-gv-body"></div>';
+    if (!GV.headRO && window.ResizeObserver) { GV.headRO = new ResizeObserver(() => el.style.setProperty('--as-gv-headh', el.querySelector('.as-gv-head').getBoundingClientRect().height + 'px')); GV.headRO.observe(el.querySelector('.as-gv-head')); }
     if (bar !== GV.bar) { GV.bar = bar; el.querySelector('.as-gv-head').innerHTML = bar; }
     el.classList.toggle('editing', GV.edit);
     el.querySelector('.as-gv-body').hidden = GV.edit;
     if (!GV.edit && body !== GV.html) { GV.html = body; el.querySelector('.as-gv-body').innerHTML = body; }
     gvSelPaint();
+    if (GV.toc) gvTocFill();
+  }
+  const GV_TOC_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg>';
+  // the sections on screen, read view or Art Station's while editing, with their names and counts
+  function gvTocTargets() {
+    if (!GV.el) return [];
+    if (GV.edit) return [...root.querySelectorAll('.as-sec, .as-grow')].filter(e => e.offsetParent).map(e => ({ e,
+      name: (e.querySelector('h3, .as-gl-name') || {}).textContent || '', n: (e.querySelector('.as-cnt, .as-gl-cnt') || {}).textContent || '' }));
+    return [...GV.el.querySelectorAll('.as-gv-body .as-gv-sec')].filter(e => e.querySelector('h3')).map(e => ({ e,
+      name: [...e.querySelectorAll('h3 > span')].filter(s => !s.matches('.as-gv-cnt')).map(s => s.textContent).join(' · '), n: (e.querySelector('.as-gv-cnt') || {}).textContent || '' }));
+  }
+  function gvTocFill() {
+    const m = GV.el && GV.el.querySelector('.as-gv-tocm'); if (!m) return;
+    const ts = gvTocTargets();
+    m.innerHTML = ts.length ? ts.map((t, i) => `<button type="button" data-gvjump="${i}" title="${esc(t.name)}"><span>${esc(t.name)}</span><span>${esc(t.n)}</span></button>`).join('') : '<button type="button" disabled>Nothing to jump to</button>';
+  }
+  // a section's heading just under the pinned bars (Event Horizon's, the gallery's, Art Station's toolbar while editing)
+  function gvJump(i) {
+    const t = gvTocTargets()[i]; if (!t) return;
+    const pin = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--eh-pin-h')) || 0;
+    const head = GV.el.querySelector('.as-gv-head'), bar = GV.edit && root.querySelector('.as-bar');
+    const over = pin + (head ? head.offsetHeight : 0) + (bar ? bar.offsetHeight : 0);
+    window.scrollTo(0, Math.max(0, window.scrollY + t.e.getBoundingClientRect().top - over - 8));
+    asLog.debug(`Group gallery: jumped to ${t.name}`);
   }
   const gvSelPaint = () => { if (GV.el) for (const f of GV.el.querySelectorAll('[data-gvk]')) f.classList.toggle('on', GV.sel.has(f.dataset.gvk)); };
   const gvTile = k => { for (const sec of GV.secs || []) { const t = sec.tiles.find(x => x.key === k); if (t) return t; } return null; };
@@ -10435,7 +10491,9 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
         if (b.dataset.gvchip) { const k = b.dataset.gvchip; GV[k] = !GV[k]; gvRender(); return; }
         if ('gvedmode' in b.dataset) { if (GV.edit) grpExit(); else grpEnter(); return; }
         if ('gvpause' in b.dataset) { const p = (GV.d && GV.d.progress) || {}; document.dispatchEvent(new CustomEvent('mbu-art-group-pause', { detail: JSON.stringify({ rg: GV.d.rg, paused: !p.paused }) })); return; }
-        if ('gvdl' in b.dataset) { GV.menu = !GV.menu; gvRender(); return; }
+        if ('gvdl' in b.dataset) { GV.menu = !GV.menu; GV.toc = false; gvRender(); return; }
+        if ('gvtoc' in b.dataset) { GV.toc = !GV.toc; GV.menu = false; gvRender(); return; }
+        if (b.dataset.gvjump) { GV.toc = false; gvRender(); gvJump(+b.dataset.gvjump); return; }
         if (b.dataset.gvzip) { GV.menu = false; gvZip(b.dataset.gvzip); return; }
       }
       const f = e.target.closest('[data-gvk]');
@@ -10474,9 +10532,13 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
     });
     document.addEventListener('mouseup', e => { if (e.button === 2) { paint = null; rmb = false; } });
     window.addEventListener('blur', () => { rmb = false; });
-    document.addEventListener('mousedown', e => { if (GV.menu && !e.target.closest('.as-gv-dlw')) { GV.menu = false; gvRender(); } });
+    document.addEventListener('mousedown', e => {
+      if (GV.menu && !e.target.closest('.as-gv-dlw')) { GV.menu = false; gvRender(); }
+      if (GV.toc && !e.target.closest('.as-gv-toc')) { GV.toc = false; gvRender(); }
+    });
     // the toolbar pins under the bar, whose height changes as it wraps
-    new ResizeObserver(() => { const h = el.querySelector('.as-gv-head'); if (h) el.style.setProperty('--as-gv-headh', h.offsetHeight + 'px'); }).observe(el);
+    const ro = new ResizeObserver(() => { const h = el.querySelector('.as-gv-head'); if (h) el.style.setProperty('--as-gv-headh', h.getBoundingClientRect().height + 'px'); });
+    ro.observe(el);
     slot.append(el);
     return el;
   }
