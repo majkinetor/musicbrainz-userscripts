@@ -40,7 +40,8 @@ async function liveHolds(mbid, name) {
     logDebug(`+ alias: checking ${mbid}'s live aliases for "${name}"`);
     let why = '';
     const live = await Promise.race([
-        mbnFetch(`${location.origin}/ws/2/artist/${mbid}?inc=aliases&fmt=json`, { headers: { Accept: 'application/json' } }, { background: false })
+        // fresh: the gate's cache would answer from before an alias added in MusicBrainz's own form, which marks no edit here
+        mbnFetch(`${location.origin}/ws/2/artist/${mbid}?inc=aliases&fmt=json`, { headers: { Accept: 'application/json' } }, { background: false, fresh: true })
             .then(r => { if (!r) { why = 'cancelled'; return null; } if (!r.ok) { why = 'HTTP ' + r.status; return null; } return r.json(); })
             .catch(e => { why = e && e.message || String(e); return null; }),
         new Promise(res => setTimeout(() => { why = `no answer in ${LIVE_TIMEOUT / 1000}s`; res(null); }, LIVE_TIMEOUT)),
