@@ -1,8 +1,12 @@
-// What's new (#896): the Announcements discussions, checked once a day. While something is unread the
+// What's new (#896): the Announcements discussions, checked every hour. While something is unread the
 // String Theory icon is golden and clicking it opens this viewer instead of the dock.
-// The discussions API ignores sort and category and answers oldest first, so read the last two pages;
+// They come from news.json on the project site (#1123), which the pages workflow rebuilds whole on every
+// change to an announcement, so reading it costs no GitHub call, and each check replaces the list: an edit
+// or a delete reaches the viewer too. Only when the file can't be read does the check ask GitHub's API.
+// That API ignores sort and category and answers oldest first, so read the last two pages;
 // the viewer reads further back, page by page, as its list is scrolled to the end.
-var ST_NEWS_KEY = 'stNews', ST_NEWS_MAX = 20, ST_NEWS_DAY = 864e5, ST_NEWS_FIRST = 14 * ST_NEWS_DAY;
+var ST_NEWS_KEY = 'stNews', ST_NEWS_MAX = 20, ST_NEWS_DAY = 864e5, ST_NEWS_FIRST = 14 * ST_NEWS_DAY, ST_NEWS_EVERY = 36e5;
+var ST_NEWS_FILE = 'https://milic.info/musicbrainz-userscripts/news.json';
 var ST_NEWS_ALL = 'https://github.com/' + ST_REPO + '/discussions?discussions_q=category%3AAnnouncements+-label%3A%22skip+changelog%22';
 var ST_NEWS_LOG = 'https://github.com/' + ST_REPO + '/blob/main/userscripts/string_theory/CHANGELOG.md';
 var ST_NEWS_API = 'https://api.github.com/repos/' + ST_REPO + '/discussions?per_page=100', ST_NEWS_FULL = 'application/vnd.github.full+json';
@@ -74,14 +78,15 @@ function stNewsGet(url, accept, cb) {
       var tags = {}; try { tags = GM_getValue(ST_NEWS_ETAG, {}) || {}; } catch (e) { /* no storage */ }
       var old = tags[url];
       if (old && old.e) h['If-None-Match'] = old.e;
+      if (old && old.l) h['If-Modified-Since'] = old.l;
       GM_xmlhttpRequest({ method: 'GET', url: url, headers: h, timeout: 20000,
         onload: function (r) {
           var head = r.responseHeaders || '';
           if (r.status === 304 && old) return cb(old.t, old.h);
           if (r.status < 200 || r.status >= 300) return fail(r.status, head);
-          var e = stNewsHead(head, 'etag');
-          if (e) {
-            delete tags[url]; tags[url] = { e: e, t: r.responseText, h: head };
+          var e = stNewsHead(head, 'etag'), l = stNewsHead(head, 'last-modified');
+          if (e || l) {
+            delete tags[url]; tags[url] = { e: e, l: l, t: r.responseText, h: head };
             var keys = Object.keys(tags); while (keys.length > 16) delete tags[keys.shift()];
             try { GM_setValue(ST_NEWS_ETAG, tags); } catch (x) { /* no storage */ }
           }
@@ -122,6 +127,17 @@ function stNewsPick(pages, max) {
       && !(d.labels || []).some(function (l) { return l.name === 'skip changelog'; });
   }).sort(function (a, b) { return Date.parse(b.created_at) - Date.parse(a.created_at); }).slice(0, max || ST_NEWS_MAX).map(stNewsItem);
 }
+// the site's file: every announcement, newest first, its channel already worked out; null when it can't be read
+function stNewsFile(t) {
+  try {
+    var j = JSON.parse(t);
+    if (!j || !Array.isArray(j.items)) return null;
+    return j.items.map(function (d) {
+      var s = stNewsScript(d.labels || []);
+      return { id: d.id, title: d.title, url: d.url, at: d.at, html: d.html || '', script: s.name, icon: s.icon, issue: d.issue || 0, channel: d.channel || '' };
+    });
+  } catch (e) { return null; }
+}
 // an issue with the `released` label is on stable, any other on latest
 function stNewsChannels(items, old, cb) {
   var known = {}, left = 0;
@@ -146,9 +162,22 @@ function stNewsChannels(items, old, cb) {
 }
 function stNewsCheck(force, cb) {
   var v = stNewsRead();
-  if (!force && Date.now() - v.at < ST_NEWS_DAY) return;
+  if (!force && Date.now() - v.at < ST_NEWS_EVERY) return;
+  v.at = Date.now(); stNewsSave(v);   // another tab need not check too; a failure waits for the next hour
+  stNewsGet(ST_NEWS_FILE, 'application/json', function (t) {
+    var all = t && stNewsFile(t);
+    if (!all) return stNewsCheckApi(v, cb);
+    var now = stNewsRead(), ids = all.map(function (i) { return i.id; });
+    now.items = all.slice(0, ST_NEWS_MAX); now.ids = ids; now.src = 'file';
+    now.seen = now.seen.filter(function (id) { return ids.indexOf(id) >= 0; });   // a deleted post's mark goes with it
+    if (!now.since) now.since = Date.now() - ST_NEWS_FIRST;   // a first run doesn't flag the whole history
+    stNewsSave(now); stNewsSignal();
+    if (cb) cb(true);
+  });
+}
+// GitHub's API, when the site's file can't be read
+function stNewsCheckApi(v, cb) {
   var base = ST_NEWS_API, full = ST_NEWS_FULL;
-  v.at = Date.now(); stNewsSave(v);   // another tab need not check too; a failure waits for tomorrow
   stNewsGet(base + '&page=1', full, function (first, head) {
     if (!first) { if (cb) cb(false, stNewsWhy); return; }
     var last = /[?&]page=(\d+)>;\s*rel="last"/.exec(head), n = last ? +last[1] : 1;
@@ -156,7 +185,7 @@ function stNewsCheck(force, cb) {
       var items = stNewsPick(pages);
       stNewsChannels(items, v.items, function () {
         var now = stNewsRead();
-        now.items = items;
+        now.items = items; now.src = 'api'; delete now.ids;
         if (!now.since) now.since = Date.now() - ST_NEWS_FIRST;   // a first run doesn't flag the whole history
         stNewsSave(now); stNewsSignal();
         if (cb) cb(true);
@@ -251,7 +280,7 @@ function stNewsOpen() {
   // Older posts, 20 at a time as the list nears its end: GitHub's pages run oldest first, so walk back from the last one.
   // A cached set short of 20 is the whole history. They are kept for this window only, and carry no channel:
   // that costs a call a post, and old changes are long released.
-  var older = [], pool = [], page = 0, busy = false, failed = false, end = items.length < ST_NEWS_MAX;
+  var older = [], pool = [], page = 0, busy = false, failed = false, fileGot = false, end = v.src === 'file' && v.ids ? v.ids.length <= items.length : items.length < ST_NEWS_MAX;
   var moreNear = function () { return list.scrollHeight - list.scrollTop - list.clientHeight < 200; };
   var moreGot = function (t) {
     var have = {}; items.concat(pool).forEach(function (i) { have[i.id] = 1; });
@@ -275,7 +304,16 @@ function stNewsOpen() {
   var moreLoad = function () {
     if (busy || end || !ov.isConnected) return;
     busy = true; failed = false; draw();
-    if (page) return moreFill();
+    if (page || fileGot) return moreFill();
+    if (v.src === 'file') {
+      return stNewsGet(ST_NEWS_FILE, 'application/json', function (t) {
+        var all = t && stNewsFile(t);
+        if (!all) { busy = false; failed = true; if (ov.isConnected) draw(); return; }
+        var have = {}; items.forEach(function (i) { have[i.id] = 1; });
+        pool = all.filter(function (i) { return !have[i.id]; }); fileGot = true;
+        moreFill();
+      });
+    }
     stNewsGet(ST_NEWS_API + '&page=1', ST_NEWS_FULL, function (t, head) {
       if (t === null) { busy = false; failed = true; if (ov.isConnected) draw(); return; }
       var last = /[?&]page=(\d+)>;\s*rel="last"/.exec(head);
@@ -351,7 +389,11 @@ function stNewsOpen() {
       var id = items[at] && items[at].id;
       v = stNewsRead();
       var fresh = {}; v.items.forEach(function (i) { fresh[i.id] = 1; });
-      items = v.items.concat(older.filter(function (i) { return !fresh[i.id]; }));
+      // from the file, an older post deleted meanwhile is dropped; the next scroll to the end reads the file again
+      var live = null; if (v.src === 'file' && v.ids) { live = {}; v.ids.forEach(function (id) { live[id] = 1; }); }
+      older = older.filter(function (i) { return !fresh[i.id] && (!live || live[i.id]); });
+      items = v.items.concat(older); pool = []; fileGot = false;
+      end = live ? v.ids.length <= items.length : end;
       var n = items.findIndex(function (i) { return i.id === id; });
       if (n < 0) show(0); else { at = n; draw(); }
     });
@@ -362,7 +404,7 @@ function stNewsOpen() {
   var first = stNewsUnread(v)[0], idx = first ? items.indexOf(first) : 0;
   show(idx < 0 ? 0 : idx);
   ov.querySelector('#st-news').focus();
-  if (Date.now() - v.at > 3e5) refresh();   // on opening, but not on every opening: GitHub allows 60 anonymous calls an hour
+  if (Date.now() - v.at > 3e5) refresh();   // on opening, but not on every opening: the API fallback allows 60 anonymous calls an hour
 }
 function stNewsStart() {
   var css = document.createElement('style'); css.id = 'st-news-gold';

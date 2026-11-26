@@ -105,3 +105,38 @@ test.describe("what's new, older posts", () => {
     if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT + '-more.png' });
   });
 });
+test.describe("what's new, from the site's file", () => {
+  // #1123: news.json on the project site, rebuilt whole by the pages workflow; each check replaces the list with it
+  const filePost = (id, title, at) => ({ id, title, url: 'https://github.com/x/' + id, at, edited: '', html: '<p>' + title + '</p>',
+    labels: ['area | apollo editor'], issue: 0, channel: 'stable' });
+  const day = (k) => new Date(Date.now() - k * 864e5).toISOString();
+  // cached: 3 (unread), 2 (read), 1 (read); the file meanwhile edited 3, deleted 2, and has 44 older ones after 1
+  const cached = [3, 2, 1].map((id) => ({ id, title: 'Old ' + id, url: 'https://github.com/x/' + id, at: day(4 - id), html: '<p>Old ' + id + '</p>',
+    script: 'Apollo Editor', icon: '', issue: 0, channel: '' }));
+  const file = { generated: day(0), items: [filePost(3, 'Edited 3', day(1)), filePost(1, 'Old 1', day(3))]
+    .concat(Array.from({ length: 44 }, (_, k) => filePost(970000 - k, 'File older ' + (k + 1), day(10 + k)))) };
+  test.use({ gm: { name: 'String Theory', values: { 'string_theory.off': ['event_horizon'], stNews: { at: 0, since: 1, seen: [2, 1], items: cached } } } });
+  test('edits and deletions follow the file, older posts come from it', { tag: ['@sandbox'] }, async ({ page, inject, context }) => {
+    const asked = [];
+    answerGm(context, ({ url }) => {
+      if (url === 'https://milic.info/musicbrainz-userscripts/news.json') { asked.push('file'); return { status: 200, url, headers: 'content-type: application/json', body: JSON.stringify(file) }; }
+      if (/^https:\/\/api\.github\.com\//.test(url)) { asked.push('api'); return { status: 500, url, headers: '', body: '' }; }
+      return null;
+    });
+    await page.goto(`${SANDBOX}/search/edits`, { waitUntil: 'load', timeout: 60000 });
+    await inject('string_theory');
+    await page.waitForSelector('#mbu-dock', { timeout: 15000 });
+    await until(() => page.evaluate(() => document.documentElement.hasAttribute('data-st-news')), v => v, { timeout: 10000 });
+    await page.click('#mbu-dock');
+    await page.waitForSelector('#st-news-list li[data-n="19"]', { timeout: 5000 });
+    const titles = await page.$$eval('#st-news-list li[data-n] .t', xs => xs.map(x => x.textContent));
+    check(titles[0] === 'Edited 3', `an edited post shows its new title (${titles[0]})`);
+    check(!titles.includes('Old 2'), 'a deleted post is gone');
+    check(titles.length === 20, `the newest 20 are kept (${titles.length})`);
+    check((await page.textContent('#st-news-view h3 .n')) === 'Edited 3' && (await page.textContent('#st-news-view .b')).includes('Edited 3'), 'its new text');
+    // scrolled to the end on every look: each scroll to the end loads the next 20
+    const n = await until(() => page.$eval('#st-news-list', l => { l.scrollTop = l.scrollHeight; l.dispatchEvent(new Event('scroll')); return l.querySelectorAll('li[data-n]').length; }), v => v >= 46, { timeout: 30000 });
+    check(n === 46, `older posts come from the file, to its end (${n})`);
+    check(!asked.includes('api'), `no GitHub API call (${asked.join(', ')})`);
+  });
+});

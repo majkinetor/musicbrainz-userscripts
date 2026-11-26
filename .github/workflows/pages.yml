@@ -1,0 +1,55 @@
+# The project site (docs/) on GitHub Pages, with the Announcements as news.json beside it (#1123):
+# String Theory's What's new reads that file, so it makes no GitHub API calls and never meets the
+# anonymous rate limit. Pages' source is "GitHub Actions": this workflow is the only deploy.
+#
+# Every run is a full rebuild from GitHub's current state, so any change to an announcement reaches
+# the file: an edit, a delete, a label (`skip changelog` drops it, an `area | …` label moves it), a
+# move to another category, a transfer. A failed build deploys nothing, and the site keeps the last file.
+#
+# A push made with a workflow's own token starts no workflow, so metrics.yml starts this one by hand
+# after it commits docs/stats.html. The daily run catches anything else that slipped by.
+name: pages
+on:
+  discussion:
+    types: [created, edited, deleted, transferred, category_changed, labeled, unlabeled, pinned, unpinned]
+  issues:
+    types: [labeled, unlabeled]   # the `released` label sets a post's channel
+  push:
+    branches: [main]
+    paths: ['docs/**', 'dev/news/**', '.github/workflows/pages.yml']
+  schedule:
+    - cron: '41 4 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  discussions: read
+  issues: read
+  pull-requests: read
+  pages: write
+  id-token: write
+# one build at a time; a newer event replaces a queued one, and each build reads the whole state anyway
+concurrency: { group: pages, cancel-in-progress: false }
+jobs:
+  deploy:
+    # an issue label other than `released` changes no channel
+    if: github.event_name != 'issues' || github.event.label.name == 'released'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: The announcements
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node dev/news/build.mjs --out docs/news.json
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: docs }
+      - id: deploy
+        uses: actions/deploy-pages@v4

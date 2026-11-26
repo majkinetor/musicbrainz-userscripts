@@ -12,6 +12,7 @@
 name: metrics
 permissions:
   contents: write
+  actions: write   # to start the site deploy
 on:
   schedule:
     - cron: '17 9 * * 3'
@@ -53,8 +54,11 @@ jobs:
           df -h / | tail -1
       # main moves during the hour the count takes, often with these same files (a local run, a
       # dashboard change): the reports go on top of the latest main as they are, never rebased
+      # docs/stats.html is on the site; a push with this token starts no workflow, so the deploy is started here
       - name: Commit the reports
         if: steps.dump.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           files=(dev/script-metrics/out/METRICS.md dev/script-metrics/out/dashboard.html dev/script-metrics/out/metrics.json docs/stats.html)
           keep=$(mktemp -d)
@@ -67,7 +71,7 @@ jobs:
             if git diff --quiet -- "${files[@]}"; then echo "reports unchanged"; exit 0; fi
             git add -- "${files[@]}"
             git commit -q -m "metrics: rebuild from the ${{ steps.dump.outputs.id }} snapshot [skip ci]"
-            git push -q origin HEAD:main && { git log --oneline -1; exit 0; }
+            git push -q origin HEAD:main && { git log --oneline -1; gh workflow run pages.yml --ref main; exit 0; }
             sleep 10
           done
           exit 1
