@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.26.221208
+// @version      2026.11.26.232358
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -117,8 +117,9 @@ if (window.top !== window && location.hostname === 'www.youtube-nocookie.com' &&
                 if (!m.media) return;
                 const ms = W.navigator.mediaSession;
                 try {
-                    if (title !== m.media.title + '|' + m.media.album) {
-                        title = m.media.title + '|' + m.media.album;
+                    const key = m.media.title + '|' + m.media.album + '|' + ((m.media.artwork || [])[0] || {}).src;   // a cover found later sets it again
+                    if (title !== key) {
+                        title = key;
                         own.meta.call(ms, new W.MediaMetadata(copy({ title: m.media.title, artist: m.media.artist, album: m.media.album, artwork: m.media.artwork })));
                         for (const k of ['play', 'pause', 'nexttrack', 'previoustrack', 'seekbackward', 'seekforward', 'seekto'])
                             try { own.act.call(ms, k, fn(e => { try { window.parent.postMessage({ ehPlyAction: k, seekOffset: e && e.seekOffset, seekTime: e && e.seekTime }, '*'); } catch (x) {} })); } catch (x) {}
@@ -14621,10 +14622,19 @@ function plyWake(on) {
     plyWakeIv = setInterval(() => { const c = ply.q[ply.i]; if (c && !ply.paused) plyMedia(c, true); }, 4000);
     a.play().then(() => PLOG.info('keep-awake audio playing'), e => PLOG.warn('keep-awake audio refused:', e.message));
 }
+// the track's cover for the phone's card: the image that loaded on the page (caaSrc), because the archive's fixed
+// front-250 can be missing (404), and the card then shows the site's icon (#1104). A release this page never showed
+// is looked up once, and the next refresh (every 4 s) takes the image that loaded
+const PLY_ART_ASKED = new Set();
+const plyArt = t => {
+    if (!t.front || !t.rel) return [];
+    if (!CAA_CV.has('release/' + t.rel) && !PLY_ART_ASKED.has(t.rel)) { PLY_ART_ASKED.add(t.rel); caaFind('release', t.rel).catch(() => {}); }
+    return [{ src: caaSrc('release', t.rel), sizes: '250x250' }, { src: caaSrc('release', t.rel, 500), sizes: '500x500' }];
+};
 // what a widget's session shows (Bandcamp's, Deezer's, YouTube's): the player's track, its cover and clock
 const plyWidgetMedia = t => ({ title: t.title || '', artist: t.artist || '', album: t.relTitle || '', paused: !!ply.paused,
     dur: (t.len || 0) / 1000, pos: Math.min(t.len || 0, t.played || 0) / 1000,
-    artwork: t.front && t.rel ? [{ src: `https://coverartarchive.org/release/${t.rel}/front-250`, sizes: '250x250' }, { src: `https://coverartarchive.org/release/${t.rel}/front-500`, sizes: '500x500' }] : [] });
+    artwork: plyArt(t) });
 // to YouTube's widget as JSON text, as its own commands go: an object there stopped its state messages to the page
 const plyYtMedia = t => plyPost(JSON.stringify({ ehPlyCmd: 'media', media: plyWidgetMedia(t) }));
 function plyMedia(t, again, w = PW) {
@@ -14634,7 +14644,7 @@ function plyMedia(t, again, w = PW) {
     const ms = w === PW ? msPage() : w.navigator.mediaSession; if (!ms || !t) { if (!again) LOG.warn('player: Media Session unavailable'); return; }
     try {
         ms.metadata = new (w.MediaMetadata || MediaMetadata)(msObj({ title: t.title || '', artist: t.artist || '', album: t.relTitle || '',
-            artwork: t.front && t.rel ? [{ src: caaSrc('release', t.rel), sizes: '250x250' }, { src: caaSrc('release', t.rel, 500), sizes: '500x500' }] : [] }, w));
+            artwork: plyArt(t) }, w));
         ms.playbackState = 'playing';
         if (!again) LOG.info('player: Media Session metadata set; page context:', PW === window ? 'window' : 'unsafeWindow', 'exportFunction:', typeof exportFunction, 'cloneInto:', typeof cloneInto);
     } catch (e) { if (!again) LOG.warn('player: Media Session metadata failed:', e.message); }
