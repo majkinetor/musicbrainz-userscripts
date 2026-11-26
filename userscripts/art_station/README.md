@@ -102,6 +102,10 @@ In [Event Horizon](../event_horizon/README.md), a release group's **Artwork** ta
 
 **Download zip** saves the selected images, the largest copy of each merged image, or everything, in a folder per release: `1984 JP CP35-3017/booklet-03.jpg`. Clicking an image opens the viewer over its row.
 
+The thumbnail sizes work as in the main gallery: the size buttons, the wheel over them, or right-click + wheel anywhere.
+
+**Edit** changes every release's art in place. Each image gets its own tile; click tiles to select them, then set their types, write a comment, or mark them for removal. Grouped by release, drag a cover to move it within its release. **Submit…** opens the same commit window as the main gallery, with an edit per release; **Discard** drops what you staged. After submitting, the cover art archive can take a while to show the changes.
+
 ## File names ⇄ types
 
 When an added image has no type, it's guessed from its file name (switch it off in ⚙):

@@ -92,11 +92,13 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   check(await gv.locator('.as-gv-t.on').count() === 1, 'right-click selects the tile');
   await gv.locator('[data-gvdl]').click();
   check(/Selected \(1\)/.test(await gv.locator('[data-gvzip="sel"]').textContent()), 'Download zip offers the selected one');
-  await page.keyboard.press('Escape');
+  await gv.locator('[data-gvdl]').click();   // close the menu (an outside click is swallowed)
+  await gv.locator('.as-gv-t').first().click({ button: 'right' });   // unselect
   // editing the whole group: a type and a comment on two covers, a removal, and (by release) a move; a dry run sends nothing
   const posts = [];
   await page.route('**/*', r => { if (r.request().method() === 'POST') { posts.push(r.request().url()); return r.abort(); } return r.continue(); });
   await gv.locator('[data-gvedmode]').click();
+  await until(() => gv.locator('.as-gv-edrow').count(), n => n > 0);
   check(await gv.locator('.as-gv-edrow').isVisible() && await gv.locator('.as-gv-t.stk').count() === 0, 'Edit shows the edit row, one tile per image');
   await gv.locator('.as-gv-t').nth(0).click(); await gv.locator('.as-gv-t').nth(1).click();
   check(/2 selected/.test(await gv.locator('.as-gv-eds').textContent()), 'a click selects a tile while editing');

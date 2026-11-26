@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-26 10:47 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-26 10:48 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -612,6 +612,10 @@ Its keys are in [Shortcuts](#shortcuts-1). A zoomed image follows the mouse, or 
 In [Event Horizon](../event_horizon/README.md), a release group's **Artwork** tab shows the art of all its releases. Images of a type that look alike are merged into one, marked with how many releases have them; each release's booklet is one stack, marked with its page count, whether merging is on or not. Group by type, release or nothing; **Booklets only** and **PDF** narrow the view, and **Merge look-alikes** turns merging off; the count above the gallery says how many look-alikes were merged. Select covers with right-click or right-drag, as in the main gallery, to download only those. **Pause** stops the reading.
 
 **Download zip** saves the selected images, the largest copy of each merged image, or everything, in a folder per release: `1984 JP CP35-3017/booklet-03.jpg`. Clicking an image opens the viewer over its row.
+
+The thumbnail sizes work as in the main gallery: the size buttons, the wheel over them, or right-click + wheel anywhere.
+
+**Edit** changes every release's art in place. Each image gets its own tile; click tiles to select them, then set their types, write a comment, or mark them for removal. Grouped by release, drag a cover to move it within its release. **Submit…** opens the same commit window as the main gallery, with an edit per release; **Discard** drops what you staged. After submitting, the cover art archive can take a while to show the changes.
 
 ### File names ⇄ types
 
