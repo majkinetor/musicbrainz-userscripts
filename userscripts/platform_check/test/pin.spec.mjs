@@ -1,6 +1,6 @@
 // The docked panel's pin: open with no click, against a side of the screen, moved over by its title, and back there after a reload.
 import { test, check } from '../../../dev/test/harness.mjs';
-import { openPc } from './pc.mjs';
+import { openPc, scansDone } from './pc.mjs';
 
 test.use({ gm: { name: 'Platform Check', persist: true } });
 
@@ -36,6 +36,8 @@ test('a pinned dock panel stays open where it was dragged', { tag: ['@sandbox', 
   await page.keyboard.press('Escape');
   await page.mouse.click(5, 300);
   check(await win.isVisible(), 'Escape and a click outside leave it open');
+  // Rows that a scan adds later grow the window, and held by its bottom it moves its title away from a press measured before
+  await scansDone(page);
 
   const box = () => page.evaluate(() => { const b = document.querySelector('.mbu-dock-win').getBoundingClientRect(); return { top: b.top, bottom: b.bottom }; });
   const grow = () => page.evaluate(() => { const d = document.createElement('div'); d.style.height = '100px'; document.querySelector('.mbu-dock-win').firstElementChild.append(d); });
