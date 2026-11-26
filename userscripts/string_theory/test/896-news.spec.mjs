@@ -1,5 +1,5 @@
 // #896: unread announcements turn the icon golden, and clicking it opens the viewer instead of the dock.
-import { test, check, until, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, until, SANDBOX, answerGm } from '../../../dev/test/harness.mjs';
 
 const post = (id, title, channel) => ({ id, title, url: 'https://github.com/x', at: new Date().toISOString(),
   html: `<p>Body ${id} on the RG page</p><sub>Issue: #${id}</sub><script>window.bad = 1</script>`, script: 'Apollo Editor', icon: '', issue: id, channel });
@@ -76,7 +76,22 @@ test.describe('what\'s new', () => {
 test.describe("what's new, older posts", () => {
   const full = Array.from({ length: 20 }, (_, k) => post(990020 - k, 'Cached ' + (20 - k), 'stable'));
   test.use({ gm: { name: 'String Theory', values: { 'string_theory.off': ['event_horizon'], stNews: { at: Date.now(), since: 1, seen: [], items: full } } } });
-  test('scrolling to the end loads older posts', { tag: ['@sandbox', '@quarantine'] }, async ({ page, inject }) => {
+  // GitHub's discussions API, answered here: anonymous calls get 60 an hour per address, and the nightly runners and
+  // a day of local runs use them up ("403 rate limit exceeded"), so the live API failed this spec every night.
+  // Page 1 has no announcements and links to page 2, the last; page 2 has 25 older ones, of which 20 are appended.
+  const older = Array.from({ length: 25 }, (_, k) => ({ number: 980000 - k, title: 'Older ' + (k + 1), html_url: 'https://github.com/x/' + k,
+    created_at: new Date(Date.UTC(2025, 0, 28 - k)).toISOString(), body: '', body_html: '<p>Older ' + (k + 1) + '</p>',
+    category: { slug: 'announcements' }, labels: [{ name: 'area | apollo editor' }] }));
+  test('scrolling to the end loads older posts', { tag: ['@sandbox'] }, async ({ page, inject, context }) => {
+    const asked = [];
+    answerGm(context, ({ url }) => {
+      const m = /^https:\/\/api\.github\.com\/repos\/[^/]+\/[^/]+\/discussions\?per_page=100&page=(\d+)$/.exec(url);
+      if (!m) return null;
+      asked.push(+m[1]);
+      return m[1] === '1'
+        ? { status: 200, url, headers: 'content-type: application/json\r\nlink: <' + url.replace(/page=1$/, 'page=2') + '>; rel="last"', body: '[]' }
+        : { status: 200, url, headers: 'content-type: application/json', body: JSON.stringify(m[1] === '2' ? older : []) };
+    });
     await page.goto(`${SANDBOX}/search/edits`, { waitUntil: 'load', timeout: 60000 });
     await inject('string_theory');
     await page.waitForSelector('#mbu-dock', { timeout: 15000 });
@@ -85,7 +100,7 @@ test.describe("what's new, older posts", () => {
     await page.waitForSelector('#st-news-list li[data-n="19"]', { timeout: 5000 });
     await page.$eval('#st-news-list', l => { l.scrollTop = l.scrollHeight; });
     const n = await until(() => page.$$eval('#st-news-list li[data-n]', xs => xs.length), v => v > 20, { timeout: 30000 });
-    check(n > 20, `older posts appended (${n})`);
+    check(n === 40, `20 older posts appended (${n}, pages asked: ${asked.join(', ')})`);
     check((await page.textContent('#st-news-n')) === String(n), 'the footer counts them');
     if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT + '-more.png' });
   });
