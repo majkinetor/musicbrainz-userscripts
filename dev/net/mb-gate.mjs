@@ -335,7 +335,8 @@ export function mbnTrace(ev) {
  *   o.log         (level, message) for waits worth mentioning (over a second)
  *   o.label       what the request is, for the log
  *   o.reason      why the script asks (view, play, prefetch…), its own column in the log
- *   o.entity      the entity the request is about (recording, area…), when its path does not say
+ *   o.entity      the entity the request is about (recording, area…), when its path does not say: an
+ *                 edit, a tag vote, an art archive's request (mbnLog and mbnXhr take it too)
  *   o.search      a search (?query=): it also waits out a search-shed hold (mbnFetch sets it)
  * A background request in a hidden tab books only once the queue is free, so the tab in view
  * never waits behind it.
@@ -709,8 +710,8 @@ export function mbnGm(opts, fn) {
 // a GM request function that logs through mbnGm, or null without one
 export function mbnGmFn(fn) { return fn ? o => mbnGm(o, fn) : null; }
 // an XMLHttpRequest (an upload with progress) that the gate's log shows; call it after open()
-export function mbnXhr(xhr, url, method, body) {
-    mbnLog(url, { method: method || 'GET', body }, { send: () => new Promise((ok, no) => {
+export function mbnXhr(xhr, url, method, body, o) {
+    mbnLog(url, { method: method || 'GET', body }, { ...o, send: () => new Promise((ok, no) => {
         xhr.addEventListener('load', () => ok({ status: xhr.status, rs: mbnGmSize({ responseHeaders: xhr.getAllResponseHeaders(), response: xhr.responseType && xhr.responseType !== 'text' ? xhr.response : null, responseText: !xhr.responseType || xhr.responseType === 'text' ? xhr.responseText : null }) }));
         xhr.addEventListener('error', () => no(new Error('network error')));
         xhr.addEventListener('timeout', () => no(new Error('timeout')));

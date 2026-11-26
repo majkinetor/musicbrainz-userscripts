@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.25.233432
+// @version      2026.11.26.093018
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -690,8 +690,8 @@ function mbnGm(opts, fn) {
     return fn(Object.assign({}, opts, { onload: wrap('onload'), onerror: wrap('onerror', 'network error'), ontimeout: wrap('ontimeout', 'timeout'), onabort: wrap('onabort', 'aborted') }));
 }
 function mbnGmFn(fn) { return fn ? o => mbnGm(o, fn) : null; }
-function mbnXhr(xhr, url, method, body) {
-    mbnLog(url, { method: method || 'GET', body }, { send: () => new Promise((ok, no) => {
+function mbnXhr(xhr, url, method, body, o) {
+    mbnLog(url, { method: method || 'GET', body }, { ...o, send: () => new Promise((ok, no) => {
         xhr.addEventListener('load', () => ok({ status: xhr.status, rs: mbnGmSize({ responseHeaders: xhr.getAllResponseHeaders(), response: xhr.responseType && xhr.responseType !== 'text' ? xhr.response : null, responseText: !xhr.responseType || xhr.responseType === 'text' ? xhr.responseText : null }) }));
         xhr.addEventListener('error', () => no(new Error('network error')));
         xhr.addEventListener('timeout', () => no(new Error('timeout')));
@@ -5391,7 +5391,7 @@ async function keptCover(rel, img) {
     // 30 minutes in the tab, so the next draws ask for the full image at once
     const small = ((img.thumbnails || {})['500'] || caaSrc('release', rel, 500)).replace(/^http:/, 'https:');
     const full = img.image ? String(img.image).replace(/^http:/, 'https:') : '';
-    const get = async u => { const t0 = performance.now(); try { const x = await mbnLog(u); fetchLog('CAA front ' + rel, t0, x); return x; } catch (er) { return null; } };
+    const get = async u => { const t0 = performance.now(); try { const x = await mbnLog(u, undefined, { entity: 'release' }); fetchLog('CAA front ' + rel, t0, x); return x; } catch (er) { return null; } };
     let r = full && KP_NO500.has(k) ? null : await get(small);
     if (!(r && r.ok) && full) { KP_NO500.set(k, 1); r = await get(full); }
     if (!r) throw new Error('network error');
@@ -5411,7 +5411,7 @@ async function keptCover(rel, img) {
 }
 const caa = id => kept('caa:' + id, async () => {
     const t0 = performance.now();
-    try { const r = await mbnLog('https://coverartarchive.org/release/' + id); fetchLog('CAA release ' + id, t0, r); if (r.status === 404) return '{}'; if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); } catch (e) { fetchLog('CAA release ' + id, t0, null, e); throw e; }
+    try { const r = await mbnLog('https://coverartarchive.org/release/' + id, undefined, { entity: 'release' }); fetchLog('CAA release ' + id, t0, r); if (r.status === 404) return '{}'; if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); } catch (e) { fetchLog('CAA release ' + id, t0, null, e); throw e; }
 }).then(t => JSON.parse(t).images || [], () => []);
 // platforms by host; the rest fall back to their name as a monogram
 const HOSTS = [
@@ -6224,7 +6224,7 @@ const CAA_JSON = new Map(), CAA_JSON_KEPT = caaStore('eh:caa-json', 10 * 60 * 10
 const caaJson = (k, id) => {
     const key = k + '/' + id;
     if (!CAA_JSON.has(key)) CAA_JSON.set(key, CAA_JSON_KEPT.has(key) ? Promise.resolve(CAA_JSON_KEPT.get(key))
-        : mbnLog(`${caaHost(k)}/${key}`).then(r => r.ok ? r.json() : r.status === 404 ? null : Promise.reject(new Error('HTTP ' + r.status)))
+        : mbnLog(`${caaHost(k)}/${key}`, undefined, { entity: k }).then(r => r.ok ? r.json() : r.status === 404 ? null : Promise.reject(new Error('HTTP ' + r.status)))
             .then(j => { CAA_JSON_KEPT.set(key, j); return j; }, () => null));
     return CAA_JSON.get(key);
 };

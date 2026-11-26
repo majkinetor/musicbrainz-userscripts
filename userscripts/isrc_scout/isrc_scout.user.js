@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.25
+// @version      2026.11.26.093018
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -630,8 +630,8 @@
       return fn(Object.assign({}, opts, { onload: wrap('onload'), onerror: wrap('onerror', 'network error'), ontimeout: wrap('ontimeout', 'timeout'), onabort: wrap('onabort', 'aborted') }));
   }
   function mbnGmFn(fn) { return fn ? o => mbnGm(o, fn) : null; }
-  function mbnXhr(xhr, url, method, body) {
-      mbnLog(url, { method: method || 'GET', body }, { send: () => new Promise((ok, no) => {
+  function mbnXhr(xhr, url, method, body, o) {
+      mbnLog(url, { method: method || 'GET', body }, { ...o, send: () => new Promise((ok, no) => {
           xhr.addEventListener('load', () => ok({ status: xhr.status, rs: mbnGmSize({ responseHeaders: xhr.getAllResponseHeaders(), response: xhr.responseType && xhr.responseType !== 'text' ? xhr.response : null, responseText: !xhr.responseType || xhr.responseType === 'text' ? xhr.responseText : null }) }));
           xhr.addEventListener('error', () => no(new Error('network error')));
           xhr.addEventListener('timeout', () => no(new Error('timeout')));
@@ -8593,7 +8593,7 @@ async function tidalTokenFetch() {
       const r = await mbnFetch(MB_ROOT + '/ws/js/edit/create', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-      });
+      }, { entity: 'recording' });
       const text = await r.text().catch(() => '');
       let j = null; try { j = JSON.parse(text); } catch (e) {}
       if (!r.ok || (j && j.error)) {
@@ -8694,7 +8694,7 @@ async function tidalTokenFetch() {
     }
     async function postEdits(edits, note) {
       LogAll.keep();
-      const r = await mbnFetch(MB_ROOT + '/ws/js/edit/create', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ edits, editNote: note || '', makeVotable: 0 }) });
+      const r = await mbnFetch(MB_ROOT + '/ws/js/edit/create', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ edits, editNote: note || '', makeVotable: 0 }) }, { entity: 'recording' });
       const text = await r.text().catch(() => ''); let j = null; try { j = JSON.parse(text); } catch (e) {}
       if (!r.ok || (j && j.error)) { const m = (j && (j.error.message || j.error)) || ('HTTP ' + r.status); throw new Error((typeof m === 'string' ? m : JSON.stringify(m)).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)); }
       refreshEhRelease();
