@@ -135,7 +135,18 @@ var ST_GATE_CSS = ''
   // a phone: the whole screen, whatever was saved
   + '@media (max-width:600px){#st-gate,#st-gate.full{top:0!important;left:0!important;right:0!important;bottom:0!important;width:auto!important;height:auto!important;transform:none!important;border-radius:0;border:0}'
   + '#st-gate .mbu-logpop-full,#st-gate .mbu-logpop-min,#st-gate .mbu-logpop-grip{display:none}#st-gate .mbu-logpop-h{cursor:default;flex-wrap:wrap}'
-  + '#st-gate-lanes{padding-left:90px}.st-gl-bands{left:90px}.st-gl-name{left:-90px;width:84px}}';
+  + '#st-gate-lanes{padding-left:90px}.st-gl-bands{left:90px}.st-gl-name{left:-90px;width:84px}'
+  // the title bar in two rows: the title and the close, then the filters and the actions; the count is the summary's big number
+  + '#st-gate .mbu-logpop-h{position:sticky;top:0;z-index:6;background:var(--mbu-bg);row-gap:6px;padding:8px 10px}#st-gate .mbu-logpop-h .st-gate-n,#st-gate .mbu-logpop-h>span[style]{display:none}'
+  + '#st-gate .mbu-logpop-h .mbu-logpop-x{order:1;margin-left:auto}#st-gate .mbu-logpop-h::after{content:"";order:2;flex-basis:100%;height:0}'
+  + '#st-gate .mbu-logpop-h>.st-gate-hosts,#st-gate .mbu-logpop-h>#st-gate-span,#st-gate .mbu-logpop-h>.mbu-logpop-sp,#st-gate .mbu-logpop-h>.mbu-logpop-copy,#st-gate .mbu-logpop-h>.mbu-logpop-clear{order:3}'
+  // the whole window scrolls: the summary and the time line go up, and the table then fills the screen under the title bar
+  + '#st-gate{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}#st-gate>*,#st-gate .st-gate-pane{flex-shrink:0!important}'
+  + '#st-gate #st-gate-body{flex:none;height:calc(100dvh - var(--st-gate-hh,84px))}#st-gate:not([data-max=lanes]) #st-gate-lanes{max-height:30vh}#st-gate-split{display:none}'
+  // a compact summary; a phone has no mouse wheel, so the wheel button goes
+  + '#st-gate-state{padding:6px 10px 0}.st-gate-sumrow>.st-gate-wm{display:none}#st-gate .st-gate-sr{gap:4px 10px;padding-left:0}#st-gate-sum .st-gate-tl{padding:2px 6px 3px}#st-gate-sum .st-gate-tl b{font-size:15px}'
+  // the time line's axis keeps every other label, which then do not overlap
+  + '#st-gate-lanes .st-gl-ax span:nth-child(2n){display:none}}';
 
 function stGateState() { try { return JSON.parse(localStorage.getItem(ST_GATE_KEY) || 'null') || {}; } catch (e) { return {}; } }
 function stGateTab() { try { return sessionStorage.getItem(ST_GATE_KEY + '-tab') || ''; } catch (e) { return ''; } }
@@ -1132,7 +1143,7 @@ function stGateBuild() {
   stGateRemember({ open: true });
   var st = stGateWinState();
   if (ST_GATE_SPANS.indexOf(st.span) >= 0) ST_GATE_SPAN = st.span;
-  var mode = st.mode || 'all', hosts = st.hosts || { mb: st.src !== 'other', ext: st.src !== 'mb' }, hide = st.hide || [], sig = '', opened = {}, cf = {}, cft = {}, lastGroups = [];
+  var mode = st.mode || 'all', hosts = st.hosts || { mb: st.src !== 'other', ext: st.src !== 'mb' }, hide = st.hide || (window.matchMedia && window.matchMedia('(max-width:600px)').matches ? [2, 4, 7, 11, 12] : []), sig = '', opened = {}, cf = {}, cft = {}, lastGroups = [];
   var pop = document.createElement('div');
   pop.id = 'st-gate'; pop.className = 'mbu-ui'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Network log');
   pop.innerHTML = '<div class="mbu-logpop-h"><button type="button" id="st-gate-hud" aria-label="Minimize to the HUD" data-tip="Minimize to the HUD\nThe time line in a small strip that stays on screen\nA double click in the window does the same"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></button><b>Network log</b> <span class="st-gate-n"></span><button type="button" id="st-gate-lbl" aria-label="Request names on the time line" data-tip="Request names on the time line\nEach request\'s name under its script\'s icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg></button><button type="button" id="st-gate-dk" aria-label="Icon with the launchers" data-tip="Icon with the launchers\nIt counts this tab\'s latest burst of requests\nThe mouse on it shows the HUD, a click opens this window"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M6.5 12h2.5l1.5-3.5 3 7 1.5-3.5h2.5"/></svg></button><span class="mbu-logpop-sp"></span>'
@@ -1580,6 +1591,11 @@ function stGateBuild() {
   // a phone shows it full screen: a minimised or moved one from a wider screen would hide it
   var phone = window.matchMedia && window.matchMedia('(max-width:600px)').matches;
   if (st.min && !phone) setMin(true); else if (st.full) setFull(true);
+  // the table's height on a phone: the screen under the title bar, which takes one or two rows
+  if (phone) {
+    var hh = function () { pop.style.setProperty('--st-gate-hh', head.offsetHeight + 'px'); };
+    hh(); if (window.ResizeObserver) new ResizeObserver(hh).observe(head);
+  }
   // dragged by its title bar, kept on screen
   head.addEventListener('mousedown', function (e) {
     if (e.button !== 0 || e.target.closest('button, input') || pop.classList.contains('full') || phone) return;
