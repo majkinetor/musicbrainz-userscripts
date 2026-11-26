@@ -43,11 +43,27 @@ export async function tap(what, { wait = 10000 } = {}) {
   }
 }
 // installs or updates a userscript in Violentmonkey: opens its address and taps the install button
-export async function install(url) {
+export async function install(url, again = true) {
+  sh(`am force-stop ${FF}`);   // a fresh Firefox: a prompt left by a test page (DRM, a tip) would cover the install page
   open(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());   // a new address each time, or Firefox shows its cached copy
-  await tap(/^(Install|Reinstall|Update)$/, { wait: 30000 });
+  try { await tap(/^(Install|Reinstall|Update)$/, { wait: 30000 }); }
+  catch (e) {
+    // after some test runs, Violentmonkey stops opening its install page until Android restarts
+    if (!again) throw e;
+    console.error('no install page: restarting the emulator');
+    await reboot();
+    return install(url, false);
+  }
   await tap(/^Script installed/, { wait: 10000 }).catch(() => {});
   return 'installed ' + url;
+}
+// restarts Android, waits until it booted, and links the server's port again
+export async function reboot(port = 8777) {
+  adb('reboot'); await sleep(10000); adb('wait-for-device');   // the old boot's state answers until Android goes down
+  const up = () => { try { return sh('getprop sys.boot_completed').trim() === '1' && !/not found/.test(sh('service check activity')); } catch (e) { return false; } };
+  for (let i = 0; i < 100 && !up(); i++) await sleep(3000);
+  adb('reverse', `tcp:${port}`, `tcp:${port}`);
+  await sleep(8000);   // Firefox's add-ons start after the boot
 }
 export const tapAt =(x, y) => sh(`input tap ${x} ${y}`);
 export const shot = file => writeFileSync(file, execFileSync(ADB, ['exec-out', 'screencap', '-p'], { maxBuffer: 64 << 20 }));
@@ -75,7 +91,7 @@ export const playing = () => audio().some(p => p.state === 'started');
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const [cmd, ...a] = process.argv.slice(2);
-  const out = { ui: () => ui().filter(n => n.text || n.desc), tap: () => tap(/^\/.*\/$/.test(a[0]) ? new RegExp(a[0].slice(1, -1)) : a.join(' ')), shot: () => shot(a[0] || 'shot.png'), media, audio, install: () => install(a[0]), key: () => key(a[0]), open: () => open(a[0]), sh: () => sh(a.join(' ')) }[cmd];
-  if (!out) { console.log('helpers: ui, tap <text|/regex/>, shot <file>, media, audio, key <code>, open <url>, sh <cmd>'); process.exit(1); }
+  const out = { ui: () => ui().filter(n => n.text || n.desc), tap: () => tap(/^\/.*\/$/.test(a[0]) ? new RegExp(a[0].slice(1, -1)) : a.join(' ')), shot: () => shot(a[0] || 'shot.png'), media, audio, install: () => install(a[0]), reboot: () => reboot(), key: () => key(a[0]), open: () => open(a[0]), sh: () => sh(a.join(' ')) }[cmd];
+  if (!out) { console.log('helpers: ui, tap <text|/regex/>, shot <file>, media, audio, install <url>, reboot, key <code>, open <url>, sh <cmd>'); process.exit(1); }
   const r = await out(); if (r !== undefined) console.log(typeof r === 'string' ? r : JSON.stringify(r, null, 1));
 }

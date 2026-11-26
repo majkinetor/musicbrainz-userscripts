@@ -28,15 +28,18 @@ sh('svc power stayon true'); key('KEYCODE_WAKEUP');
 sh(`am force-stop ${FF}`);
 open(url);
 await sleep(8);
+// Firefox's tips ("Shake your device…") cover the page: closed when one shows
+try { await tap('Dismiss', { wait: 1500 }); await sleep(1); } catch (e) {}
 if (play !== 'none') await tap(/^\/.*\/$/.test(play) ? new RegExp(play.slice(1, -1)) : play, { wait: 30000 });
 for (let s = 0; s < fg; s += every) { await sleep(every); await line('fg'); }
 key('KEYCODE_HOME');
 if (has('off')) { sh('svc power stayon false'); key('KEYCODE_SLEEP'); }
-const keys = has('keys') ? { 15: 'KEYCODE_MEDIA_PAUSE', 25: 'KEYCODE_MEDIA_PLAY', 35: 'KEYCODE_MEDIA_NEXT', 50: 'KEYCODE_MEDIA_PREVIOUS' } : {};
+// as a headset's button: Android hands the key to the session that holds the media button (input keyevent misses it with the screen off)
+const keys = has('keys') ? { 15: 'pause', 25: 'play', 35: 'next', 50: 'previous' } : {};
 const rows = [];
 for (let s = every; s <= bg; s += every) {
   await sleep(every);
-  for (const k of Object.keys(keys)) if (+k > s - every && +k <= s) { key(keys[k]); console.log(`${at()} key  ${keys[k]}`); }
+  for (const k of Object.keys(keys)) if (+k > s - every && +k <= s) { sh('cmd media_session dispatch ' + keys[k]); console.log(`${at()} key  ${keys[k]}`); }
   rows.push(await line(has('off') ? 'off' : 'bg'));
 }
 if (has('off')) { key('KEYCODE_WAKEUP'); sh('svc power stayon true'); }

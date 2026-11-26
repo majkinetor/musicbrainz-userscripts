@@ -64,6 +64,8 @@ function audioLoad(k) {
   }
   el.src = audio[i % audio.length];
   el.play().catch(e => log('play refused', e.message));
+  // art=<url>: the phone's card gets a title and this cover, to tell whether Android shows a page's cover at all
+  if (q.get('art')) navigator.mediaSession.metadata = new MediaMetadata({ title: 'Control ' + i, artist: 'EH test', album: 'Control', artwork: [{ src: q.get('art'), sizes: '500x500', type: 'image/jpeg' }] });
 }
 
 let wakeEl = null;

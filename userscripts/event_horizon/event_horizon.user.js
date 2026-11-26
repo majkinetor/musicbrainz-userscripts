@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.26.190608
+// @version      2026.11.26.221208
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -30,6 +30,7 @@
 // @match        https://*.musicbrainz.org/cdtoc/*
 // @match        https://bandcamp.com/EmbeddedPlayer/*
 // @match        https://widget.deezer.com/widget/*
+// @match        https://www.youtube-nocookie.com/embed/*
 // @exclude-match https://picard.musicbrainz.org/*
 // @run-at       document-start
 // @grant        GM_getValue
@@ -78,14 +79,85 @@ if (window.top !== window && new URLSearchParams(location.search).get('mc_embed'
 // frame: the relationship editor would then be in a frame inside a frame.
 const EH_EMBED = (() => { try { return window.parent !== window && !!window.frameElement && window.frameElement.hasAttribute('data-eh-embed'); } catch (e) { return false; } })();
 if (EH_EMBED && !/^\/release\/[0-9a-f-]{36}\/edit-relationships\/?$/i.test(location.pathname)) { try { window.parent.postMessage({ ehRelDone: location.href }, location.origin); } catch (e) {} return; }
+// Inside the player's YouTube widget (#1104): YouTube's embed pauses about 3 s after the page goes to the background,
+// a locked phone too. The player's widget is told that its page is always in view. Only a widget that EH's player made
+// (its origin parameter names MusicBrainz) is changed; the YouTube embeds of other sites are left alone.
+if (window.top !== window && location.hostname === 'www.youtube-nocookie.com' && location.pathname.startsWith('/embed/')) {
+    let from = ''; try { from = new URL(new URLSearchParams(location.search).get('origin') || '').hostname; } catch (e) {}
+    if (/(^|\.)musicbrainz\.org$/.test(from)) {
+        const W = (typeof unsafeWindow !== 'undefined' && unsafeWindow) || window;
+        const fn = f => typeof exportFunction === 'function' ? exportFunction(f, W) : f;
+        for (const [k, v] of [['hidden', false], ['visibilityState', 'visible'], ['webkitHidden', false], ['webkitVisibilityState', 'visible']])
+            try { Object.defineProperty(W.Document.prototype, k, { get: fn(() => v), configurable: true }); } catch (e) {}
+        const stop = e => e.stopImmediatePropagation();
+        for (const t of ['visibilitychange', 'webkitvisibilitychange']) { window.addEventListener(t, stop, true); document.addEventListener(t, stop, true); }
+        // The phone's controls go to the media session of the frame that sounds, this widget's. YouTube's own (the video's
+        // title, pause and seek alone) is blocked, and the player's track goes in its place, with the cover, previous and
+        // next; an action is sent to the player's page, as from Bandcamp's widget.
+        try {
+            const M = W.MediaSession.prototype, d = k => Object.getOwnPropertyDescriptor(M, k);
+            const own = { meta: d('metadata').set, state: d('playbackState').set, act: d('setActionHandler').value, pos: d('setPositionState').value };
+            // YouTube reads back what it wrote, and answers the page no more when it finds another track there: it reads its
+            // own, while the phone's session holds the player's
+            let ytMeta = null, ytState = 'none';
+            Object.defineProperty(M, 'metadata', { get: fn(() => ytMeta), set: fn(v => { ytMeta = v; }), configurable: true });
+            Object.defineProperty(M, 'playbackState', { get: fn(() => ytState), set: fn(v => { ytState = v; }), configurable: true });
+            for (const k of ['setActionHandler', 'setPositionState']) Object.defineProperty(M, k, { value: fn(() => {}), configurable: true, writable: true });
+            const copy = o => typeof cloneInto === 'function' ? cloneInto(o, W) : o;
+            let title = null;
+            // playing or paused, from the video itself: the page may not hear of a pause in the background, and the
+            // phone's play does nothing while the session says it plays
+            const said = () => { const v = document.querySelector('video'); try { if (title !== null) own.state.call(W.navigator.mediaSession, v && !v.paused ? 'playing' : 'paused'); } catch (e) {} };
+            for (const k of ['play', 'playing', 'pause', 'ended']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement) said(); }, true);
+            window.addEventListener('message', ev => {
+                if (ev.source !== window.parent || typeof ev.data !== 'string' || !ev.data.startsWith('{"ehPlyCmd":"media"')) return;
+                // YouTube's player reads every message from the page, and after this one it answers none (#1104)
+                ev.stopImmediatePropagation();
+                let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+                if (!m.media) return;
+                const ms = W.navigator.mediaSession;
+                try {
+                    if (title !== m.media.title + '|' + m.media.album) {
+                        title = m.media.title + '|' + m.media.album;
+                        own.meta.call(ms, new W.MediaMetadata(copy({ title: m.media.title, artist: m.media.artist, album: m.media.album, artwork: m.media.artwork })));
+                        for (const k of ['play', 'pause', 'nexttrack', 'previoustrack', 'seekbackward', 'seekforward', 'seekto'])
+                            try { own.act.call(ms, k, fn(e => { try { window.parent.postMessage({ ehPlyAction: k, seekOffset: e && e.seekOffset, seekTime: e && e.seekTime }, '*'); } catch (x) {} })); } catch (x) {}
+                    }
+                    said();
+                    if (m.media.dur > 0) own.pos.call(ms, copy({ duration: m.media.dur, position: Math.min(m.media.dur, m.media.pos || 0), playbackRate: 1 }));
+                } catch (e) { try { window.parent.postMessage({ ehPlyMedia: 'widget session failed: ' + e.message }, '*'); } catch (x) {} }
+            }, true);
+        } catch (e) {}
+    }
+    return;
+}
 // Inside Bandcamp's or Deezer's player widget, in the player's frame (#1063): neither starts on its own nor says when a
 // track ends. Once the page asks, this presses the widget's play button and tells the page how its audio plays. A widget
 // on any other site is left alone: nothing happens until a parent sends {ehPlyCmd}.
 if (window.top !== window && (location.hostname === 'bandcamp.com' && location.pathname.startsWith('/EmbeddedPlayer/') || location.hostname === 'widget.deezer.com')) {
     const BTN = location.hostname === 'bandcamp.com' ? '#big_play_button, #play' : '[data-testid="widget-player-play"]';
-    let armed = false, last = 0, restoring = false, restoreMute = null, restoreReady = false, vol = -1;   // vol: the page's volume, 0 to 1, put on the audio before it sounds
+    let armed = false, last = 0, restoring = false, restoreMute = null, restoreReady = false, vol = -1, media = null, told = '';   // vol: the page's volume, 0 to 1, put on the audio before it sounds
     const post = (state, a) => { if (armed) try { window.parent.postMessage({ ehPly: state, pos: a ? a.currentTime : 0, dur: a ? a.duration : 0 }, '*'); } catch (e) {} };
-    for (const k of ['play', 'pause', 'ended']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement) { if (k === 'play' && vol >= 0) ev.target.volume = vol; if (k === 'play' && restoring && !restoreReady) { if (restoreMute === null) restoreMute = ev.target.muted; ev.target.muted = true; } post(k, ev.target); } }, true);
+    const mediaSetup = () => {
+        if (!armed || !media) return;
+        try {
+            const w = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window, ms = w.navigator.mediaSession;
+            if (!ms) throw new Error('unavailable');
+            const copy = o => typeof cloneInto === 'function' ? cloneInto(o, w) : o;
+            ms.metadata = new w.MediaMetadata(copy(media));
+            const ok = [], failed = [];
+            for (const k of ['play', 'pause', 'nexttrack', 'previoustrack', 'seekbackward', 'seekforward', 'seekto']) {
+                try {
+                    const fn = ev => { try { window.parent.postMessage({ ehPlyAction: k, seekOffset: ev && ev.seekOffset, seekTime: ev && ev.seekTime }, '*'); } catch (e) {} };
+                    ms.setActionHandler(k, typeof exportFunction === 'function' ? exportFunction(fn, w) : fn); ok.push(k);
+                } catch (e) { failed.push(k + ': ' + e.message); }
+            }
+            if (told === media.title) return;   // the page sends the track again every few seconds: one log line for each track
+            told = media.title;
+            window.parent.postMessage({ ehPlyMedia: 'widget handlers: ' + ok.join(', ') + (failed.length ? '; failed: ' + failed.join(', ') : '') }, '*');
+        } catch (e) { try { window.parent.postMessage({ ehPlyMedia: 'widget session failed: ' + e.message }, '*'); } catch (x) {} }
+    };
+    for (const k of ['play', 'pause', 'ended']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement) { if (k === 'play' && vol >= 0) ev.target.volume = vol; if (k === 'play' && restoring && !restoreReady) { if (restoreMute === null) restoreMute = ev.target.muted; ev.target.muted = true; } if (k === 'play') mediaSetup(); post(k, ev.target); } }, true);
     for (const k of ['playing', 'loadedmetadata']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement && vol >= 0 && Math.abs(ev.target.volume - vol) > 0.005) ev.target.volume = vol; }, true);
     document.addEventListener('timeupdate', ev => { if (ev.target instanceof HTMLMediaElement && Date.now() - last > 900) { last = Date.now(); post(ev.target.paused ? 'pause' : 'time', ev.target); } }, true);
     const press = want => {
@@ -99,6 +171,7 @@ if (window.top !== window && (location.hostname === 'bandcamp.com' && location.p
     window.addEventListener('message', ev => {
         if (ev.source !== window.parent || !ev.data || typeof ev.data.ehPlyCmd !== 'string') return;
         if (!armed) { armed = true; post('hello'); }
+        if (ev.data.ehPlyCmd === 'media') { media = ev.data.media; mediaSetup(); return; }
         if (ev.data.v >= 0) vol = Math.min(1, ev.data.v);
         if (ev.data.ehPlyCmd === 'vol') { const a = document.querySelector('audio'); if (a && vol >= 0) a.volume = vol; return; }
         if (ev.data.ehPlyCmd === 'seek') { const a = document.querySelector('audio'); if (a && ev.data.pos >= 0) a.currentTime = ev.data.pos; return; }
@@ -14074,7 +14147,8 @@ function plyEmbed(p) {
         const url = new URL(u);
         if (p.key === 'youtube' || p.key === 'ytmusic') {
             const id = url.searchParams.get('v') || (url.hostname === 'youtu.be' ? url.pathname.slice(1) : (url.pathname.match(/\/(?:embed|shorts|live)\/([\w-]{11})/) || [])[1]);
-            return id && { yt: true, url: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`, h: 180 };
+            const start = parseInt(url.searchParams.get('t') || url.searchParams.get('start') || '0', 10) || 0;
+            return id && { yt: true, id, start, url: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1${start ? '&start=' + start : ''}&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`, h: 180 };
         }
         if (p.key === 'spotify') { const m = url.pathname.match(/\/(track|album)\/(\w+)/); return m && { url: `https://open.spotify.com/embed/${m[1]}/${m[2]}?autoplay=1`, h: 80 }; }
         if (p.key === 'deezer') { const m = url.pathname.match(/\/(track|album)\/(\d+)/); return m && { url: `https://widget.deezer.com/widget/auto/${m[1]}/${m[2]}?autoplay=true`, h: 92 }; }
@@ -14162,7 +14236,12 @@ function plyAudio(f, src) {
     a.preload = 'auto'; a.src = src; d.body.append(a);
     let armed = false, last = 0;
     const post = st => { if (armed) window.postMessage({ ehPly: st, ehIa: tok, pos: a.currentTime || 0, dur: a.duration || 0 }, '*'); };
-    for (const k of ['play', 'pause', 'ended']) a.addEventListener(k, () => post(k));
+    // the phone's card says playing or paused as the audio does: its play key does nothing while the card says it plays (#1104)
+    for (const k of ['play', 'pause', 'ended']) a.addEventListener(k, () => {
+        if (k === 'play' && f === plyFrame()) plyMedia(ply.q[ply.i], false, w);
+        else if (k !== 'play') try { w.navigator.mediaSession.playbackState = 'paused'; } catch (e) {}
+        post(k);
+    });
     a.addEventListener('timeupdate', () => { if (Date.now() - last > 900) { last = Date.now(); post(a.paused ? 'pause' : 'time'); } });
     a.addEventListener('error', () => { if (f.isConnected && f === plyFrame()) { PLOG.warn('Internet Archive file failed', src); toast('The Internet Archive file does not play'); plyEnded('no Internet Archive file'); } });
     w.addEventListener('message', ev => {
@@ -14469,6 +14548,8 @@ function plyGo(i, want) {
     if (plyRemote && !PLY_WINDOW) { plyControl('go', { i, want }); return; }
     const t = ply.q[i]; if (!t) return;
     const p = plyPick(t, want), e = plyEmbed(p), gen = ++ply.gen;
+    // a hidden page (a phone in the background) can't start a new YouTube widget: the next video loads in the one playing (#1104)
+    const ytKeep = e && e.yt && ply.yt && document.hidden ? plyFrame() : null;
     // the next track's widget, loaded in advance (#1084): taken when it is this track from the same source, else dropped
     const old = ply.fadeOld; ply.fadeOld = null;
     plyFadeStop();
@@ -14492,6 +14573,12 @@ function plyGo(i, want) {
     plyDraw();
     plySave();
     plyKeep();
+    if (ytKeep && ytKeep.isConnected) {
+        pre?.f?.remove();
+        PLOG.info('the page is hidden: the next YouTube video loads in the widget that plays');
+        plyPost(JSON.stringify({ event: 'command', func: 'loadVideoById', args: [e.id, e.start || 0] }));
+        return;
+    }
     if (pre) { plySwap(pre, old); return; }
     if (e.ia) {
         plyDock(null);
@@ -14519,12 +14606,12 @@ function plyGo(i, want) {
 // phone's controls then fall to the widget's iframe (pause alone). The page's session, with exported handlers, as a web app sets it
 const PW = (typeof unsafeWindow !== 'undefined' && unsafeWindow) || window;
 const msPage = () => { try { return PW.navigator.mediaSession; } catch (e) { return navigator.mediaSession; } };
-const msFn = f => typeof exportFunction === 'function' ? exportFunction(f, PW) : f;
-const msObj = o => typeof cloneInto === 'function' ? cloneInto(o, PW) : o;
+const msFn = (f, w = PW) => typeof exportFunction === 'function' ? exportFunction(f, w) : f;
+const msObj = (o, w = PW) => typeof cloneInto === 'function' ? cloneInto(o, w) : o;
 let plyWakeEl = null, plyWakeIv = 0;
 function plyWake(on) {
     if (!on) { clearInterval(plyWakeIv); if (plyWakeEl) { plyWakeEl.pause(); plyWakeEl = null; } return; }
-    if (plyWakeEl) { if (plyWakeEl.paused) plyWakeEl.play().catch(() => {}); return; }
+    if (plyWakeEl) { if (plyWakeEl.paused) plyWakeEl.play().catch(e => LOG.warn('player: keep-awake resume refused:', e.message)); return; }
     const n = 8000 * 6, b = new Uint8Array(44 + n), v = new DataView(b.buffer), w = (o, t) => { for (let i = 0; i < t.length; i++) b[o + i] = t.charCodeAt(i); };
     w(0, 'RIFF'); v.setUint32(4, 36 + n, true); w(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
     v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); w(36, 'data'); v.setUint32(40, n, true);
@@ -14532,20 +14619,31 @@ function plyWake(on) {
     const a = plyWakeEl = new PW.Audio(URL.createObjectURL(new Blob([b], { type: 'audio/wav' })));
     a.loop = true; a.volume = 0.01; a.setAttribute('aria-hidden', 'true');
     plyWakeIv = setInterval(() => { const c = ply.q[ply.i]; if (c && !ply.paused) plyMedia(c, true); }, 4000);
-    a.play().then(() => PLOG.debug('keep-awake on'), e => PLOG.debug('keep-awake refused', e.message));
+    a.play().then(() => PLOG.info('keep-awake audio playing'), e => PLOG.warn('keep-awake audio refused:', e.message));
 }
-function plyMedia(t, again) {
-    const ms = msPage(); if (!ms || !t) return;
+// what a widget's session shows (Bandcamp's, Deezer's, YouTube's): the player's track, its cover and clock
+const plyWidgetMedia = t => ({ title: t.title || '', artist: t.artist || '', album: t.relTitle || '', paused: !!ply.paused,
+    dur: (t.len || 0) / 1000, pos: Math.min(t.len || 0, t.played || 0) / 1000,
+    artwork: t.front && t.rel ? [{ src: `https://coverartarchive.org/release/${t.rel}/front-250`, sizes: '250x250' }, { src: `https://coverartarchive.org/release/${t.rel}/front-500`, sizes: '500x500' }] : [] });
+// to YouTube's widget as JSON text, as its own commands go: an object there stopped its state messages to the page
+const plyYtMedia = t => plyPost(JSON.stringify({ ehPlyCmd: 'media', media: plyWidgetMedia(t) }));
+function plyMedia(t, again, w = PW) {
+    // YouTube's widget sets the phone's session from these (#1104), again and again for its clock
+    // Bandcamp's and Deezer's too: a preloaded widget that takes over has none of its own, and the card then shows the page's title
+    if (w === PW && t && t === ply.q[ply.i]) { if (ply.yt) plyYtMedia(t); else if (ply.kind === 'bandcamp' || ply.kind === 'deezer') plyPost({ ehPlyCmd: 'media', media: plyWidgetMedia(t) }); }
+    const ms = w === PW ? msPage() : w.navigator.mediaSession; if (!ms || !t) { if (!again) LOG.warn('player: Media Session unavailable'); return; }
     try {
-        ms.metadata = new (PW.MediaMetadata || MediaMetadata)(msObj({ title: t.title || '', artist: t.artist || '', album: t.relTitle || '',
-            artwork: t.front && t.rel ? [{ src: caaSrc('release', t.rel), sizes: '250x250' }, { src: caaSrc('release', t.rel, 500), sizes: '500x500' }] : [] }));
+        ms.metadata = new (w.MediaMetadata || MediaMetadata)(msObj({ title: t.title || '', artist: t.artist || '', album: t.relTitle || '',
+            artwork: t.front && t.rel ? [{ src: caaSrc('release', t.rel), sizes: '250x250' }, { src: caaSrc('release', t.rel, 500), sizes: '500x500' }] : [] }, w));
         ms.playbackState = 'playing';
-    } catch (e) {}
+        if (!again) LOG.info('player: Media Session metadata set; page context:', PW === window ? 'window' : 'unsafeWindow', 'exportFunction:', typeof exportFunction, 'cloneInto:', typeof cloneInto);
+    } catch (e) { if (!again) LOG.warn('player: Media Session metadata failed:', e.message); }
     // the widget's iframe plays too and can take over the lock screen's session, which then shows only its own
     // pause: the handlers go on again with every track, and the silent loop restarts so this page plays last
-    if (plyWakeEl && !again) { plyWakeEl.pause(); plyWakeEl.play().catch(() => {}); }
-    try { if (t.len) ms.setPositionState(msObj({ duration: t.len / 1000, position: Math.min(t.len, t.played || 0) / 1000, playbackRate: 1 })); } catch (e) {}
-    const on = (k, f) => { try { ms.setActionHandler(k, msFn(ev => f(ev && { seekOffset: ev.seekOffset, seekTime: ev.seekTime }))); } catch (e) {} };
+    if (w === PW && plyWakeEl && !again) { plyWakeEl.pause(); plyWakeEl.play().catch(e => LOG.warn('player: keep-awake restart refused:', e.message)); }
+    try { if (t.len) ms.setPositionState(msObj({ duration: t.len / 1000, position: Math.min(t.len, t.played || 0) / 1000, playbackRate: 1 }, w)); } catch (e) { if (!again) LOG.warn('player: Media Session position failed:', e.message); }
+    const supported = [], failed = [];
+    const on = (k, f) => { try { ms.setActionHandler(k, msFn(ev => { const c = ply.q[ply.i]; LOG.info('player: system media action', k, 'track:', c ? c.title : 'none', 'artist:', c ? c.artist : '', 'source:', ply.kind, ev && ev.seekOffset != null ? 'offset ' + ev.seekOffset : '', ev && ev.seekTime != null ? 'time ' + ev.seekTime : ''); f(ev && { seekOffset: ev.seekOffset, seekTime: ev.seekTime }); }, w)); supported.push(k); } catch (e) { failed.push(k + ': ' + e.message); } };
     const by = d => { const c = ply.q[ply.i]; if (c && c.len) plySeek(Math.max(0, Math.min(c.len - 1000, (c.played || 0) + d))); };
     on('seekbackward', ev => by(-1000 * ((ev && ev.seekOffset) || 10)));
     on('seekforward', ev => by(1000 * ((ev && ev.seekOffset) || 10)));
@@ -14555,7 +14653,13 @@ function plyMedia(t, again) {
     on('nexttrack', () => plyStep(1));
     on('previoustrack', () => plyStep(-1));
     on('stop', () => plyClose());
+    if (!again) { LOG.info('player: Media Session handlers registered:', supported.join(', ') || 'none'); if (failed.length) LOG.warn('player: Media Session handlers failed:', failed.join('; ')); }
 }
+document.addEventListener('visibilitychange', () => {
+    if (ply.i < 0) return;
+    try { const ms = msPage(), t = ply.q[ply.i]; LOG.info('player: page', document.visibilityState, 'track:', t ? t.title : 'none', 'artist:', t ? t.artist : '', 'source:', ply.kind, 'player:', ply.paused ? 'paused' : 'playing', 'keep-awake:', !plyWakeEl ? 'absent' : plyWakeEl.paused ? 'paused' : 'playing', 'session:', ms ? ms.playbackState : 'unavailable', 'metadata:', ms && ms.metadata ? ms.metadata.title : 'none'); }
+    catch (e) { LOG.warn('player: Media Session status failed:', e.message); }
+});
 // the track is over: the next one, or the player stops at the last
 function plyEnded(why) {
     const t = ply.q[ply.i]; if (!t || t.done) return;
@@ -14563,7 +14667,8 @@ function plyEnded(why) {
     PLOG.info('track ended (' + why + ')', t.title);
     if (S.playerRepeat === 'one') { plyGo(ply.i, ply.src); return; }
     const n = plyNextIdx();
-    if (n >= 0) plyGo(n); else { ply.paused = true; plyDraw(); }
+    // the end of the queue: the near-silent loop stops too, or the phone's card says it plays on (#1104)
+    if (n >= 0) plyGo(n); else { if (plyWakeEl) plyWakeEl.pause(); ply.paused = false; plyState(true); }
 }
 // the track that plays after this one, or -1; shuffle's choice is made once, so the preloaded widget is the one that plays
 function plyNextIdx() {
@@ -14602,7 +14707,10 @@ function plyRepeat() {
     S.playerRepeat = S.playerRepeat === 'off' ? 'all' : S.playerRepeat === 'all' ? 'one' : 'off';
     save(); PLOG.info('repeat', S.playerRepeat); plyDraw();
 }
-const plyState = paused => { if (paused === ply.paused) return; ply.paused = paused; try { msPage().playbackState = paused ? 'paused' : 'playing'; } catch (e) {} PLOG.debug(paused ? 'paused' : 'plays'); plyDraw(); };
+const plyState = paused => { if (paused === ply.paused) return; ply.paused = paused; try { msPage().playbackState = paused ? 'paused' : 'playing'; } catch (e) {}
+    // the YouTube widget's session too, so the phone's play works after a pause
+    const c = ply.q[ply.i]; if (ply.yt && c) plyYtMedia(c);
+ PLOG.debug(paused ? 'paused' : 'plays'); plyDraw(); };
 const plyStep = d => {
     if (plyRemote && !PLY_WINDOW) { plyControl('step', d); return; }
     const t = ply.q[ply.i]; if (d < 0 && ply.ctl && t && (t.played || 0) > 3000) { plySeek(0); return; }
@@ -14643,7 +14751,14 @@ function plyDock(e) {
     dock.innerHTML = plyIframe(e.url, e.h);
     const f = dock.querySelector('iframe'), gen = ply.gen, kind = ply.kind;
     f.addEventListener('load', () => {
-        if (kind === 'youtube' || kind === 'ytmusic') plyPost('{"event":"listening","id":1,"channel":"widget"}');
+        if (kind === 'youtube' || kind === 'ytmusic') {
+            // the widget may miss the first word on a busy page and then never says how it plays (its end included):
+            // asked again until it answers, as YouTube's own iframe API does (#1104)
+            const ask = () => { try { f.contentWindow.postMessage('{"event":"listening","id":1,"channel":"widget"}', '*'); } catch (e) {} };
+            let n = 0; const iv = setInterval(() => { if (f.ehHeard || !f.isConnected || ++n > 30) { clearInterval(iv); if (n > 30) PLOG.warn('no answer from the YouTube widget'); return; } ask(); }, 500);
+            ask();
+            const c = ply.q[ply.i]; if (c && gen === ply.gen) plyYtMedia(c);
+        }
         if (kind === 'bandcamp' || kind === 'deezer') plyArm(gen, kind, kind === 'bandcamp' ? (ply.q[ply.i]?.resume || 0) / 1000 : 0);
     }, { once: true });
 }
@@ -14665,8 +14780,10 @@ function plyPreload() {
     const n = plyNextIdx(), nt = ply.q[n];
     if (ply.nx && (ply.nx.i !== n || ply.nx.t !== nt)) { PLOG.debug('preload dropped: the next track changed'); ply.nx.f?.remove(); ply.nx = null; }
     if (ply.nx || n < 0 || n === ply.i || !nt || (t.played || 0) < 3000) return;
-    const tried = ply.gen + ':' + n; if (ply.nxTried === tried) return; ply.nxTried = tried;
     const p = plyPick(nt), e = plyEmbed(p); if (!e || !PLY_PRE.includes(p.key)) return;
+    // a hidden page's next YouTube video loads in the widget that plays (plyGo): a second one would not start
+    if (e.yt && ply.yt && document.hidden) return;
+    const tried = ply.gen + ':' + n; if (ply.nxTried === tried) return; ply.nxTried = tried;
     const nx = ply.nx = { i: n, t: nt, key: p.key, yt: !!e.yt, h: e.h, f: null, loaded: false, ready: false };
     const make = url => {
         const dock = plyRoot().querySelector('.ply-dock'); if (ply.nx !== nx || !dock) return;
@@ -14723,7 +14840,20 @@ function plyFadeStop(vol) {
     if (vol && was) plyVol();
 }
 const plyFrame = () => document.querySelector('#eh-ply .ply-dock iframe:not(.ply-nx):not(.ply-old)');
-const plyPost = m => { const f = plyFrame(); if (f) try { f.contentWindow.postMessage(m, '*'); } catch (e) {} };
+// YouTube's widget breaks on a command that comes before its API is ready (TypeError: this.api.isExternalMethodAvailable
+// is not a function), and then never says how it plays (#1104): its commands wait until it answers "listening" (plyDock)
+const plyTell = (f, m, yt) => {
+    if (!f) return;
+    if (yt && !f.ehHeard && typeof m === 'string' && m.startsWith('{"event":"command"')) { (f.ehWait ||= []).push(m); return; }
+    try { f.contentWindow.postMessage(m, '*'); } catch (e) {}
+};
+const plyPost = m => plyTell(plyFrame(), m, ply.yt);
+const plyHeard = f => {
+    if (f.ehHeard) return;
+    f.ehHeard = true;
+    for (const m of f.ehWait || []) try { f.contentWindow.postMessage(m, '*'); } catch (e) {}
+    f.ehWait = null;
+};
 // the widget's play and pause, each in its own words
 function plyCmd(play) {
     if (plyRemote && !PLY_WINDOW) { plyControl('play', play); return; }
@@ -14746,7 +14876,7 @@ function plyVol() {
 // the volume now: the setting, times how far a crossfade has brought the new track in
 const plyVolNow = () => Math.max(0, Math.min(100, Math.round((+S.playerVol || 0) * ply.fadeIn)));
 function plyVolTo(f, k, yt, v) {
-    const post = m => { if (f) try { f.contentWindow.postMessage(m, '*'); } catch (e) {} };
+    const post = m => plyTell(f, m, yt);
     if (yt) { post(JSON.stringify({ event: 'command', func: v ? 'unMute' : 'mute', args: [] })); post(JSON.stringify({ event: 'command', func: 'setVolume', args: [v] })); }
     else if (k === 'soundcloud') post(JSON.stringify({ method: 'setVolume', value: v }));
     else post({ ehPlyCmd: 'vol', v: v / 100 });
@@ -14787,7 +14917,7 @@ function plySeek(ms) {
 // events it was asked for. Bandcamp's and Deezer's: what the bridge above posts from their audio.
 window.addEventListener('message', ev => {
     // the preloaded widget's first word: it is ready to start
-    if (ply.nx && ply.nx.f && ev.source === ply.nx.f.contentWindow) { if (!ply.nx.ready) { ply.nx.ready = true; PLOG.debug('the preloaded', ply.nx.key, 'widget answers'); } return; }
+    if (ply.nx && ply.nx.f && ev.source === ply.nx.f.contentWindow) { plyHeard(ply.nx.f); if (!ply.nx.ready) { ply.nx.ready = true; PLOG.debug('the preloaded', ply.nx.key, 'widget answers'); } return; }
     const f = plyFrame(), t = ply.q[ply.i];
     if (!f || !t || (ev.source !== f.contentWindow && !(f.ehIa && ev.data && ev.data.ehIa === f.ehIa))) return;
     let m = ev.data; if (typeof m === 'string') { try { m = JSON.parse(m); } catch (e) { return; } }
@@ -14797,7 +14927,22 @@ window.addEventListener('message', ev => {
     const pi = m.event === 'infoDelivery' && m.info ? m.info : typeof m.ehPly === 'string' ? { currentTime: m.pos, duration: m.dur } : null;
     if (pi && typeof pi.currentTime === 'number') ply.pos = { gen: ply.gen, pos: pi.currentTime, dur: pi.duration > 0 ? pi.duration : ply.pos?.gen === ply.gen ? ply.pos.dur : 0, when: Date.now() };
     if (pi) setTimeout(plyFadeCheck);
+    if (k === 'bandcamp' || k === 'deezer' || ply.yt) {
+        if (typeof m.ehPlyMedia === 'string') { LOG.info('player: Media Session', m.ehPlyMedia); return; }
+        if (typeof m.ehPlyAction === 'string') {
+            LOG.info('player: widget system media action', m.ehPlyAction, 'track:', t.title, 'source:', k);
+            if (m.ehPlyAction === 'play') plyCmd(true);
+            else if (m.ehPlyAction === 'pause') plyCmd(false);
+            else if (m.ehPlyAction === 'nexttrack') plyStep(1);
+            else if (m.ehPlyAction === 'previoustrack') plyStep(-1);
+            else if (t.len && m.ehPlyAction === 'seekto' && Number.isFinite(m.seekTime)) plySeek(Math.max(0, Math.min(t.len - 1000, m.seekTime * 1000)));
+            else if (t.len && (m.ehPlyAction === 'seekbackward' || m.ehPlyAction === 'seekforward')) plySeek(Math.max(0, Math.min(t.len - 1000, (t.played || 0) + (m.ehPlyAction === 'seekbackward' ? -1 : 1) * 1000 * (Number.isFinite(m.seekOffset) && m.seekOffset > 0 ? m.seekOffset : 10))));
+            return;
+        }
+        if (m.ehPly === 'hello') plyPost({ ehPlyCmd: 'media', media: plyWidgetMedia(t) });
+    }
     if (ply.yt) {
+        if (m.event) plyHeard(f);   // its API's answer: no more asking (plyDock), and the commands that waited
         const st = m.event === 'onStateChange' ? m.info : m.event === 'infoDelivery' && m.info ? m.info.playerState : undefined;
         if (st === 0) plyEnded('YouTube'); else if (st === 1 || st === 2) plyState(st === 2);
         plyVolOnce();

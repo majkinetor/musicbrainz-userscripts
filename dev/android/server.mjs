@@ -25,6 +25,18 @@ export function serve(port = 8777) {
       res.setHeader('access-control-allow-origin', '*'); res.end('ok'); return;
     }
     if (url.pathname === '/state') { res.setHeader('content-type', 'application/json'); res.end(JSON.stringify(states.at(-1) || null)); return; }
+    // Event Horizon from this checkout, with its test hooks on and eh-test.js added: the emulator installs it from here
+    if (url.pathname === '/eh.user.js') {
+      try {
+        let js = await readFile(join(root, '../../../userscripts/event_horizon/event_horizon.user.js'), 'utf8');
+        const add = await readFile(join(root, '../eh-test.js'), 'utf8');
+        const at = "const PLOG = LOG.cat('player');";
+        if (!js.includes(at)) throw new Error('no place for eh-test.js');
+        js = js.replace('// ==/UserScript==', '// @connect      localhost\n// ==/UserScript==').replace(at, at + '\n' + add);
+        res.setHeader('content-type', 'text/javascript'); res.setHeader('cache-control', 'no-store'); res.end(js);
+      } catch (e) { res.statusCode = 500; res.end(String(e)); }
+      return;
+    }
     const file = url.pathname === '/' ? 'index.html' : url.pathname.slice(1);
     if (file.includes('..')) { res.statusCode = 400; res.end(); return; }
     try {
