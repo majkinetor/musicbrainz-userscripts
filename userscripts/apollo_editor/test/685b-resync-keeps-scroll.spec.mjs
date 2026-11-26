@@ -4,7 +4,7 @@
 // the rows put the view back at the top, as a drop did: a tracklist change from
 // outside the table (MusicBrainz's guess case behind [Aa], a bookmarklet) resyncs
 // and re-mounts every section, and [Aa] also re-renders the rows itself.
-import { test, check, idle, frames } from '../../../dev/test/harness.mjs';
+import { test, check, until, idle, frames } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -22,7 +22,10 @@ test('#685: a resync and [Aa] leave the tracklist scrolled where it was', { tag:
 
   const row = '.tc-mirror tr[data-tk="0:11"]';
   const name = () => page.evaluate(() => window.MB.releaseEditor.rootField.release().mediums()[0].tracks()[11].name());
-  await page.locator(row).scrollIntoViewIfNeeded();
+  // a resync can mount the rows again a moment later, and scrollIntoViewIfNeeded fails on a row that leaves the
+  // page ("Element is not attached to the DOM"): scroll to whichever row is there now
+  const toRow = () => until(() => page.evaluate(r => { const e = document.querySelector(r); if (e) e.scrollIntoView({ block: 'center' }); return !!e; }, row), Boolean);
+  await toRow();
   const before = await page.evaluate(() => window.scrollY);
   check(before > 200, `fixture: the page is scrolled down to the last tracks (${before}px)`);
 
@@ -33,7 +36,7 @@ test('#685: a resync and [Aa] leave the tracklist scrolled where it was', { tag:
   const afterSync = await page.evaluate(() => window.scrollY);
   check(Math.abs(afterSync - before) < 5, `a resync left the view where it was (${before}px → ${afterSync}px)`);
 
-  await page.locator(row).scrollIntoViewIfNeeded();   // (back down, should the resync have lost it)
+  await toRow();   // (back down, should the resync have lost it)
   await page.locator(row + ' .t-wrap').hover();
   const beforeGc = await page.evaluate(() => window.scrollY);
   await page.locator(row + ' .t-gc').click();
