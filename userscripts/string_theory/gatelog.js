@@ -297,9 +297,11 @@ function stGateCount(groups) {
 // the totals of the last span: the count and its rate, a curve of requests over the span, and a
 // bar that splits them by result; "other" is shared, cached, cancelled or cut off, so the bar adds up
 function stGateSpark(starts, now) {
-  var N = 30, w = 120, h = 22, b = [], i;
+  // the slots follow the clock, not the moment of the redraw: a request stays in its slot, and the curve
+  // moves one slot at a time instead of reshaping on every redraw
+  var N = 30, w = 120, h = 22, b = [], i, B = ST_GATE_SPAN / N, first = Math.floor(now / B) - N + 1;
   for (i = 0; i < N; i++) b.push(0);
-  starts.forEach(function (t) { var k = Math.floor((t - (now - ST_GATE_SPAN)) / ST_GATE_SPAN * N); if (k >= 0 && k < N) b[k]++; else if (k >= N) b[N - 1]++; });
+  starts.forEach(function (t) { var k = Math.floor(t / B) - first; if (k >= 0 && k < N) b[k]++; else if (k >= N) b[N - 1]++; });
   var max = Math.max.apply(null, b) || 1, pts = b.map(function (y, j) { return [(j / (N - 1) * (w - 4) + 2).toFixed(1), (h - 3 - y / max * (h - 6)).toFixed(1)]; });
   var d = pts.map(function (p, j) { return (j ? 'L' : 'M') + p[0] + ' ' + p[1]; }).join(' '), last = pts[N - 1];
   return '<svg class="st-gate-spark" viewBox="0 0 ' + w + ' ' + h + '" data-tip="Requests over the last ' + stGateSpanTxt() + '\nThe newest are at the right"><path class="f" d="' + d + ' L' + last[0] + ' ' + h + ' L2 ' + h + ' Z"/><path class="l" d="' + d + '"/><circle cx="' + last[0] + '" cy="' + last[1] + '" r="2"/></svg>';
