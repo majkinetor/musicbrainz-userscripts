@@ -28,15 +28,17 @@ test('a barcode alone starts a consolidation', { tag: ['@sandbox', '@web'] }, as
   await info.attach('barcode consolidation', { body: await page.screenshot(), contentType: 'image/png' });
 });
 
+// 2001112223330: a store-internal EAN (prefix 2), which no published album carries. The old example EAN,
+// 4006381333931, now finds albums on Apple Music, Tidal and 7digital.
 test('a barcode no platform has says so', { tag: ['@sandbox', '@web'] }, async ({ page, inject }) => {
   test.setTimeout(120_000);
-  await page.goto(`${SANDBOX}/release/add#mc=btest1118n&bc=4006381333931`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${SANDBOX}/release/add#mc=btest1118n&bc=2001112223330`, { waitUntil: 'domcontentloaded' });
   await inject('first_contact', { waitFor: '__fcTest' });
   await inject('platform_check', { waitFor: '__pcTest702' });
   await inject('mission_control', { waitFor: '__mccTest' });
   await page.waitForSelector('#mcc-root');
   const err = await until(() => page.evaluate(() => window.__mccTest.state().error), Boolean, { timeout: 90_000 });
   console.log(JSON.stringify(await page.evaluate(() => window.__mccTest.state().bc)));
-  check(/barcode 4006381333931/.test(err), `the error names the barcode: ${err}`);
+  check(/barcode 2001112223330/.test(err), `the error names the barcode: ${err}`);
   check(/command palette/.test(await page.locator('#mcc-root').textContent()), 'and points to the palette to try another');
 });
