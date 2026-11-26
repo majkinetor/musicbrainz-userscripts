@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-26 19:06 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-26 19:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -609,13 +609,13 @@ Its keys are in [Shortcuts](#shortcuts-1). A zoomed image follows the mouse, or 
 
 ### Release group artwork
 
-In [Event Horizon](../event_horizon/README.md), a release group's **Artwork** tab shows the art of all its releases. Images of a type that look alike are merged into one, shown by its largest copy and marked with how many releases have them; each release's booklet is one stack, marked with its page count, whether merging is on or not. A PDF booklet whose comment gives its pages (`44 pages`) is marked the same way. Group by type, release or nothing; grouped, **Jump to** lists the groups and takes you to one, in **Edit** too. **Booklets only** and **PDF** narrow the view, and **Merge look-alikes** turns merging off; the count above the gallery says how many look-alikes were merged. Select covers with right-click or right-drag, as in the main gallery, to download only those. **Pause** stops the reading.
+In [Event Horizon](../event_horizon/README.md), a release group's **Artwork** tab shows the art of all its releases. Images of a type that look alike are merged into one, shown by its largest copy and marked with how many releases have them; each release's booklet is one stack, marked with its page count, whether merging is on or not. A PDF booklet whose comment gives its pages (`44 pages`) is marked the same way. Group by release (as it opens), type or nothing; grouped, **Jump to** lists the groups and takes you to one, in **Edit** too. **Booklets only** and **PDF** narrow the view, and **Merge look-alikes** turns merging off; the count above the gallery says how many look-alikes were merged. An image whose removal is open for votes is marked **removal open**, and one the release no longer has says **Not on the release**. Select covers with right-click or right-drag, as in the main gallery, to download only those. **Pause** stops the reading.
 
 **Download zip** saves the selected images, the largest copy of each merged image, or everything, in a folder per release, each file [named](#file-names--types) as that release's own download names it: `1984 JP CP35-3017/05 booklet.jpg`. Clicking an image opens the viewer over its row.
 
 The thumbnail sizes work as in the main gallery: the size buttons, the wheel over them, or right-click + wheel anywhere.
 
-**Edit** opens the main gallery over every image of every release, with nothing merged or stacked, and you edit them the same way: selection, **Type ▾**, **Comment ▾**, the type pills, the trash, the viewer and the commit window all work as on a release's page. The grouping buttons above it still apply. Grouped by type or not at all, each cover shows its release; grouped by release, you can drag a cover to move it within its release. Adding, sourcing, upscaling, AI scan, rotating, downloading and reporting are left out. The cover at the top of the view stays there as you go in and out. **Edit** again leaves, and asks first if changes are staged. After you commit, the cover art archive can take a while to show the changes.
+**Edit** opens the main gallery over every image of every release, with nothing merged or stacked, and you edit them the same way: selection, **Type ▾**, **Comment ▾**, the type pills, the trash, the viewer and the commit window all work as on a release's page. The grouping buttons above it still apply. Grouped by type or not at all, each cover shows its release; grouped by release, you can drag a cover to move it within its release. Adding, sourcing, upscaling, AI scan, rotating, downloading and reporting are left out. The cover at the top of the view stays there as you go in and out. **Edit** again leaves, and asks first if changes are staged. A cover whose removal is open for votes can't be removed again. After you commit, the cover art archive can take a while to show the changes.
 
 ### File names ⇄ types
 
