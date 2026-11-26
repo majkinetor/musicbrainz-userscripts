@@ -5,7 +5,7 @@
 // Fusion is in Ask mode by default: the column offers Fetch RG, nothing runs on
 // Probe. Apply is a dry run only: a real one merges on the sandbox and would use
 // the fixture up.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until } from '../../../dev/test/harness.mjs';
 
 // a successful Execute would reload the page under the test (on by default since settings v2).
 // The fixture's duplicates share title, artist and length, no ISRC or AcoustID: Fusion groups
@@ -61,7 +61,9 @@ test('#680: Fusion runs on Fetch RG and marks the tracks with duplicates', { tag
   // the ISRCs and AcoustIDs are looked up by themselves, group after group: no button, and none stays unknown
   check(await page.locator('#mc-root [data-act="fx-check"]').count() === 0, 'no Check button');
   await page.waitForFunction(() => window.__mcTest.fxChecking() === 0, null, { timeout: 120_000 });
-  check(await card.locator('.fs-idunk').count() === 0, 'once checked, no ISRC or AcoustID is unknown on the card');
+  // the card is Fusion's: it draws the answer a moment after Mission Control counts the group done
+  const unk = await until(() => card.locator('.fs-idunk').count(), n => n === 0, { timeout: 15000 });
+  check(unk === 0, `once checked, no ISRC or AcoustID is unknown on the card (${unk})`);
   check(/AcoustIDs/.test(await page.locator('#mc-root .mc-insp .mc-fxm').first().textContent()), 'the inspector lists the match\'s AcoustIDs');
   check(!/not checked/.test(await page.locator('#mc-root .mc-insp .mc-fxm').first().textContent()), 'and they are checked');
   check(await card.locator('[data-act="mc-open"] img').count() === 1 && await card.locator('[data-act="mc-open"]').getAttribute('data-tip') !== null, 'Open in Fusion is Fusion\'s icon, with a tooltip');
