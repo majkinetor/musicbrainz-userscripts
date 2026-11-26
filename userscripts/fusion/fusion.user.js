@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.26.093018
+// @version      2026.11.26.093100
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -5054,6 +5054,11 @@ function fsStyle() {
         + '.fs-ctrs{display:inline-flex;align-items:center;gap:4px}'
         // #908: the header is three parts, the type counters centred between the title and the buttons
         + '.fs-hl{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:10px}'
+        // the status texts (busy, background task, network, scope) on a line of their own under the title: beside
+        // it a long scope wrapped over the counters; cut with an ellipsis, never wrapped, the whole of it is in the log
+        + '.fs-hl:has(>.fs-hstat){flex-direction:column;align-items:flex-start;justify-content:center;gap:2px}'
+        + '.fs-hstat{display:flex;align-items:center;gap:8px;max-width:100%;min-width:0;overflow:hidden}'
+        + '.fs-hstat>*{flex:none}.fs-hstat>.fs-scope{flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
         + '.fs-hr{flex:1 1 0;display:flex;justify-content:flex-end;align-items:center;gap:6px}'
         + '.fs-ctr{position:relative;display:inline-grid;place-items:center;width:26px;height:24px;border-radius:5px;color:var(--mbu-text-weak);cursor:pointer;font-weight:400}'
         + '.fs-ctr svg{width:16px;height:16px;display:block}'
@@ -5064,6 +5069,11 @@ function fsStyle() {
         + '.fs-launch .fs-lctrs{position:absolute;right:100%;top:50%;transform:translateY(-50%);display:flex;gap:3px;margin-right:4px;pointer-events:none}.fs-launch .fs-lctrs>*{pointer-events:auto}'
         + ':root[data-mbu-flow=row] .fs-launch .fs-lctrs,.fs-launch .fs-lctrs.fs-lv{right:auto;left:50%;top:auto;bottom:100%;transform:translateX(-50%);flex-direction:column-reverse;margin:0 0 4px}'
         + '.fs-launch .fs-lctrs .fs-ctr:hover{color:var(--mbu-text)}'
+        // loading, outside the dock (the dock draws its own from the same attributes): the dots, then the count so far
+        + '.fs-launch .fs-ldots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}.fs-launch:not([data-mbu-docked])[data-mbu-busy][data-mb-corner-status="···"] .fs-ldots{display:flex}'
+        + '.fs-ldots i{width:5px;height:5px;border-radius:50%;background:var(--mbu-accent,#e05aa5);animation:fs-ldot 1.2s ease-in-out infinite}.fs-ldots i:nth-child(2){animation-delay:.2s}.fs-ldots i:nth-child(3){animation-delay:.4s}@keyframes fs-ldot{0%,80%,100%{opacity:.25}40%{opacity:1}}'
+        + '.fs-launch:not([data-mbu-docked])[data-mbu-busy]:not([data-mb-corner-status="···"])::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-6px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border-radius:9px;background:var(--mbu-accent,#7b4fa0);color:var(--mbu-text-on-accent,#fff);font:700 10px/18px system-ui,sans-serif;text-align:center;animation:fs-pulse 1.1s ease-in-out infinite}'
+        + '@media (prefers-reduced-motion:reduce){.fs-ldots i,.fs-launch::after{animation:none!important}}'
         + '.fs-addmenu{font-family:var(--mbu-font);max-height:70vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}'
         + '.fs-addmenu .fs-am-t{font-weight:700;margin:0 0 6px}'
         + '.fs-addmenu label{display:flex;align-items:center;gap:7px;padding:4px 2px;cursor:pointer;white-space:nowrap}'
@@ -6287,6 +6297,7 @@ function seedPageProgress(page, totalPages, loaded, total) {
     const of = totalPages ? ' of ' + totalPages : '';
     const got = total ? ' — ' + loaded + ' of ' + total + ' recordings so far' : '';
     setScopeLabel('Loading… page ' + page + of + got);
+    if (loaded) { _launchLoaded = loaded; launchBusy(); }
 }
 function setScopeSuffix(suffix) { const e = document.getElementById('fs-scope'); if (e) e.textContent = _scopeBaseLabel + suffix; }
 
@@ -6769,7 +6780,7 @@ function buildShell() {
             + MATCH_CUTOFFS.map((c, i) => '{' + TIER_COLORS[c] + (i === cur ? ' on' : i > cur ? ' off' : '') + '} ' + c[0].toUpperCase() + c.slice(1) + ': ' + CUTOFF_MEANS[c]).join('\n');
     };
     overlay.innerHTML = '<div class="fs-cons" id="fs-cons">'
-        + '<div class="fs-hdr" id="fs-hdr"><div class="fs-hl"><div class="fs-title">' + fsTitle('recording') + '</div><span class="fs-busy" id="fs-busy" style="display:none" data-tip="Open the activity log"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none" data-tip="Open the activity log"></span><span class="fs-netbanner" id="fs-netbanner" style="display:none"></span><div class="fs-scope" id="fs-scope" data-tip="Open the activity log">…</div></div>' + emCounters('recording') + '<div class="fs-hr">' + CLEAR_ALL_BTN
+        + '<div class="fs-hdr" id="fs-hdr"><div class="fs-hl"><div class="fs-title">' + fsTitle('recording') + '</div><div class="fs-hstat"><span class="fs-busy" id="fs-busy" style="display:none" data-tip="Open the activity log"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none" data-tip="Open the activity log"></span><span class="fs-netbanner" id="fs-netbanner" style="display:none"></span><div class="fs-scope" id="fs-scope" data-tip="Open the activity log">…</div></div></div>' + emCounters('recording') + '<div class="fs-hr">' + CLEAR_ALL_BTN
         + '<button class="fs-cons-x" id="fs-max" type="button" data-tip="Maximize or restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" data-tip="Fusion\nOptions, the log, help">' + MBU_CFG_ICON + '</button><button class="fs-cons-x" id="fs-close" type="button" data-tip="Close">✕</button></div></div>'
         + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr" id="fs-pool-hdr"><span>Pool</span><span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" data-tip="Filter by title, artist, release, ISRC or AcoustID\nMatch still looks at the whole pool.">' + fsAddField('fs-add-input', 'paste a recording, release, or release-group MBID|URL…', 'Add recordings\nPaste a recording’s, release’s or release group’s MBID or MusicBrainz URL; its recordings come in at once.') + fsGroupAllBtn('fs-groupall', 'Group all\nThe selected recording, or the pool as filtered, in one new group') + '<span class="fs-pooltog" id="fs-pooltog" data-tip="Fold the pool away\nThe groups get the full width.">◀</span></div>'
         + '<div class="fs-poolsort">Sort ' + POOL_SORT_HTML.replace('<span class="fs-seg">', '<span class="fs-seg" id="fs-pool-sort">') + '<select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select>' + addPageBtn() + '</div>'
@@ -6969,7 +6980,8 @@ const FS_PHONE_CSS = '.fs-overlay.fs-phone{-webkit-text-size-adjust:100%;text-si
     + '.fs-phone .fs-pool{width:auto;right:0}.fs-phone .fs-poolfilter{max-width:none}'
     + '.fs-phone .fs-note,.fs-phone #fs-max,.fs-phone #fs-em-max{display:none}.fs-phone .fs-ftr{flex-wrap:wrap;padding:8px 10px}';
 async function openFusion() {
-    if (scopeLoad) await scopeLoad;
+    // no wait for a load the add menu started: a big one runs for minutes, and the click looked dead all
+    // that time. The window opens at once with the load's progress in its header; the pool fills when it lands
     const next = detectScope();
     if (!next) return;
     enterScope(next);
@@ -6979,6 +6991,7 @@ async function openFusion() {
     fsStyle();
     buildShell();
     if (_scopeBaseLabel) setScopeLabel(_scopeBaseLabel);
+    renderBusy(); setBgTask(_bgLabel); renderNetBanner();   // work already running when the window opened
     renderAll();
     // recordings added while the window was closed: the RG-edition picker wasn't there to fill
     if (SCOPE.type === 'release' && STATE.poolOrder.length) maybeShowRGDropdown(SCOPE.mbid).catch(() => {});
@@ -7308,6 +7321,7 @@ function ensureLauncher() {
         btn = el('button', 'fs-launch'); btn.id = 'fs-launch'; btn.type = 'button';
         const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; btn.appendChild(img);
         const lc = el('span', 'fs-lctrs'); lc.id = 'fs-launch-ctrs'; btn.appendChild(lc);
+        const dots = el('span', 'mbu-dock-dots fs-ldots'); dots.innerHTML = '<i></i><i></i><i></i>'; btn.appendChild(dots);   // while a load has counted nothing yet
         btn.dataset.tip = 'Fusion — merge\nClick: open\nRight-click: settings\nCtrl+click / middle-click: add from this page';   // icon-only: the tooltip carries the name
         btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '30'; btn.dataset.mbCornerLabel = 'Fusion';
         btn.addEventListener('mousedown', e => { if (e.button === 1) e.preventDefault(); });   // no autoscroll
@@ -7315,13 +7329,24 @@ function ensureLauncher() {
         btn.onclick = e => {
             const c = e.target.closest('.fs-ctr'); if (c) { openPool(c.dataset.type); return; }
             if (e.ctrlKey || e.metaKey) { openAddMenu(btn); return; }
-            if (detectScope() && (poolCount('recording') || !emCount())) openFusion(); else openEntities();
+            if (detectScope() && (scopeLoad || poolCount('recording') || !emCount())) openFusion(); else openEntities();
         };
         btn.oncontextmenu = e => { if (clearPoolFromCounter(e)) return; e.preventDefault(); if (document.getElementById('fs-settings')) document.getElementById('fs-settings').remove(); else openSettings(btn); };
         document.body.appendChild(btn);
         mbRestackCorner('br');
     }
     refreshCounters();
+    launchBusy();
+}
+// The launcher while the add menu loads recordings: the dock's loading look, three dots and then the count so
+// far, fading; on a launcher outside the dock the same dots and a fading count by its corner. Without it a load of
+// a thousand recordings showed nothing for minutes, the counters only appearing once all had arrived
+let _launchLoaded = 0;
+function launchBusy() {
+    const b = document.getElementById('fs-launch'); if (!b) return;
+    const on = !!scopeLoad, st = on ? (_launchLoaded ? String(_launchLoaded) : '···') : '';
+    if (on !== b.hasAttribute('data-mbu-busy')) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; }
+    if ((b.dataset.mbCornerStatus || '') !== st) { if (st) b.dataset.mbCornerStatus = st; else delete b.dataset.mbCornerStatus; mbuRestackSoon(); }
 }
 // what the add menu offers on this page: [type, label, ticked]; the page's own entity starts ticked
 function addMenuOptions() {
@@ -7443,8 +7468,8 @@ async function loadScopeRecordings() {
     if (scopeLoad) { await scopeLoad; return; }
     enterScope(sc);
     const before = STATE.poolOrder.length;
-    scopeLoad = seedFromScope();
-    try { await scopeLoad; } finally { scopeLoad = null; }
+    scopeLoad = seedFromScope(); _launchLoaded = 0; launchBusy();
+    try { await scopeLoad; } finally { scopeLoad = null; _launchLoaded = 0; launchBusy(); }
     renderAll();
     const n = STATE.poolOrder.length - before;
     Log.info('Add menu: ' + n + ' recording(s) into the pool');
