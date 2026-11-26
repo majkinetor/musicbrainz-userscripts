@@ -3,7 +3,7 @@
 // there, so it makes no GitHub API calls. Every run is a full rebuild from GitHub's current state, so an edited
 // post carries its new text, and a deleted post, one moved out of Announcements or one labeled `skip changelog`
 // is gone. See README.md.
-import { writeFileSync, mkdirSync, readdirSync, readFileSync, existsSync, rmSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readdirSync, readFileSync, existsSync, rmSync, copyFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 
 const args = process.argv.slice(2);
@@ -45,14 +45,20 @@ for (let after = null; ;) {
 }
 
 // the script a post is about, from its `area | <script>` label, for the site's page (String Theory works it out
-// itself): its @name and icon, a PNG where there is one (as the site's front page does)
-const RAW = 'https://raw.githubusercontent.com/' + OWNER + '/' + NAME + '/main/userscripts/';
+// itself): its @name and icon, a PNG where there is one (as the site's front page does). The icon is copied into the
+// site, news/icons/<script>.<ext>, so neither the page nor its readers depend on raw.githubusercontent.com's limits.
+// news/ is rewritten whole on every run, the post pages below too, so a deleted post loses its page.
+const SITE = opt('--site', 'https://milic.info/musicbrainz-userscripts/');
+const dir = dirname(OUT) + '/news';
+rmSync(dir, { recursive: true, force: true });
+mkdirSync(dir + '/icons', { recursive: true });
 const scripts = {};
-for (const dir of existsSync('userscripts') ? readdirSync('userscripts') : []) {
-  let name = dir.replace(/_/g, ' ');
-  try { name = /^\/\/ @name\s+(.+)$/m.exec(readFileSync(`userscripts/${dir}/${dir}.user.js`, 'utf8'))[1].trim(); } catch { /* no script */ }
-  const icon = ['icon.png', 'icon.svg'].find((i) => existsSync(`userscripts/${dir}/${i}`));
-  scripts[dir.replace(/_/g, ' ')] = scripts[name.toLowerCase()] = { name, icon: icon ? RAW + dir + '/' + icon : '' };
+for (const d of existsSync('userscripts') ? readdirSync('userscripts') : []) {
+  let name = d.replace(/_/g, ' ');
+  try { name = /^\/\/ @name\s+(.+)$/m.exec(readFileSync(`userscripts/${d}/${d}.user.js`, 'utf8'))[1].trim(); } catch { /* no script */ }
+  const icon = ['icon.png', 'icon.svg'].find((i) => existsSync(`userscripts/${d}/${i}`)), file = icon ? d + icon.slice(4) : '';
+  if (icon) copyFileSync(`userscripts/${d}/${icon}`, `${dir}/icons/${file}`);
+  scripts[d.replace(/_/g, ' ')] = scripts[name.toLowerCase()] = { name, icon: icon ? SITE + 'news/icons/' + file : '' };
 }
 const scriptOf = (labels) => {
   for (const l of labels) { const m = /^area \| (.+)$/.exec(l); if (m) return scripts[m[1].toLowerCase()] || { name: m[1], icon: '' }; }
@@ -89,16 +95,12 @@ writeFileSync(OUT, JSON.stringify({ generated: new Date().toISOString(), items }
 
 // one page a post, news/<id>.html, for links pasted into chats and forums: a link preview never sees news.html's
 // #<id>, so it would show the page's title for every post. Each page carries its post's title, text and first image
-// in the preview tags and sends a reader on to news.html#<id>. Rewritten whole, so a deleted post loses its page.
-const SITE = opt('--site', 'https://milic.info/musicbrainz-userscripts/');
+// in the preview tags and sends a reader on to news.html#<id>.
 const attr = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const text = (html) => html.replace(/<sub>\s*Issue:[\s\S]*?<\/sub>/gi, ' ').replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ').replace(/<[^>]+>/g, ' ')
   .replace(/&nbsp;/g, ' ').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
   .replace(/\s+/g, ' ').trim();
 const cut = (s, n) => s.length <= n ? s : s.slice(0, s.lastIndexOf(' ', n - 1) > n / 2 ? s.lastIndexOf(' ', n - 1) : n - 1) + '…';
-const dir = dirname(OUT) + '/news';
-rmSync(dir, { recursive: true, force: true });
-mkdirSync(dir, { recursive: true });
 for (const i of items) {
   const to = '../news.html#' + i.id, img = (/<img[^>]+src="([^"]+)"/i.exec(i.html) || [])[1] || '';
   const title = i.title + ' · ' + i.script, desc = cut(text(i.html), 200);

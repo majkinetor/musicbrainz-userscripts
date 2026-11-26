@@ -11,6 +11,7 @@ A link preview in a chat or a forum never sees the `#1122` part, so the script a
 - Every run is a full rebuild from GitHub's current state. An edited post carries its new text. A deleted post, a post moved out of Announcements and a post labeled `skip changelog` are not in the file.
 - Each post has its number (`id`), `title`, `url`, creation time (`at`), last edit time (`edited`), rendered body (`html`), label names (`labels`), the issue from its `Issue: #N` line (`issue`), and that issue's channel (`channel`): `stable` with the `released` label, else `latest`.
 - Each post also has its script's name (`script`) and icon address (`icon`), from its `area | …` label, for the site's page. String Theory works these out itself.
+- The script copies every script's icon into the site, at `news/icons/<script>.svg` or `.png`, and `icon` points there. The site does not depend on `raw.githubusercontent.com`.
 - The posts are newest first. `generated` is the time of the build.
 - If GitHub fails after three tries, the script exits with an error. The workflow then deploys nothing, and the site keeps the last file.
 
