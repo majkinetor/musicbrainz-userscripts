@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-26 19:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-26 20:54 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -606,6 +606,8 @@ Stores sometimes offer a bigger file that is only a smaller picture enlarged, su
 Its keys are in [Shortcuts](#shortcuts-1). A zoomed image follows the mouse, or drags with that off in ⚙.
 
 **↶ ↷** by **Download** turn the cover 90°. A new cover rotates in place; an existing one is staged as a rotated new copy with its type, comment and position, and the original is marked for removal. PNGs rotate losslessly, JPEGs are re-saved at high quality.
+
+**✂ Trim** crops the plain border around a cover, such as the white table around a photographed CD. A little JPEG noise or dust does not stop it. It stages the result as rotate does, and says so when there is no plain border.
 
 ### Release group artwork
 
