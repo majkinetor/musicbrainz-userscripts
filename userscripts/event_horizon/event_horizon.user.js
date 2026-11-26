@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.26.184140
+// @version      2026.11.26.190608
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -6240,11 +6240,15 @@ const caaOf = u => { const m = (u || '').match(CAA_RE); return m ? { k: m[1] || 
 const caaSrc = (k, id, size = 250) => CAA_CV.get(k + '/' + id) || `${caaHost(k)}/${k}/${id}/front-${size}`;
 // the front's images from the archive listing, smallest first; [] when it has none
 const CAA_JSON = new Map(), CAA_JSON_KEPT = caaStore('eh:caa-json', 10 * 60 * 1000);
-// the archive's listing of a release, group or event, fetched once, and kept in the tab for 10 minutes; null when it has none
-const caaJson = (k, id) => {
+// the archive's listing of a release, group or event, fetched once, and kept in the tab for 10 minutes; null when it has none.
+// fresh: asked of the archive again, past the browser's copy (archive.org sends a listing with six hours of max-age, so a
+// removed image would stay listed that long)
+const CAA_FRESH = new Set();   // listings read fresh in this tab
+const caaJson = (k, id, fresh) => {
     const key = k + '/' + id;
-    if (!CAA_JSON.has(key)) CAA_JSON.set(key, CAA_JSON_KEPT.has(key) ? Promise.resolve(CAA_JSON_KEPT.get(key))
-        : mbnLog(`${caaHost(k)}/${key}`, undefined, { entity: k }).then(r => r.ok ? r.json() : r.status === 404 ? null : Promise.reject(new Error('HTTP ' + r.status)))
+    if (fresh && !CAA_FRESH.has(key)) { CAA_FRESH.add(key); CAA_JSON.delete(key); }
+    if (!CAA_JSON.has(key)) CAA_JSON.set(key, CAA_JSON_KEPT.has(key) && !fresh ? Promise.resolve(CAA_JSON_KEPT.get(key))
+        : mbnLog(`${caaHost(k)}/${key}`, fresh ? { cache: 'no-cache' } : undefined, { entity: k }).then(r => r.ok ? r.json() : r.status === 404 ? null : Promise.reject(new Error('HTTP ' + r.status)))
             .then(j => { CAA_JSON_KEPT.set(key, j); return j; }, () => null));
     return CAA_JSON.get(key);
 };
@@ -11366,7 +11370,7 @@ async function rgaScan(rgId, eds) {
     const work = async () => {
         for (let e; (e = todo.shift());) {
             await rgaHold(st);
-            const j = await caaJson('release', e.id);
+            const j = await caaJson('release', e.id, true);
             RGA_REL.set(e.id, rgaList(e.id, j));
             st.n++;
             if (performance.now() - last > 500) { last = performance.now(); rgaRedraw(rgId); }
@@ -17053,9 +17057,9 @@ async function rgaRefresh() {
     const d = data, ids = [...RGA_EDITED]; RGA_EDITED.clear();
     for (const id of ids) {
         const key = 'release/' + id;
-        CAA_JSON.delete(key); CAA_JSON_KEPT.delete(key); CAA_LIST.delete(key); CAA_CV.delete(key);
+        CAA_JSON.delete(key); CAA_JSON_KEPT.delete(key); CAA_LIST.delete(key); CAA_CV.delete(key); CAA_FRESH.delete(key);
         const sig = l => JSON.stringify((l || []).map(i => [i.id, i.types, i.comment]));
-        const was = sig(RGA_REL.get(id)), j = await caaJson('release', id), im = rgaList(id, j);
+        const was = sig(RGA_REL.get(id)), j = await caaJson('release', id, true), im = rgaList(id, j);
         if (RGA_REL.has(id) && sig(im) === was) { LOG.debug(`Group artwork: release ${id} read again, unchanged`); continue; }
         RGA_REL.set(id, im);
         const e = (d.editions || []).find(x => x.id === id);

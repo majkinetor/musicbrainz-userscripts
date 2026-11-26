@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.26.184511
+// @version      2026.11.26.190608
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -1832,28 +1832,33 @@
   // #787: a cover with a remove edit open for votes says so on its card, with a link to the edit. One read of the
   // open-edits page, by its structure (MusicBrainz translates the labels): an open remove edit's header, its link,
   // the image link with the artwork id, and the closing time in the expiration tooltip
-  // a release group's gallery reads the group's open-edits page, which lists its releases' edits; the image is
-  // matched on its release too (an image missing from the archive has no image link, only its file name)
-  async function loadOpenRemovals(base = ENT.base, rel = null) {
+  // the remove edits open for votes on an open-edits page: [{ edit, id, rid, until }]. A release group's page lists its
+  // releases' edits; an image missing from the archive has no image link there, only its file name
+  async function readOpenRemovals(base) {
+    const r = await mbnFetch(`${base}/open_edits`, { credentials: 'same-origin' }, { log: (l, m) => asLog[l === 'warn' ? 'warn' : 'info'](m) });
+    if (!r || !r.ok) { asLog.debug(`Open removals: no open-edits page (HTTP ${r ? r.status : 'failed'})`); return null; }
+    const doc = new DOMParser().parseFromString(await r.text(), 'text/html'), out = [];
+    doc.querySelectorAll('.edit-list').forEach(e => {
+      if (!e.querySelector(`.edit-header.open.remove-${ENT.art}`)) return;
+      const a = e.querySelector('.edit-header a[href*="/edit/"]'), img = e.querySelector('a.artwork-image'), file = e.querySelector('.edit-details code');
+      const edit = a && (a.getAttribute('href').match(/\/edit\/(\d+)/) || [])[1];
+      const id = ((img && img.getAttribute('href')) || (file && file.textContent) || '').match(/-?(\d+)\.[a-z0-9]+$/i)?.[1];
+      const rel = e.querySelector('.edit-details a[href*="/release/"]'), rid = rel && (rel.getAttribute('href').match(/[0-9a-f-]{36}/) || [])[0];
+      const t = e.querySelector('.edit-expiration [title]'), until = t ? Date.parse(t.getAttribute('title').replace(' UTC', 'Z').replace(' ', 'T')) : NaN;
+      if (edit && id) out.push({ edit, id, rid, until });
+    });
+    return out;
+  }
+  async function loadOpenRemovals() {
     try {
-      const r = await mbnFetch(`${base}/open_edits`, { credentials: 'same-origin' }, { log: (l, m) => asLog[l === 'warn' ? 'warn' : 'info'](m) });
-      if (!r || !r.ok) { asLog.debug(`Open removals: no open-edits page (HTTP ${r ? r.status : 'failed'})`); return; }
-      const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
-      let n = 0;
-      doc.querySelectorAll('.edit-list').forEach(e => {
-        if (!e.querySelector(`.edit-header.open.remove-${ENT.art}`)) return;
-        const a = e.querySelector('.edit-header a[href*="/edit/"]'), img = e.querySelector('a.artwork-image'), file = e.querySelector('.edit-details code');
-        const edit = a && (a.getAttribute('href').match(/\/edit\/(\d+)/) || [])[1];
-        const id = ((img && img.getAttribute('href')) || (file && file.textContent) || '').match(/-?(\d+)\.[a-z0-9]+$/i)?.[1];
-        const rid = rel && ((e.querySelector('.edit-details a[href*="/release/"]') || {}).getAttribute?.('href') || '').match(/[0-9a-f-]{36}/)?.[0];
-        const it = id && MODEL.find(x => !x._new && String(x.id) === id && (!rel || x._rel === rid));
-        if (rel && !rel()) return;
-        if (!edit || !it) return;
-        const t = e.querySelector('.edit-expiration [title]'), until = t ? Date.parse(t.getAttribute('title').replace(' UTC', 'Z').replace(' ', 'T')) : NaN;
-        it._rmOpen = { edit, until };
+      const l = await readOpenRemovals(ENT.base); let n = 0;
+      for (const x of l || []) {
+        const it = MODEL.find(m => !m._new && String(m.id) === x.id);
+        if (!it) continue;
+        it._rmOpen = { edit: x.edit, until: x.until };
         if (it._del && !it._mcOffer) it._del = false;   // already entered: nothing to remove again
         n++;
-      });
+      }
       if (n) { asLog.info(`Open removals: ${n} ${n === 1 ? ITEM : ITEMS} with a remove edit open for votes`); render(); }
     } catch (e) { asLog.debug('Open removals: ' + (e && e.message)); }
   }
@@ -2705,7 +2710,7 @@
         const it = byId(cardId(img));
         const orig = it && !it._pdf ? (it._img || imgUrl(it.id)) : null;
         if (orig && img.getAttribute('src') !== orig) img.src = orig;
-        else th.classList.add('na');
+        else { th.classList.add('na'); if (_grp && it && !it._new) { th.classList.add('as-gone'); it._gone = true; } }
       };
       if (img.complete && !img.naturalWidth && img.getAttribute('src')) img.onerror();
     });
@@ -5500,7 +5505,9 @@
     Object.assign(known, learnt); gmSave(typeNamesKey(), JSON.stringify(known));
   }
   async function buildEdit(it, meta) {   // retype / comment on an existing cover
-    const form = await getPostForm(`${it._R || R}/edit-${ART}/${it.id}`);   // _R: a release group's image, on its release
+    let form;   // _R: a release group's image, on its release; a 404: the release no longer has it
+    try { form = await getPostForm(`${it._R || R}/edit-${ART}/${it.id}`); }
+    catch (e) { if (/404/.test(String((e && e.message) || e))) return { noop: true, note: 'not on the release any more' }; throw e; }
     const p = new URLSearchParams(); copyHidden(form, p);
     const tm = typeMapOf(form, `edit-${ART}`);
     // #721 types untouched (only the comment changed): send the ones the form has checked,
@@ -10008,8 +10015,11 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   .as-gv-t:hover .as-gv-im{border-color:var(--mbu-border)}
   .as-gv-t.on .as-gv-im{border-color:var(--mbu-accent)}
   .as-gv-im img{width:100%;height:100%;object-fit:contain;display:block}
+  .as-gv-t.gone .as-gv-im img{display:none}
+  .as-gv-t.gone .as-gv-im::after,.as-thumb.na.as-gone::after{content:'Not on the release';text-align:center;color:var(--mbu-text-dim);font:600 12px var(--mbu-font);padding:0 12px}
   .as-gv-stk .as-gv-im{box-shadow:none;border-bottom:4px double var(--mbu-border)}
   .as-gv-doc{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--mbu-text-dim);font:600 11px var(--mbu-font)}
+  .as-gv-rm{color:var(--mbu-error)}
   .as-gv-n{position:absolute;right:4px;top:4px;font:600 11px var(--mbu-font);padding:1px 6px;border-radius:999px;background:rgba(0,0,0,.65);color:#fff}
   .as-gv-t.on .as-gv-im{box-shadow:0 0 0 2px var(--mbu-accent),0 3px 14px rgba(95,62,192,.3)}
   .as-gv-t .as-selmark{background:var(--mbu-accent)}
@@ -10093,7 +10103,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   // Event Horizon reads every release's listing and hashes the images; each step it sends the whole snapshot
   // (mbu-art-group), and this draws it: look-alikes of a type merged across releases, booklets one stack per
   // release, grouped by type, release or not at all. See DEVELOP.md.
-  const GV = { dims: new Map(), d: null, by: 'type', merge: true, book: false, pdf: false, sel: new Set(), el: null, dl: '', menu: false, html: '',
+  const GV = { rm: new Map(), rmRg: '', dims: new Map(), d: null, by: 'release', merge: true, book: false, pdf: false, sel: new Set(), el: null, dl: '', menu: false, html: '',
     edit: false };   // editing: Art Station's own gallery over every release's images (grpEnter)
   const GV_BOOK = ['Booklet', 'Liner', 'Poster'];
   const GV_ORDER = ['Front', 'Back', 'Booklet', 'Medium', 'Tray', 'Obi', 'Spine', 'Track', 'Liner', 'Sticker', 'Poster', 'Panel', 'Top', 'Bottom', 'Matrix/Runout', 'Watermark', 'Raw/Unedited', 'Other', 'PDF'];
@@ -10145,6 +10155,20 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   const grpSig = d => (d.releases || []).map(r => r.id + ':' + (r.images || []).map(i => `${i.id}/${(i.types || []).join(',')}/${i.comment || ''}`).join(';')).join('|');
   // MODEL from Event Horizon's snapshot. What a run put in (_grp.done) is kept on top until the archive, which lags,
   // shows it too
+  // #787 the group's removals open for votes, one read of its open-edits page: marked on the tiles and the cards
+  async function gvLoadRm() {
+    const rg = GV.d && GV.d.rg; if (!rg) return;
+    GV.rmRg = rg;
+    let l = null; try { l = await readOpenRemovals('/release-group/' + rg); } catch (e) { asLog.debug('Open removals: ' + (e && e.message)); }
+    if (!l || !GV.d || GV.d.rg !== rg) return;
+    GV.rm = new Map(l.map(x => [x.rid + ':' + x.id, { edit: x.edit, until: x.until }]));
+    if (l.length) asLog.info(`Open removals: ${l.length} image${l.length === 1 ? '' : 's'} in the group with a remove edit open for votes`);
+    GV.html = ''; gvRender();
+    if (_grp) {
+      MODEL.forEach(it => { const o = GV.rm.get(it._rel + ':' + it.id); it._rmOpen = o; if (o && it._del && !it._mcOffer) it._del = false; });
+      render();
+    }
+  }
   function grpModel() {
     const d = GV.d, done = _grp.done, sel = new Set(MODEL.filter(x => x._sel).map(x => x.id)), out = [];
     const was = new Map(MODEL.map(x => [String(x.id), x]));   // what is measured stays measured
@@ -10170,7 +10194,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
         const p = was.get(id) || {};
         out.push({ id, types, comment, order: out.length, w: p.w || 0, h: p.h || 0, _noDim: p._noDim, bytes: SIZES.get(id) || 0, fmt: FORMATS.get(id) || fileFormat(image), _del: false, _new: false, _pending: false,
           _pdf: /\.pdf(\?|$)/i.test(image), _img: image, _origTypes: types.slice(), _origComment: comment, _origOrder: out.length,
-          _rel: r.id, _R: '/release/' + r.id, _relLabel: gvRelLabel(r), _sel: sel.has(id), _rmOpen: p._rmOpen });
+          _rel: r.id, _R: '/release/' + r.id, _relLabel: gvRelLabel(r), _sel: sel.has(id), _rmOpen: GV.rm.get(r.id + ':' + id) });
       }
     }
     MODEL = out; _grp.sig = grpSig(d);   // measured as the cards come into view (grpMeasure): there are many originals
@@ -10210,7 +10234,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     GV.edit = true; GV.menu = GV.toc = false;
     asLog.info(`Group gallery: editing on, ${MODEL.length} images`);
     gvRender(); render(); grpRestore(at, GRP_EDIT); grpSizes();
-    const g = _grp; loadOpenRemovals('/release-group/' + GV.d.rg, () => _grp === g);   // #787, so a removal open for votes isn't entered again
+    if (GV.rmRg !== GV.d.rg) gvLoadRm();   // #787, so a removal open for votes isn't entered again (read with the group)
   }
   // false when the person keeps their staged changes
   function grpExit(force) {
@@ -10315,6 +10339,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
       }
     }
     asLog.info(`Group gallery: committed on ${rels.size} release${rels.size === 1 ? '' : 's'}, reading them again`);
+    gvLoadRm();
     render();
     for (const rid of rels) document.dispatchEvent(new CustomEvent('mbu-art-group-edit', { detail: JSON.stringify({ rg: GV.d.rg, release: rid, now: true }) }));
   }
@@ -10358,6 +10383,13 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     const rank = n => { const i = GV_ORDER.indexOf(n); return i < 0 ? GV_ORDER.length - 1.5 : i; };
     return [...m.values()].sort((a, b) => rank(a.name) - rank(b.name));
   }
+  const gvRmChip = t => {
+    const o = t.items.map(it => GV.rm.get(it.r.id + ':' + it.id)).filter(Boolean);
+    if (!o.length) return '';
+    const d = Math.min(...o.map(x => Math.ceil((x.until - Date.now()) / 86400000)));
+    const left = isNaN(d) ? '' : d <= 0 ? ' · closing' : ` · ${d} day${d === 1 ? '' : 's'}`;
+    return `<span class="as-rmopen as-gv-rm" data-tip="${o.length === t.items.length ? '' : `${o.length} of ${t.items.length}: `}a removal open for votes${o.length === 1 ? `, edit #${esc(o[0].edit)}` : ''}">${o.length > 1 ? o.length + ' removals' : 'removal'} open${left}</span>`;
+  };
   function gvTileHtml(t, si) {
     const it = t.items[0];
     // a PDF booklet's page count, when its comment gives one ("12 pages"), marked as a stack's is
@@ -10365,9 +10397,9 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     const cap = t.kind === 'stack' ? (GV.by === 'release' ? 'Booklet' : `${gvRelLabel(it.r)} · ${t.items.length} page${t.items.length === 1 ? "" : "s"}`)
       : GV.by === 'type' ? (t.n > 1 ? `${t.n} releases` : gvRelLabel(it.r)) + (it.comment ? ' · ' + it.comment : '')
       : it.types.join(', ') + (it.comment ? ' · ' + it.comment : '');
-    const pic = t.kind === 'pdf' ? `<span class="as-gv-doc">${GV_SVG.pdf}<b>PDF</b></span>` : `<img loading="lazy" draggable="false" alt="" src="${esc(it.thumb)}"${it.pdf || it.thumb === it.image ? '' : ` data-full="${esc(it.image)}" onerror="this.onerror=null;this.src=this.dataset.full"`}>`;
+    const pic = t.kind === 'pdf' ? `<span class="as-gv-doc">${GV_SVG.pdf}<b>PDF</b></span>` : `<img loading="lazy" draggable="false" alt="" src="${esc(it.thumb)}"${it.pdf || it.thumb === it.image ? '' : ` data-full="${esc(it.image)}"`}>`;
     return `<figure class="as-gv-t${t.kind === 'stack' ? ' stk' : ''}" data-gvk="${esc(t.key)}" data-gvid="${esc(it.id)}" data-gvs="${si}">
-      <div class="as-gv-im">${pic}${t.n > 1 ? `<span class="as-gv-n">×${t.n}</span>` : ''}${t.kind === 'stack' ? `<span class="as-gv-n">${t.items.length} page${t.items.length === 1 ? "" : "s"}</span>` : ''}${pdfPages ? `<span class="as-gv-n">${pdfPages} page${pdfPages === 1 ? '' : 's'}</span>` : ''}<span class="as-selmark">✓</span></div>
+      <div class="as-gv-im">${pic}${t.n > 1 ? `<span class="as-gv-n">×${t.n}</span>` : ''}${t.kind === 'stack' ? `<span class="as-gv-n">${t.items.length} page${t.items.length === 1 ? "" : "s"}</span>` : ''}${pdfPages ? `<span class="as-gv-n">${pdfPages} page${pdfPages === 1 ? '' : 's'}</span>` : ''}<span class="as-selmark">✓</span>${gvRmChip(t)}</div>
       <figcaption>${esc(cap)}</figcaption></figure>`;
   }
   function gvNote(d, all, tiles) {
@@ -10390,7 +10422,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     const seg = (v, l) => `<button type="button" data-gvby="${v}" aria-pressed="${GV.by === v}" class="${GV.by === v ? 'on' : ''}" data-tip="Group by ${l.toLowerCase()}">${GV_SVG[v]}${L(l)}</button>`;
     const chip = (k, ico, l, n, tip) => `<button type="button" class="as-gv-chip${GV[k] ? ' on' : ''}" data-gvchip="${k}" aria-pressed="${GV[k]}" data-tip="${tip}">${GV_SVG[ico]}${L(l)}${n ? `<span>${n}</span>` : ''}</button>`;
     const nb = tiles.filter(t => t.kind === 'stack').length, np = tiles.filter(t => t.kind === 'pdf').length;
-    const bar = `<div class="as-gv-bar"><span class="as-gv-lbl">Group by</span><div class="as-gv-seg">${seg('type', 'Type')}${seg('release', 'Release')}${seg('none', 'None')}</div>${GV.by === 'none' ? '' : `<div class="as-gv-toc"><button type="button" class="as-gv-chip${GV.toc ? ' on' : ''}" data-gvtoc aria-expanded="${!!GV.toc}" data-tip="Jump to a ${GV.by === 'release' ? 'release' : 'type'}">${GV_TOC_SVG}${L('Jump to')}</button><div class="as-gv-menu as-gv-tocm${GV.toc ? ' open' : ''}"></div></div>`}
+    const bar = `<div class="as-gv-bar"><span class="as-gv-lbl">Group by</span><div class="as-gv-seg">${seg('release', 'Release')}${seg('type', 'Type')}${seg('none', 'None')}</div>${GV.by === 'none' ? '' : `<div class="as-gv-toc"><button type="button" class="as-gv-chip${GV.toc ? ' on' : ''}" data-gvtoc aria-expanded="${!!GV.toc}" data-tip="Jump to a ${GV.by === 'release' ? 'release' : 'type'}">${GV_TOC_SVG}${L('Jump to')}</button><div class="as-gv-menu as-gv-tocm${GV.toc ? ' open' : ''}"></div></div>`}
       ${GV.edit ? '' : chip('merge', 'merge', 'Merge look-alikes', 0, `Merge look-alikes
 Copies of one image across releases show as one`) + chip('book', 'book', 'Booklets only', nb, 'Booklets only')}${np && !GV.edit ? chip('pdf', 'doc', 'PDF', np, 'PDF booklets only') : ''}
       <button type="button" class="as-gv-chip as-gv-edc${GV.edit ? ' on' : ''}" data-gvedmode aria-pressed="${GV.edit}"${GV.edit || (!d.wait && !(p.read < p.total)) ? '' : ' disabled'} data-tip="${GV.edit ? `Stop editing
@@ -10556,6 +10588,13 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
   }
   function gvMount(slot) {
     const el = document.createElement('div'); el.className = 'as-gv';
+    // a tile whose thumbnail fails shows the original; when that fails too, the release no longer has the image (a
+    // listing the archive hasn't rewritten yet still names it)
+    el.addEventListener('error', e => {
+      const img = e.target; if (!(img instanceof HTMLImageElement) || !img.closest('.as-gv-im')) return;
+      if (img.dataset.full && img.getAttribute('src') !== img.dataset.full) { img.src = img.dataset.full; return; }
+      const t = img.closest('.as-gv-t'); if (t && !t.classList.contains('gone')) { t.classList.add('gone'); asLog.debug(`Group gallery: image ${t.dataset.gvid} not in the archive, not on its release any more`); }
+    }, true);
     el.style.setProperty('--as-gv-tile', SETTINGS.tile + 'px');
     // the pencil opens the release in a new tab (its link does that); Event Horizon is told, to read it again on return
     const edited = e => { const a = e.target.closest('[data-gvedit]'); if (a && GV.d && (e.type === 'click' || e.button === 1)) document.dispatchEvent(new CustomEvent('mbu-art-group-edit', { detail: JSON.stringify({ rg: GV.d.rg, release: a.dataset.gvedit }) })); return !!a; };
@@ -10627,10 +10666,11 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
     const slot = document.getElementById('as-gslot');
     if (!d || !d.rg || !slot) return;
     e.preventDefault();
-    if (!GV.d || GV.d.rg !== d.rg) { if (_grp) grpExit(true); GV.sel.clear(); GV.menu = false; asLog.info(`Group gallery: ${d.rg}`); }
+    if (!GV.d || GV.d.rg !== d.rg) { if (_grp) grpExit(true); GV.sel.clear(); GV.menu = false; GV.rm = new Map(); asLog.info(`Group gallery: ${d.rg}`); }
     GV.d = d;
     if (!GV.el || GV.el.parentNode !== slot) { GV.el = gvMount(slot); GV.html = GV.bar = ''; }
     gvRender();
+    if (GV.rmRg !== d.rg) gvLoadRm();
     if (_grp) grpSnapshot();
   });
   document.dispatchEvent(new CustomEvent('mbu-art-group-ask'));   // Event Horizon got there first: it sends the snapshot again

@@ -11,6 +11,17 @@ const RG = 'b1392450-e666-3926-a536-22c65f834433';
 // viewer over a tile's row (#1116).
 test('a release group\'s Artwork tab gathers the art of all its releases', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
   test.setTimeout(600000);
+  // one release's listing names an image the archive doesn't have (a listing not rewritten yet after a removal)
+  let ghost = '';
+  await page.route(/coverartarchive\.org\/release\/[0-9a-f-]{36}\/?$/, async r => {
+    const res = await r.fetch(), j = await res.json().catch(() => null);
+    if (!ghost && j && j.images && j.images.length) {
+      const im = j.images[0], base = im.image.replace(/\/[^/]+$/, '');
+      ghost = r.request().url();
+      j.images.push({ ...im, id: 9999999999, front: false, types: ['Other'], comment: 'ghost', image: base + '/9999999999.jpg', thumbnails: { 250: base + '/9999999999-250.jpg', small: base + '/9999999999-250.jpg' } });
+    }
+    await r.fulfill({ response: res, json: j });
+  });
   await page.goto(`https://test.musicbrainz.org/release-group/${RG}`, { waitUntil: 'domcontentloaded' });
   await idle(page);
   await inject('event_horizon');
@@ -40,6 +51,14 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   const m = note.match(/(\d+) look-alikes? merged/) || [];
   check(+m[1] > 0, `merging folded look-alikes together: ${note}`);
   check(await page.locator('#app #as-gslot .rga-fb').count() === 0, 'the card made way for the gallery');
+  check(await gv.locator('.as-gv-seg button').first().getAttribute('data-gvby') === 'release' && await gv.locator('[data-gvby="release"][aria-pressed="true"]').count() === 1, 'Release is the first grouping, and the one shown');
+  await gv.locator('.as-gv-t[data-gvid="9999999999"]').scrollIntoViewIfNeeded();
+  check(await until(() => gv.locator('.as-gv-t.gone[data-gvid="9999999999"]').count(), n => n > 0, { timeout: 30000 }) > 0, `an image the archive doesn't have says it isn't on the release (${ghost})`);
+  // a removal open for votes is marked on its tile too, not only while editing (#787)
+  const rmt = await until(() => gv.locator('.as-gv-t .as-gv-rm').count(), n => n > 0, { timeout: 20000 }).catch(() => 0);
+  if (rmt) check(/removals? open/.test(await gv.locator('.as-gv-t .as-gv-rm').first().textContent()), `${rmt} tiles say a removal is open`);
+  else console.log('no removal open for votes in the group: the tile check is skipped');
+  await gv.locator('[data-gvby="type"]').click();
   check(await gv.locator('.as-gv-n', { hasText: /×\d+/ }).count() > 0, 'a tile says how many releases share it');
   const byType = await gv.locator('.as-gv-sec h3').allTextContents();
   console.log('type sections', byType.join(' | '));
@@ -56,12 +75,13 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   await page.mouse.wheel(0, 100); await page.mouse.wheel(0, 100); await page.mouse.wheel(0, 100); await page.mouse.wheel(0, 100);
   const wheeled = await until(tw, w => w < xl - 40);
   check(wheeled < xl - 40, `the wheel over the buttons shrinks the tiles (${Math.round(wheeled)} px)`);
+  await gv.locator('.as-gv-t').nth(1).scrollIntoViewIfNeeded();
   const box = await gv.locator('.as-gv-t').nth(1).boundingBox();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   const sel0 = await gv.locator('.as-gv-t.on').count();
   await page.mouse.down({ button: 'right' }); await page.mouse.wheel(0, -100); await page.mouse.wheel(0, -100); await page.mouse.up({ button: 'right' });
   const grown = await until(tw, w => w > wheeled + 20);
-  check(grown > wheeled + 20 && await gv.locator('.as-gv-t.on').count() === sel0, `right-click + wheel grows them and selects nothing (${Math.round(grown)} px)`);
+  check(grown > wheeled + 20 && await gv.locator('.as-gv-t.on').count() === sel0, `right-click + wheel grows them and selects nothing (${Math.round(wheeled)} → ${Math.round(grown)} px, ${sel0} → ${await gv.locator(".as-gv-t.on").count()} selected)`);
   await gv.locator('[data-gvsize="0"]').click();
   // a merged tile shows its largest copy, its size read from the first bytes of each
   const merged = await until(() => page.evaluate(() => window.__asTest.gvMerged()), m => m.length > 0 && m.every(c => c.every(z => z !== null)), { timeout: 60000 });
