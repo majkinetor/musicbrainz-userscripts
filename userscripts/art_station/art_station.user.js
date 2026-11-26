@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.26.182626
+// @version      2026.11.26.183031
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -1832,18 +1832,22 @@
   // #787: a cover with a remove edit open for votes says so on its card, with a link to the edit. One read of the
   // open-edits page, by its structure (MusicBrainz translates the labels): an open remove edit's header, its link,
   // the image link with the artwork id, and the closing time in the expiration tooltip
-  async function loadOpenRemovals() {
+  // a release group's gallery reads the group's open-edits page, which lists its releases' edits; the image is
+  // matched on its release too (an image missing from the archive has no image link, only its file name)
+  async function loadOpenRemovals(base = ENT.base, rel = null) {
     try {
-      const r = await mbnFetch(`${ENT.base}/open_edits`, { credentials: 'same-origin' }, { log: (l, m) => asLog[l === 'warn' ? 'warn' : 'info'](m) });
+      const r = await mbnFetch(`${base}/open_edits`, { credentials: 'same-origin' }, { log: (l, m) => asLog[l === 'warn' ? 'warn' : 'info'](m) });
       if (!r || !r.ok) { asLog.debug(`Open removals: no open-edits page (HTTP ${r ? r.status : 'failed'})`); return; }
       const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
       let n = 0;
       doc.querySelectorAll('.edit-list').forEach(e => {
         if (!e.querySelector(`.edit-header.open.remove-${ENT.art}`)) return;
-        const a = e.querySelector('.edit-header a[href*="/edit/"]'), img = e.querySelector('a.artwork-image');
+        const a = e.querySelector('.edit-header a[href*="/edit/"]'), img = e.querySelector('a.artwork-image'), file = e.querySelector('.edit-details code');
         const edit = a && (a.getAttribute('href').match(/\/edit\/(\d+)/) || [])[1];
-        const id = img && (img.getAttribute('href').match(/\/(\d+)\.[a-z0-9]+$/i) || [])[1];
-        const it = id && MODEL.find(x => !x._new && String(x.id) === id);
+        const id = ((img && img.getAttribute('href')) || (file && file.textContent) || '').match(/-?(\d+)\.[a-z0-9]+$/i)?.[1];
+        const rid = rel && ((e.querySelector('.edit-details a[href*="/release/"]') || {}).getAttribute?.('href') || '').match(/[0-9a-f-]{36}/)?.[0];
+        const it = id && MODEL.find(x => !x._new && String(x.id) === id && (!rel || x._rel === rid));
+        if (rel && !rel()) return;
         if (!edit || !it) return;
         const t = e.querySelector('.edit-expiration [title]'), until = t ? Date.parse(t.getAttribute('title').replace(' UTC', 'Z').replace(' ', 'T')) : NaN;
         it._rmOpen = { edit, until };
@@ -10160,7 +10164,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
         const p = was.get(id) || {};
         out.push({ id, types, comment, order: out.length, w: p.w || 0, h: p.h || 0, _noDim: p._noDim, bytes: SIZES.get(id) || 0, fmt: FORMATS.get(id) || fileFormat(image), _del: false, _new: false, _pending: false,
           _pdf: /\.pdf(\?|$)/i.test(image), _img: image, _origTypes: types.slice(), _origComment: comment, _origOrder: out.length,
-          _rel: r.id, _R: '/release/' + r.id, _relLabel: gvRelLabel(r), _sel: sel.has(id) });
+          _rel: r.id, _R: '/release/' + r.id, _relLabel: gvRelLabel(r), _sel: sel.has(id), _rmOpen: p._rmOpen });
       }
     }
     MODEL = out; _grp.sig = grpSig(d);   // measured as the cards come into view (grpMeasure): there are many originals
@@ -10200,6 +10204,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     GV.edit = true; GV.menu = GV.toc = false;
     asLog.info(`Group gallery: editing on, ${MODEL.length} images`);
     gvRender(); render(); grpRestore(at, GRP_EDIT); grpSizes();
+    const g = _grp; loadOpenRemovals('/release-group/' + GV.d.rg, () => _grp === g);   // #787, so a removal open for votes isn't entered again
   }
   // false when the person keeps their staged changes
   function grpExit(force) {

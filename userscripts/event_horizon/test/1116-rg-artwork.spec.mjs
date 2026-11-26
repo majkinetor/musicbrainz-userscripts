@@ -130,6 +130,10 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   console.log('anchor', aid, 'read y', ay, 'edit y', cy, 'toolbar bottom', tbot);
   check(cy >= tbot - 1 && cy < tbot + Math.max(60, ay - tbot + 20), `Edit keeps image ${aid} at the top of the view (${Math.round(ay)} → ${Math.round(cy)})`);
   check(!(await gv.locator('.as-gv-body').isVisible()) && await as.locator('.as-toolbar, .as-commit').count() > 0, "Edit opens Art Station's gallery in place of the tiles");
+  // a removal open for votes (the sandbox keeps them a week) says so on its card and can't be entered again (#787)
+  const ro = await until(() => as.locator('.as-card.rmopen').count(), n => n > 0, { timeout: 20000 }).catch(() => 0);
+  if (ro) check(await as.locator('.as-card.rmopen .as-rmopen').count() === ro && !(await as.locator('.as-card.rmopen .as-rmone').count()), `${ro} cards say their removal is open, with no trash`);
+  else console.log('no removal open for votes in the group: the open-removal check is skipped');
   // Jump to: a section's heading lands just under the pinned bars
   await gv.locator('[data-gvtoc]').click();
   const jumps = gv.locator('.as-gv-tocm [data-gvjump]'), nj = await jumps.count();
