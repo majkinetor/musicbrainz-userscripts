@@ -61,6 +61,10 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   const grown = await until(tw, w => w > wheeled + 20);
   check(grown > wheeled + 20 && await gv.locator('.as-gv-t.on').count() === sel0, `right-click + wheel grows them and selects nothing (${Math.round(grown)} px)`);
   await gv.locator('[data-gvsize="0"]').click();
+  // a merged tile shows its largest copy, its size read from the first bytes of each
+  const merged = await until(() => page.evaluate(() => window.__asTest.gvMerged()), m => m.length > 0 && m.every(c => c.every(z => z !== null)), { timeout: 60000 });
+  console.log('merged', JSON.stringify(merged));
+  check(merged.length > 0 && merged.every(c => c.every(z => z && z.w * z.h <= c[0].w * c[0].h)), `each merged tile shows its largest copy (${merged.length} tiles)`);
   await gv.locator('[data-gvby="release"]').click();
   const byRel = await until(() => gv.locator('.as-gv-sec').count(), n => n > byType.length);
   check(byRel > byType.length, `grouped by release, one section each (${byRel})`);
