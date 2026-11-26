@@ -37,8 +37,8 @@ var ST_GATE_CSS = ''
   + '.st-gate-spark{width:120px;height:22px;flex:none;display:block}.st-gate-spark .l{fill:none;stroke:var(--mbu-accent);stroke-width:1.5}.st-gate-spark .f{fill:color-mix(in srgb,var(--mbu-accent) 16%,transparent)}.st-gate-spark circle{fill:var(--mbu-accent)}'
   + '.st-gate-bar{display:flex;gap:1px;height:6px;border-radius:3px;overflow:hidden;background:var(--mbu-divider);flex:0 1 160px;min-width:80px}.st-gate-bar i{display:block;height:100%}'
   + '.st-gate-c-ok{background:var(--mbu-ok)}.st-gate-c-re{background:var(--mbu-warn)}.st-gate-c-bad{background:var(--mbu-error)}.st-gate-c-go{background:var(--mbu-info)}.st-gate-c-other{background:color-mix(in srgb,var(--mbu-text-weak) 45%,transparent)}'
-  + '.st-gate-leg{display:flex;flex-wrap:wrap;gap:4px 12px}.st-gate-leg>span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}.st-gate-leg i{width:8px;height:8px;border-radius:2px}#st-gate-sum .st-gate-leg .z b{color:var(--mbu-text-weak);font-weight:400}'
-  + '.st-gate-log{margin-left:auto;white-space:nowrap}'
+  + '.st-gate-leg{display:flex;flex-wrap:wrap;gap:4px 12px;margin:0 18px 0 -4px}.st-gate-leg>span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}.st-gate-leg i{width:8px;height:8px;border-radius:2px}#st-gate-sum .st-gate-leg .z b{color:var(--mbu-text-weak);font-weight:400}'
+  + '.st-gate-log{white-space:nowrap}'
   + '#st-gate-lanes{position:relative;flex:0 1 auto;min-height:60px;max-height:40vh;overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;margin:4px 13px 8px;padding-left:180px}'
   + '.st-gl-bands{position:absolute;top:0;bottom:16px;left:180px;right:0}'
   + '.st-gl-sub,.st-gl-bands{transform:translateX(var(--st-gl-dx,0px));will-change:transform}'
@@ -318,9 +318,9 @@ function stGateSumHtml(groups, now) {
     return '<span class="' + (p[2] ? '' : 'z') + '" data-tip="' + p[3] + '"><i class="st-gate-c-' + p[0] + '"></i><b>' + p[2] + '</b> ' + p[1] + '</span>';
   }).join('');
   return '<div class="st-gate-sr"><b class="st-gate-big">' + c.n + '</b><span class="st-gate-rate">request' + (c.n === 1 ? '' : 's') + ' in ' + stGateSpanTxt() + (gap ? '<br>one every ' + stGateSec(gap) : '') + '</span>'
-    + stGateSpark(starts, now) + bar
-    + '<span><b>' + mb + '</b> MusicBrainz · <b>' + ext + '</b> external · <b>' + n + '</b> tab' + (n === 1 ? '' : 's') + '</span></div>'
-    + '<div class="st-gate-sr"><div class="st-gate-leg">' + leg + '</div><span class="st-gate-log" data-tip="Every request the log keeps, from every tab"><b>' + all.n + '</b> in the log</span></div>';
+    + stGateSpark(starts, now) + bar + '<div class="st-gate-leg">' + leg + '</div>'
+    + '<span><b>' + mb + '</b> MusicBrainz · <b>' + ext + '</b> external · <b>' + n + '</b> tab' + (n === 1 ? '' : 's') + ' · '
+    + '<span class="st-gate-log" data-tip="Every request the log keeps, from every tab"><b>' + all.n + '</b> in the log</span></span></div>';
 }
 // the gate now: Idle, or the hold, then a chip only for what is not idle
 function stGateStateHtml(s, me) {

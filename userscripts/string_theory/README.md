@@ -85,7 +85,7 @@ The window works like the Activity log. You move it by its title bar, minimize i
 
 The top line shows the gate now. It says **Idle** when nothing holds it, or **Hold** with the wait after a 503. After it, a chip shows only what is not idle: how many 503s came in a row (**Hot**), how far ahead each queue is booked, and which page holds the lead. Your tab's name is at the right.
 
-The next lines count the requests of the last span, with how often one went out and a small curve of them over time. A bar splits them by result: ok, retried, failed, on the way, and other (shared, cached or cancelled). Under the bar, each result has its count, and the count of the whole log is at the right.
+The next lines count the requests of the last span, with how often one went out and a small curve of them over time. A bar splits them by result: ok, retried, failed, on the way, and other (shared, cached or cancelled). After the bar come the count of each result, the counts by site and tab, and the count of the whole log.
 
 Under it, the last 60 seconds show as one lane per tab, with the scripts of that tab and this tab first. Each try is a bar: gray while it waits in the gate, then green, yellow (busy, tried again) or red. A red band across all lanes is a hold that MusicBrainz asked for. The **T** button in the title bar writes each request's reason and, under it, its name below its script's icon, in the window and the HUD. Under a group of requests, it lists the first three of their reasons and names, each once. String Theory remembers your choice.
 
