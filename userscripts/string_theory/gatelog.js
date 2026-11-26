@@ -336,7 +336,8 @@ function stGateSumHtml(groups, now, f) {
   var parts = [['ok', 'ok', c.ok, 'Answered at the first try'], ['re', 'retried', c.re, 'Answered after MusicBrainz said it was busy'], ['bad', 'failed', c.bad, 'No answer, or an error'],
     ['go', 'on the way', c.go, 'Waiting in the gate or not answered yet'], ['other', 'other', c.n - c.ok - c.re - c.bad - c.go, 'Shared, cached or cancelled\nNo request of its own, or its page left']];
   var bar = c.n ? '<div class="st-gate-bar">' + parts.filter(function (p) { return p[2] > 0; }).map(function (p) { return '<i class="st-gate-c-' + p[0] + '" style="flex:' + p[2] + '" data-tip="' + p[2] + ' ' + p[1] + '\n' + p[3] + '"></i>'; }).join('') + '</div>' : '';
-  var leg = parts.filter(function (p) { return p[2] > 0 || p[0] === 'ok' || p[0] === 'bad'; }).map(function (p) {
+  // every count always shows, a zero dimmed, so the row never jumps as counts come and go
+  var leg = parts.map(function (p) {
     return tile(p[0], 'st-gate-tc-' + p[0], p[2], p[1], p[3] + '\nClick to show only these, again to show all', f.mode === p[0]);
   }).join('');
   return '<div class="st-gate-sr"><b class="st-gate-big">' + c.n + '</b><span class="st-gate-rate">request' + (c.n === 1 ? '' : 's') + ' in ' + stGateSpanTxt() + (gap ? '<br>one every ' + stGateSec(gap) : '') + '</span>'
