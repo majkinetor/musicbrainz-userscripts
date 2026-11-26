@@ -138,13 +138,14 @@ test.describe('Event Horizon turned off', () => {
 
     await page.locator('#st-flow [data-v="row"]').click();
     check(await page.evaluate(() => localStorage.getItem('mbu.cornerFlow')) === '"row"', 'the row is stored as the shared setting');
-    const row = await at(page);
+    // the launchers move a moment after the click: read them once they have
+    const row = await until(() => at(page), v => v.every(e => e.bottom === 14), { timeout: 5000 });
     check(row.every(e => e.bottom === 14) && new Set(row.map(e => e.right)).size === row.length, `in a row along the bottom (${JSON.stringify(row)})`);
 
     await page.locator('#st-side [data-v="left"]').click();
     check(await page.evaluate(() => localStorage.getItem('mbu.cornerSide')) === '"left"', 'the side too');
     check(await pressed() === 'left row', `Left and Row are selected (${await pressed()})`);
-    const left = await at(page, true);
+    const left = await until(() => at(page, true), v => Math.min(...v.map(e => e.left)) === 14, { timeout: 5000 });
     check(Math.min(...left.map(e => e.left)) === 14 && new Set(left.map(e => e.left)).size === left.length, `a row from the bottom-left corner (${JSON.stringify(left)})`);
     await page.screenshot({ path: info.outputPath('left-row.png'), clip: { x: 0, y: 900 - 80, width: 260, height: 80 } });
 
