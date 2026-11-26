@@ -73,7 +73,7 @@ Idle themes always follow **Mode**: the chosen theme's light or dark version app
 
 ## What's new
 
-String Theory checks the project's [announcements](https://github.com/majkinetor/musicbrainz-userscripts/discussions/categories/announcements) once a day. While some are unread, its icon is golden, and clicking it opens **What's new** instead of the dock.
+String Theory checks the project's [announcements](https://github.com/majkinetor/musicbrainz-userscripts/discussions/categories/announcements) every hour. While some are unread, its icon is golden, and clicking it opens **What's new** instead of the dock.
 
 The window lists the latest 20 posts and loads older ones as you scroll to the end, each with its script's name and icon. A post shows **stable** when its change is released and **latest** when it isn't yet.
 
