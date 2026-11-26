@@ -59,9 +59,14 @@ const scriptOf = (labels) => {
   return scripts['string theory'] || { name: 'String Theory', icon: '' };
 };
 
+// GitHub renders an uploaded image as a private-user-images address signed for five minutes, which a kept file
+// can't use; its stable address, github.com/user-attachments/assets/<uuid>, redirects to a fresh one
+const stable = (html) => html.replace(/https:\/\/private-user-images\.githubusercontent\.com\/\d+\/\d+-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.[a-z0-9]+\?jwt=[\w.-]+/gi,
+  'https://github.com/user-attachments/assets/$1');
+
 const items = posts.map((p) => {
   const labels = p.labels.nodes.map((l) => l.name), m = /Issue:\s*#(\d+)/i.exec(p.body || ''), s = scriptOf(labels);
-  return { id: p.number, title: p.title, url: p.url, at: p.createdAt, edited: p.lastEditedAt || '', html: p.bodyHTML || '',
+  return { id: p.number, title: p.title, url: p.url, at: p.createdAt, edited: p.lastEditedAt || '', html: stable(p.bodyHTML || ''),
     labels, script: s.name, icon: s.icon, issue: m ? +m[1] : 0, channel: '' };
 }).filter((i) => !i.labels.includes('skip changelog'));
 
