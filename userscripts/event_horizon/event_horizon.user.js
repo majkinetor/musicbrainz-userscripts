@@ -17029,6 +17029,7 @@ const RGA_EDITED = new Set();
 document.addEventListener('mbu-art-group-edit', e => {
     let x = {}; try { x = JSON.parse(e.detail || '{}'); } catch (_) {}
     if (x.release) { RGA_EDITED.add(x.release); LOG.info(`Group artwork: editing release ${x.release}; read again on return`); }
+    if (x.release && x.now) rgaRefresh();   // edited from the gallery itself: read it again now
 });
 async function rgaRefresh() {
     if (!RGA_EDITED.size || !data || data.kind !== 'rgart') return;

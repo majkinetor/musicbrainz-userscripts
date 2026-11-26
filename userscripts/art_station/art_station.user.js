@@ -5751,9 +5751,9 @@
       run();
     });
   }
-  function enterEdit(immediate) {
+  function enterEdit(immediate, opt) {
     document.getElementById('as-commit')?.remove();
-    const plan = buildPlan();
+    const group = !!(opt && opt.group), plan = (opt && opt.plan) || buildPlan();
     const ov = document.createElement('div'); ov.id = 'as-commit';
     /* #668 (majkinetor): "Edit note dominates enter edit so we can't really see most
        of the individual progress." The note is rarely changed but often holds a
@@ -5782,7 +5782,7 @@
       if (alt) img.src = alt; else img.replaceWith(Object.assign(document.createElement('span'), { className: 'as-cm-thi', textContent: '🖼' }));
     }));
     const noteEl = ov.querySelector('.as-cm-note'), nb = ov.querySelector('.as-cm-nb');
-    if (_seedNote) noteEl.value = _seedNote;   // #248/#364 carry over a seeded edit note (the native add page's)
+    if (_seedNote && !group) noteEl.value = _seedNote;   // #248/#364 carry over a seeded edit note (the native add page's)
     const paintNote = () => {
       const v = noteEl.value.trim(), lines = v ? v.split('\n').length : 0;
       ov.querySelector('.as-cm-nl').textContent = lines ? `${lines} line${lines === 1 ? '' : 's'}` : 'empty';
@@ -5816,7 +5816,7 @@
     const go = dry => {
       closeMenu();
       asLog.debug(`Commit: ${dry ? 'dry run' : 'submit'} of ${plan.length} operation(s), note ${noteEl.value.length} chars`);
-      runPlan(ov, plan, { note: noteEl.value, votable: ov.querySelector('.as-cm-vote').checked, dry });
+      runPlan(ov, plan, { note: noteEl.value, votable: ov.querySelector('.as-cm-vote').checked, dry, group });
     };
     goBtn.onclick = () => go(false);
     ov.querySelector('.as-cm-dryrun').onclick = () => go(true);
@@ -5945,7 +5945,7 @@
     const goBtn = ov.querySelector('.as-cm-go'), cancelBtn = ov.querySelector('.as-cm-cancel');
     goBtn.disabled = true;
     // #811: a live run reloads the page when it's clean, so this page's log is kept, named after the release
-    if (!meta.dry) { LOG.keep(); const t = (releaseInfo().title || '').trim(); if (t) LOG.name(t); }
+    if (!meta.dry && !meta.group) { LOG.keep(); const t = (releaseInfo().title || '').trim(); if (t) LOG.name(t); }
     // #668 the ▾ (Dry run) is off while anything runs, and gone for good once a live
     // run has started — from then on the main button is Repeat / Done, not a choice.
     const moreBtn = ov.querySelector('.as-cm-more');
@@ -6039,6 +6039,7 @@
       const b = ov.querySelector('.as-cm-go');
       const errs = ov.querySelectorAll('.as-cm-op.err').length;
       asLog[errs ? 'warn' : 'ok'](`Commit: finished — ${errs ? `${errs} failed of ${ops.length}` : `all ${ops.length} succeeded`}`);
+      if (meta.group) gvAfterRun(plan, meta);
       if (_mcCommitDone) {   // #680: Mission Control's frame reports back, and doesn't reload
         const report = extra => {
           if (!_mcCommitDone) return;
@@ -6063,9 +6064,9 @@
         // #234: clean run → the gallery shows the new state, in place (refreshArt) after a brief pause so the
         // ✅s are visible first. #248 on the add page there's no gallery to refresh: land on the cover-art
         // tab so the freshly-uploaded covers show in the normal gallery.
-        b.textContent = IS_ADD ? 'Done — opening cover art…' : 'Done — refreshing…'; b.disabled = true;
+        b.textContent = meta.group ? 'Done' : IS_ADD ? 'Done — opening cover art…' : 'Done — refreshing…'; b.disabled = true;
         b.classList.remove('as-cm-repeat');   // clear the error styling if a repeat just went clean
-        setTimeout(() => { if (IS_ADD) location.href = `${ENT.base}/${ENT.art}`; else { arStop(ov); ov.remove(); refreshArt(); } }, 900);
+        setTimeout(() => { if (meta.group) { arStop(ov); ov.remove(); } else if (IS_ADD) location.href = `${ENT.base}/${ENT.art}`; else { arStop(ov); ov.remove(); refreshArt(); } }, 900);
       } else {
         // #275: something failed — offer to RE-RUN just the failed ops in place
         // (uploads / comment / type changes are expensive to redo by hand, so
@@ -9947,6 +9948,32 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   .as-gv-t .as-selmark{background:var(--mbu-accent)}
   .as-gv-t.on .as-selmark{display:block}
   .as-gv-t figcaption{font-size:11.5px;line-height:1.35;color:var(--mbu-text-dim);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .as-gv-edc{display:inline-flex;align-items:center;gap:5px}
+  .as-gv-edrow{border-bottom:1px solid var(--mbu-border);padding:8px 0 10px;margin-bottom:10px;display:flex;flex-direction:column;gap:7px}
+  .as-gv-edl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .as-gv-eds{font-weight:600;min-width:9em}
+  .as-gv-cm{flex:0 1 260px;min-width:120px;padding:4px 8px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg)!important;color:var(--mbu-text)!important;font:inherit}
+  .as-gv-hint,.as-gv-chg{color:var(--mbu-text-dim);font-size:12px}
+  .as-gv-act{padding:4px 11px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:transparent;color:var(--mbu-text);font:inherit;cursor:pointer}
+  .as-gv-act:hover:not(:disabled){background:var(--mbu-bg-hover)}
+  .as-gv-act.warn{color:var(--mbu-error)}
+  .as-gv-act.go{background:var(--mbu-accent);border-color:var(--mbu-accent);color:var(--mbu-text-on-accent)}
+  .as-gv-act:disabled{opacity:.45;cursor:default}
+  .as-gv-tys{display:flex;flex-wrap:wrap;gap:4px}
+  .as-gv-ty{padding:2px 9px;border:1px solid var(--mbu-border);border-radius:999px;background:transparent;color:var(--mbu-text-dim);font:inherit;font-size:12px;cursor:pointer}
+  .as-gv-ty:hover:not(:disabled){background:var(--mbu-bg-hover);color:var(--mbu-text)}
+  .as-gv-ty.on{background:var(--mbu-accent);border-color:var(--mbu-accent);color:var(--mbu-text-on-accent)}
+  .as-gv-ty.mix{border-color:var(--mbu-accent);color:var(--mbu-accent);background:var(--mbu-accent-soft)}
+  .as-gv-ty:disabled{opacity:.45;cursor:default}
+  .as-gv.editing .as-gv-t{cursor:pointer}
+  .as-gv.editing .as-gv-t[draggable="true"]{cursor:grab}
+  .as-gv-t.pend figcaption{color:var(--mbu-warn)}
+  .as-gv-t.pend .as-gv-im{outline:2px dashed var(--mbu-warn);outline-offset:2px}
+  .as-gv-t.del .as-gv-im{opacity:.35;outline-color:var(--mbu-error)}
+  .as-gv-t.del figcaption{text-decoration:line-through;color:var(--mbu-error)}
+  .as-gv-t.dragging{opacity:.4}
+  .as-gv-t.drop-b{box-shadow:-3px 0 0 var(--mbu-accent)}
+  .as-gv-t.drop-a{box-shadow:3px 0 0 var(--mbu-accent)}
   `;
   // an id keeps it on where another script turns MusicBrainz's own sheets off (Event Horizon)
   const st = document.createElement('style'); st.id = 'as-css'; st.textContent = css; appendEl(st);
@@ -10017,7 +10044,8 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   // Event Horizon reads every release's listing and hashes the images; each step it sends the whole snapshot
   // (mbu-art-group), and this draws it: look-alikes of a type merged across releases, booklets one stack per
   // release, grouped by type, release or not at all. See DEVELOP.md.
-  const GV = { d: null, by: 'type', merge: true, book: false, pdf: false, sel: new Set(), el: null, dl: '', menu: false, html: '' };
+  const GV = { d: null, by: 'type', merge: true, book: false, pdf: false, sel: new Set(), el: null, dl: '', menu: false, html: '',
+    edit: false, ed: new Map(), ord: new Map() };   // editing: changes per image ("release:image" → {types, comment, del}), order per release
   const GV_BOOK = ['Booklet', 'Liner', 'Poster'];
   const GV_ORDER = ['Front', 'Back', 'Booklet', 'Medium', 'Tray', 'Obi', 'Spine', 'Track', 'Liner', 'Sticker', 'Poster', 'Panel', 'Top', 'Bottom', 'Matrix/Runout', 'Watermark', 'Raw/Unedited', 'Other', 'PDF'];
   const gvHam = (a, b, at = 0) => { let n = 0; for (let i = at; i < at + 16; i++) { let x = parseInt(a[i], 16) ^ parseInt(b[i], 16); while (x) { n += x & 1; x >>= 1; } } return n; };
@@ -10046,18 +10074,117 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   // every image of every read release, in release order
   function gvItems(d) {
     const out = [];
-    for (const r of d.releases || []) for (const im of r.images || []) {
-      const types = im.types || [], t0 = types[0] || 'Other', image = im.image || '', th = im.thumbnails || {};
-      out.push({ key: r.id + ':' + im.id, id: String(im.id), r, types, t0, comment: im.comment || '', image, thumb: th['500'] || th.large || th['250'] || image,
-        pdf: /\.pdf$/i.test(image), book: GV_BOOK.includes(t0), hash: (d.hashes || {})[im.id] || '' });
+    for (const r of d.releases || []) {
+      const ims = (r.images || []).slice(), ord = GV.ord.get(r.id);
+      if (ord) ims.sort((a, b) => ord.indexOf(String(a.id)) - ord.indexOf(String(b.id)));
+      for (const im of ims) {
+        const key = r.id + ':' + im.id, e = GV.ed.get(key) || {};
+        const types0 = im.types || [], comment0 = im.comment || '';
+        const types = e.types || types0, comment = e.comment != null ? e.comment : comment0;
+        const t0 = types[0] || 'Other', image = im.image || '', th = im.thumbnails || {};
+        out.push({ key, id: String(im.id), r, types, t0, comment, types0, comment0, del: !!e.del,
+          pend: !!e.del || types.join('|') !== types0.join('|') || comment !== comment0,
+          image, thumb: th['500'] || th.large || th['250'] || image,
+          pdf: /\.pdf$/i.test(image), book: GV_BOOK.includes(t0), hash: (d.hashes || {})[im.id] || '' });
+      }
     }
     return out;
+  }
+  // ── editing the whole group: types, comments and removals anywhere; the order only grouped by release ──
+  const gvKeyItem = (k, items) => items.find(x => x.key === k);
+  function gvSetEd(it, patch) {
+    const e = Object.assign({}, GV.ed.get(it.key) || {}, patch);
+    if (e.types && e.types.join('|') === it.types0.join('|')) delete e.types;
+    if (e.comment != null && e.comment === it.comment0) delete e.comment;
+    if (!e.del) delete e.del;
+    if (Object.keys(e).length) GV.ed.set(it.key, e); else GV.ed.delete(it.key);
+  }
+  const gvOrdered = () => [...GV.ord.keys()].filter(rid => { const r = (GV.d.releases || []).find(x => x.id === rid); return r && GV.ord.get(rid).join('|') !== (r.images || []).map(i => String(i.id)).join('|'); });
+  const gvChanges = () => GV.ed.size + gvOrdered().length;
+  function gvPlan() {
+    const items = gvItems(GV.d), plan = [];
+    const op = (kind, it, label, build) => plan.push({ kind, label, id: it && it.id, it: it && { _file: it.thumb }, _rid: it ? it.r.id : null, build });
+    for (const it of items.filter(x => x.del)) {
+      op('remove', it, `${gvRelLabel(it.r)}: Remove ${it.types0.join(', ') || 'image'}`, async meta => {
+        let form;
+        try { form = await getPostForm(`/release/${it.r.id}/remove-${ART}/${it.id}`); }
+        catch (e) { if (/\b404\b/.test(String((e && e.message) || e))) return { noop: true, note: 'already removed (not on the release)' }; throw e; }
+        const p = new URLSearchParams(); copyHidden(form, p);
+        p.append('confirm.edit_note', editNote(meta));
+        if (meta.votable) p.append('confirm.make_votable', '1');
+        return { method: 'POST', url: form._action, body: p };
+      });
+    }
+    for (const it of items.filter(x => x.pend && !x.del)) {
+      const tch = it.types.join('|') !== it.types0.join('|'), cch = it.comment !== it.comment0;
+      const what = [tch ? 'types ' + (it.types.join(', ') || '(none)') : '', cch ? 'comment "' + it.comment + '"' : ''].filter(Boolean).join(', ');
+      op('edit', it, `${gvRelLabel(it.r)}: Edit ${what}`, async meta => {
+        const form = await getPostForm(`/release/${it.r.id}/edit-${ART}/${it.id}`);
+        const p = new URLSearchParams(); copyHidden(form, p);
+        const tm = typeMapOf(form, `edit-${ART}`);
+        if (!tch) form.querySelectorAll(`input[name="edit-${ART}.type_id"]:checked`).forEach(cb => p.append(`edit-${ART}.type_id`, cb.value));
+        else it.types.forEach(t => { if (tm[t]) p.append(`edit-${ART}.type_id`, tm[t]); });
+        p.append(`edit-${ART}.comment`, it.comment);
+        p.append(`edit-${ART}.edit_note`, editNote(meta));
+        if (meta.votable) p.append(`edit-${ART}.make_votable`, '1');
+        return { method: 'POST', url: form._action, body: p };
+      });
+    }
+    for (const rid of gvOrdered()) {
+      const r = GV.d.releases.find(x => x.id === rid), gone = new Set(items.filter(x => x.del && x.r.id === rid).map(x => x.id));
+      plan.push({ kind: 'reorder', label: `${gvRelLabel(r)}: Reorder`, _rid: rid, build: async meta => {
+        const form = await getPostForm(`/release/${rid}/reorder-${ART}`);
+        const p = new URLSearchParams(); copyHidden(form, p, /\.artwork\./);
+        const ids = GV.ord.get(rid).filter(id => !gone.has(id));
+        // MusicBrainz takes no reorder that leaves one out (a removal still open for votes goes last)
+        form.querySelectorAll('input[name$=".id"]').forEach(h => { if (/\.artwork\.\d+\.id$/.test(h.name) && h.value && !ids.includes(String(h.value))) ids.push(String(h.value)); });
+        asLog.info(`Group reorder ${rid}: ${ids.join(', ')}`);
+        if (ids.length < 2) return { noop: true, note: `only one ${ITEM} left: nothing to order` };
+        ids.forEach((id, n) => { p.append(`reorder-${ART}.artwork.${n}.id`, id); p.append(`reorder-${ART}.artwork.${n}.position`, String(n + 1)); });
+        p.append(`reorder-${ART}.edit_note`, editNote(meta));
+        if (meta.votable) p.append(`reorder-${ART}.make_votable`, '1');
+        return { method: 'POST', url: form._action, body: p };
+      } });
+    }
+    return plan;
+  }
+  // after a live run: what went in is dropped from the staged changes, and Event Horizon reads those releases again
+  function gvAfterRun(plan, meta) {
+    if (meta.dry || !GV.d) return;
+    const rels = new Set();
+    for (const o of plan) {
+      if (o._err) continue;
+      if (o.kind === 'reorder') GV.ord.delete(o._rid); else GV.ed.delete(o._rid + ':' + o.id);
+      if (o._rid) rels.add(o._rid);
+    }
+    asLog.info(`Group gallery: committed on ${rels.size} release${rels.size === 1 ? '' : 's'}, reading them again`);
+    for (const rid of rels) document.dispatchEvent(new CustomEvent('mbu-art-group-edit', { detail: JSON.stringify({ rg: GV.d.rg, release: rid, now: true }) }));
+    if (!gvChanges()) GV.edit = false;
+    gvRender();
+  }
+  // the edit row: what the selected covers have, and the changes made so far
+  function gvEdRow(items) {
+    const sel = items.filter(x => GV.sel.has(x.key)), n = gvChanges();
+    const tbtn = t => { const c = sel.filter(x => x.types.includes(t)).length;
+      return `<button type="button" class="as-gv-ty${c && c === sel.length ? ' on' : c ? ' mix' : ''}" data-gvty="${esc(t)}"${sel.length ? '' : ' disabled'}>${esc(t)}</button>`; };
+    const cs = new Set(sel.map(x => x.comment)), cv = cs.size === 1 ? [...cs][0] : '';
+    const allDel = sel.length && sel.every(x => x.del);
+    return `<div class="as-gv-edl"><span class="as-gv-eds">${sel.length ? `${sel.length} selected` : 'Click covers to select them'}</span>
+      <input type="text" class="as-gv-cm" placeholder="${cs.size > 1 ? '(mixed)' : 'Comment'}" value="${esc(cv)}"${sel.length ? '' : ' disabled'} data-tip="The comment of every selected cover
+Enter or leaving the box applies it">
+      <button type="button" class="as-gv-act${allDel ? '' : ' warn'}" data-gvdel${sel.length ? '' : ' disabled'}>${allDel ? 'Keep' : 'Remove'}</button>
+      <span class="as-gv-sp"></span><span class="as-gv-hint">${GV.by === 'release' ? 'Drag a cover to move it within its release' : 'Group by Release to change the order'}</span>
+      <span class="as-gv-chg">${n ? `${n} change${n === 1 ? '' : 's'}` : 'No changes'}</span>
+      <button type="button" class="as-gv-act" data-gvdiscard${n ? '' : ' disabled'}>Discard</button>
+      <button type="button" class="as-gv-act go" data-gvsubmit${n ? '' : ' disabled'}>Submit…</button></div>
+      <div class="as-gv-tys">${COVER_TYPES.map(tbtn).join('')}</div>`;
   }
   // tiles: look-alikes of a type merged (when on), booklet pages one stack per release, PDFs alone
   function gvTiles(d) {
     const items = gvItems(d), tiles = [], stacks = new Map(), byType = new Map();
     for (const it of items) {
       if (it.pdf) { tiles.push({ key: it.key, kind: 'pdf', t0: 'PDF', items: [it] }); continue; }
+      if (GV.edit) { tiles.push({ key: it.key, kind: 'img', t0: it.t0, items: [it] }); continue; }
       if (it.book) {
         let st = stacks.get(it.r.id);
         if (!st) { st = { key: 'bk:' + it.r.id, kind: 'stack', t0: 'Booklet', items: [] }; stacks.set(it.r.id, st); tiles.push(st); }
@@ -10091,11 +10218,13 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   }
   function gvTileHtml(t, si) {
     const it = t.items[0];
-    const cap = t.kind === 'stack' ? `${gvRelLabel(it.r)} · ${t.items.length} page${t.items.length === 1 ? "" : "s"}`
+    const cap = GV.edit ? [GV.by === 'release' ? '' : gvRelLabel(it.r), it.types.join(', ') || '(no type)', it.comment].filter(Boolean).join(' · ')
+      : t.kind === 'stack' ? `${gvRelLabel(it.r)} · ${t.items.length} page${t.items.length === 1 ? "" : "s"}`
       : GV.by === 'type' ? (t.n > 1 ? `${t.n} releases` : gvRelLabel(it.r)) + (it.comment ? ' · ' + it.comment : '')
       : it.types.join(', ') + (it.comment ? ' · ' + it.comment : '');
     const pic = t.kind === 'pdf' ? `<span class="as-gv-doc">${GV_SVG.pdf}<b>PDF</b></span>` : `<img loading="lazy" draggable="false" alt="" src="${esc(it.thumb)}"${it.pdf || it.thumb === it.image ? '' : ` data-full="${esc(it.image)}" onerror="this.onerror=null;this.src=this.dataset.full"`}>`;
-    return `<figure class="as-gv-t${t.kind === 'stack' ? ' stk' : ''}" data-gvk="${esc(t.key)}" data-gvs="${si}">
+    const drag = GV.edit && GV.by === 'release' && !it.del;
+    return `<figure class="as-gv-t${t.kind === 'stack' ? ' stk' : ''}${GV.edit && it.pend ? ' pend' : ''}${GV.edit && it.del ? ' del' : ''}" data-gvk="${esc(t.key)}" data-gvs="${si}"${drag ? ' draggable="true"' : ''}>
       <div class="as-gv-im">${pic}${t.n > 1 ? `<span class="as-gv-n">×${t.n}</span>` : ''}${t.kind === 'stack' ? `<span class="as-gv-n">${t.items.length} page${t.items.length === 1 ? "" : "s"}</span>` : ''}<span class="as-selmark">✓</span></div>
       <figcaption>${esc(cap)}</figcaption></figure>`;
   }
@@ -10119,16 +10248,22 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     const chip = (k, l) => `<button type="button" class="as-gv-chip${GV[k] ? ' on' : ''}" data-gvchip="${k}" aria-pressed="${GV[k]}">${l}</button>`;
     const nb = tiles.filter(t => t.kind === 'stack').length, np = tiles.filter(t => t.kind === 'pdf').length;
     const bar = `<div class="as-gv-bar"><span class="as-gv-lbl">Group by</span><div class="as-gv-seg">${seg('type', 'Type')}${seg('release', 'Release')}${seg('none', 'None')}</div>
-      ${chip('merge', 'Merge look-alikes')}${chip('book', 'Booklets only' + (nb ? ' ' + nb : ''))}${np ? chip('pdf', 'PDF ' + np) : ''}
+      ${GV.edit ? '' : chip('merge', 'Merge look-alikes') + chip('book', 'Booklets only' + (nb ? ' ' + nb : ''))}${np && !GV.edit ? chip('pdf', 'PDF ' + np) : ''}
+      <button type="button" class="as-gv-chip as-gv-edc${GV.edit ? ' on' : ''}" data-gvedmode aria-pressed="${GV.edit}" data-tip="Edit the types, comments and order of every release's art here
+The changes go in as MusicBrainz edits when you submit them">${GV_SVG.edit} Edit</button>
       <span class="as-gv-sp"></span><span class="as-size" data-tip="${SIZE_TIP}">${TILE_SIZES.map(([n], i) => `<button type="button" data-gvsize="${i}" class="${i === tileIdx() ? 'on' : ''}" aria-label="${n}">${tileIcon(i)}</button>`).join('')}</span><div class="as-gv-dlw"><button type="button" class="as-gv-dl" data-gvdl${items.length ? '' : ' disabled'}>${GV_SVG.dl} Download zip</button>
       <div class="as-gv-menu${GV.menu ? ' open' : ''}"><button type="button" data-gvzip="sel"${GV.sel.size ? '' : ' disabled'}>Selected (${GV.sel.size})</button><button type="button" data-gvzip="big">Largest of each (${shown.length})</button><button type="button" data-gvzip="all">Everything (${items.length})</button></div></div></div>
       <div class="as-gv-note">${gvNote(d, items, tiles)}</div>`;
     const body = secs.map((sec, si) => `<section class="as-gv-sec">${sec.name ? `<h3>${sec.icon || ''}<span>${esc(sec.name)}</span>${sec.sub ? `<span class="as-gv-sub">${esc(sec.sub)}</span>` : ''}<span class="as-gv-cnt">${sec.tiles.length}</span>${sec.id ? `<a class="as-gv-edit" href="/release/${esc(sec.id)}/cover-art" target="_blank" rel="noopener" data-gvedit="${esc(sec.id)}" data-tip="Edit this release's art
 In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` : ''}</h3>` : ''}<div class="as-gv-grid">${sec.tiles.map(t => gvTileHtml(t, si)).join('')}</div></section>`).join('');
     // the bar and the tiles are written apart: a progress note or the menu never redraws the images
-    if (!el.firstChild) el.innerHTML = '<div class="as-gv-head"></div><div class="as-gv-body"></div>';
-    if (bar !== GV.bar) { GV.bar = bar; el.firstChild.innerHTML = bar; }
-    if (body !== GV.html) { GV.html = body; el.lastChild.innerHTML = body; }
+    if (!el.firstChild) el.innerHTML = '<div class="as-gv-head"></div><div class="as-gv-edrow" hidden></div><div class="as-gv-body"></div>';
+    if (bar !== GV.bar) { GV.bar = bar; el.querySelector('.as-gv-head').innerHTML = bar; }
+    const er = el.querySelector('.as-gv-edrow'), erh = GV.edit ? gvEdRow(items) : '';
+    er.hidden = !GV.edit; el.classList.toggle('editing', GV.edit);
+    // the comment box isn't redrawn while it is being typed in
+    if (erh !== GV.erh && !(er.contains(document.activeElement) && document.activeElement.matches('.as-gv-cm'))) { GV.erh = erh; er.innerHTML = erh; }
+    if (body !== GV.html) { GV.html = body; el.querySelector('.as-gv-body').innerHTML = body; }
     gvSelPaint();
   }
   const gvSelPaint = () => { if (GV.el) for (const f of GV.el.querySelectorAll('[data-gvk]')) f.classList.toggle('on', GV.sel.has(f.dataset.gvk)); };
@@ -10223,12 +10358,60 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
         if (b.dataset.gvsize) { gvSize(TILE_SIZES[+b.dataset.gvsize][1]); return; }
         if (b.dataset.gvby) { GV.by = b.dataset.gvby; gvRender(); return; }
         if (b.dataset.gvchip) { const k = b.dataset.gvchip; GV[k] = !GV[k]; gvRender(); return; }
+        if ('gvedmode' in b.dataset) {
+          if (GV.edit && gvChanges() && !confirm(`Drop ${gvChanges()} unsubmitted change${gvChanges() === 1 ? '' : 's'}?`)) return;
+          GV.edit = !GV.edit; GV.ed.clear(); GV.ord.clear(); GV.sel.clear();
+          asLog.info(`Group gallery: editing ${GV.edit ? 'on' : 'off'}`); gvRender(); return;
+        }
+        if (b.dataset.gvty) {
+          const t = b.dataset.gvty, items = gvItems(GV.d), sel = items.filter(x => GV.sel.has(x.key)), all = sel.every(x => x.types.includes(t));
+          for (const it of sel) gvSetEd(it, { types: all ? it.types.filter(x => x !== t) : it.types.includes(t) ? it.types : [...it.types, t] });
+          asLog.debug(`Group gallery: ${all ? 'removed' : 'added'} type ${t} on ${sel.length}`); gvRender(); return;
+        }
+        if ('gvdel' in b.dataset) {
+          const sel = gvItems(GV.d).filter(x => GV.sel.has(x.key)), all = sel.every(x => x.del);
+          for (const it of sel) gvSetEd(it, { del: !all });
+          asLog.debug(`Group gallery: ${all ? 'kept' : 'marked for removal'} ${sel.length}`); gvRender(); return;
+        }
+        if ('gvdiscard' in b.dataset) { asLog.info(`Group gallery: discarded ${gvChanges()} change(s)`); GV.ed.clear(); GV.ord.clear(); gvRender(); return; }
+        if ('gvsubmit' in b.dataset) {
+          const plan = gvPlan(); if (!plan.length) return;
+          asLog.info(`Group gallery: submitting ${plan.length} edit(s) on ${new Set(plan.map(o => o._rid)).size} release(s)`);
+          enterEdit(false, { plan, group: true }); return;
+        }
         if ('gvpause' in b.dataset) { const p = (GV.d && GV.d.progress) || {}; document.dispatchEvent(new CustomEvent('mbu-art-group-pause', { detail: JSON.stringify({ rg: GV.d.rg, paused: !p.paused }) })); return; }
         if ('gvdl' in b.dataset) { GV.menu = !GV.menu; gvRender(); return; }
         if (b.dataset.gvzip) { GV.menu = false; gvZip(b.dataset.gvzip); return; }
       }
       const f = e.target.closest('[data-gvk]');
+      if (f && GV.edit) { setSel(f.dataset.gvk, !GV.sel.has(f.dataset.gvk)); return; }
       if (f) { const t = gvTile(f.dataset.gvk); if (t) gvOpen(t, +f.dataset.gvs); }
+    });
+    // the comment of every selected cover, on Enter or on leaving the box
+    const comment = inp => {
+      const sel = gvItems(GV.d).filter(x => GV.sel.has(x.key)); if (!sel.length) return;
+      const v = inp.value.trim(); if (!v && inp.placeholder === '(mixed)') return;
+      for (const it of sel) gvSetEd(it, { comment: v });
+      asLog.debug(`Group gallery: comment "${v}" on ${sel.length}`); inp.blur(); gvRender();
+    };
+    el.addEventListener('keydown', e => { if (e.target.matches('.as-gv-cm') && e.key === 'Enter') { e.preventDefault(); comment(e.target); } });
+    el.addEventListener('change', e => { if (e.target.matches('.as-gv-cm')) comment(e.target); });
+    // dragging within one release (grouped by release): before or after the cover dropped on, by its middle
+    let drag = null;
+    const dropAt = e => { const f = e.target.closest('[data-gvk]'); if (!f || !drag || f.dataset.gvk === drag || f.dataset.gvk.split(':')[0] !== drag.split(':')[0]) return null;
+      const r = f.getBoundingClientRect(); return { f, after: e.clientX > r.left + r.width / 2 }; };
+    const clearMark = () => el.querySelectorAll('.drop-b,.drop-a').forEach(x => x.classList.remove('drop-b', 'drop-a'));
+    el.addEventListener('dragstart', e => { const f = e.target.closest('[data-gvk]'); if (!f || !GV.edit) return; drag = f.dataset.gvk; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', drag); } catch (x) {} f.classList.add('dragging'); });
+    el.addEventListener('dragover', e => { const at = drag && dropAt(e); clearMark(); if (!at) return; e.preventDefault(); at.f.classList.add(at.after ? 'drop-a' : 'drop-b'); });
+    el.addEventListener('dragend', () => { clearMark(); el.querySelectorAll('.dragging').forEach(x => x.classList.remove('dragging')); drag = null; });
+    el.addEventListener('drop', e => {
+      const at = drag && dropAt(e); clearMark(); if (!at) return; e.preventDefault();
+      const [rid, from] = drag.split(':'), to = at.f.dataset.gvk.split(':')[1], r = GV.d.releases.find(x => x.id === rid); if (!r) return;
+      const orig = (r.images || []).map(i => String(i.id)), cur = (GV.ord.get(rid) || orig).filter(x => x !== from);
+      cur.splice(cur.indexOf(to) + (at.after ? 1 : 0), 0, from);
+      if (cur.join('|') === orig.join('|')) GV.ord.delete(rid); else GV.ord.set(rid, cur);
+      asLog.debug(`Group gallery: moved ${from} ${at.after ? 'after' : 'before'} ${to} on ${rid}`);
+      drag = null; gvRender();
     });
     let paint = null, painted = [], rmb = false;   // right-drag: the state the first tile took, given to every tile passed over
     // the wheel over the size buttons, or anywhere with the right button held, sizes the thumbnails; a right-drag
@@ -10248,6 +10431,7 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
       const f = el.querySelector(`[data-gvk="${CSS.escape(k)}"]`); if (f) f.classList.toggle('on', v);
       const b = el.querySelector('[data-gvzip="sel"]'); if (b) { b.textContent = `Selected (${GV.sel.size})`; b.disabled = !GV.sel.size; }
       GV.bar = null;
+      if (GV.edit) gvRender();   // the edit row shows what the selected covers have
     };
     el.addEventListener('contextmenu', e => { if (e.target.closest('[data-gvk]')) e.preventDefault(); });
     el.addEventListener('contextmenu', e => { if (rmb) e.preventDefault(); });
@@ -10272,7 +10456,7 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
     const slot = document.getElementById('as-gslot');
     if (!d || !d.rg || !slot) return;
     e.preventDefault();
-    if (!GV.d || GV.d.rg !== d.rg) { GV.sel.clear(); GV.menu = false; asLog.info(`Group gallery: ${d.rg}`); }
+    if (!GV.d || GV.d.rg !== d.rg) { GV.sel.clear(); GV.menu = false; GV.edit = false; GV.ed.clear(); GV.ord.clear(); asLog.info(`Group gallery: ${d.rg}`); }
     GV.d = d;
     if (!GV.el || GV.el.parentNode !== slot) { GV.el = gvMount(slot); GV.html = GV.bar = ''; }
     gvRender();
