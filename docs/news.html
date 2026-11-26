@@ -93,7 +93,8 @@ function clean(html) {
 const icon = i => i.icon ? `<img src="${esc(i.icon)}" alt="">` : '';
 const REPO = 'https://github.com/majkinetor/musicbrainz-userscripts';
 function post(i) {
-  return `<article id="${i.id}" data-script="${esc(i.script)}"><h2>${icon(i)}<a href="#${i.id}">${esc(i.title)}</a></h2>`
+  // the title links to the post's own page (news/<id>), whose link preview shows this post; a click stays here
+  return `<article id="${i.id}" data-script="${esc(i.script)}"><h2>${icon(i)}<a href="./news/${i.id}" data-id="${i.id}" title="Link to this post">${esc(i.title)}</a></h2>`
     + `<div class="m"><span>${esc(i.script)}</span><time datetime="${esc(i.at)}">${esc(day(i.at))}</time>`
     + (i.channel ? `<span class="c" title="${i.channel === 'stable' ? 'In the official release' : 'On the latest version, not yet released'}">${esc(i.channel)}</span>` : '')
     + (i.issue ? `<a href="${REPO}/issues/${i.issue}">Issue #${i.issue}</a>` : '')
@@ -121,6 +122,13 @@ fetch('./news.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : Promise.
   list.innerHTML = items.length ? items.map(post).join('') : '<p class="state">No announcements yet.</p>';
   if (j.generated) { const d = day(j.generated); document.getElementById('lede').textContent += ' Updated ' + d + (/.$/.test(d) ? '' : '.'); }
   filter(items);
+  list.onclick = e => {
+    const a = e.target.closest('h2 a[data-id]');
+    if (!a || e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    history.replaceState(null, '', location.pathname + location.search + '#' + a.dataset.id);
+    a.closest('article').scrollIntoView();
+  };
   // a link to one post (news.html#1122) lands on it once the posts are drawn
   if (location.hash) { const a = document.getElementById(location.hash.slice(1)); if (a) { a.hidden = false; a.scrollIntoView(); } }
 }).catch(() => {

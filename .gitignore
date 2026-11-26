@@ -49,3 +49,4 @@ dev/script-metrics/_backfill.log
 /.pw-profile-ff/
 /.pw-profile-recheck/
 /docs/news.json
+/docs/news/

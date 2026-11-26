@@ -4,6 +4,8 @@ Writes the project's Announcements discussions into one file, `news.json`, for t
 
 [`.github/workflows/pages.yml`](../../.github/workflows/pages.yml) runs it and deploys `docs/` with the file to GitHub Pages, at <https://milic.info/musicbrainz-userscripts/news.json>. The site's [`news.html`](../../docs/news.html) shows every announcement from that file, at <https://milic.info/musicbrainz-userscripts/news.html>, with a filter by script (`?script=Falcon`) and a link to each post (`news.html#1122`).
 
+A link preview in a chat or a forum never sees the `#1122` part, so the script also writes one small page for each post, `news/<id>.html`. Each page carries its post's title, the start of its text and its first image in the preview tags. It sends the reader on to `news.html#<id>`. A post's title on `news.html` links to that page, so the link a reader copies is <https://milic.info/musicbrainz-userscripts/news/1122>. `--site` sets the site address in the preview tags.
+
 ## What it does
 
 - Every run is a full rebuild from GitHub's current state. An edited post carries its new text. A deleted post, a post moved out of Announcements and a post labeled `skip changelog` are not in the file.
@@ -33,4 +35,4 @@ From the repo root, with a token that can read the repo:
 GH_TOKEN=$(gh auth token) node dev/news/build.mjs --out news.json
 ```
 
-`--out` sets the file (default `docs/news.json`, which git ignores). `--repo owner/name` reads another repository.
+`--out` sets the file (default `docs/news.json`). The post pages go in a `news/` folder beside it. Git ignores both. `--repo owner/name` reads another repository.

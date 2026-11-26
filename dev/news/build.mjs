@@ -3,7 +3,7 @@
 // there, so it makes no GitHub API calls. Every run is a full rebuild from GitHub's current state, so an edited
 // post carries its new text, and a deleted post, one moved out of Announcements or one labeled `skip changelog`
 // is gone. See README.md.
-import { writeFileSync, mkdirSync, readdirSync, readFileSync, existsSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readdirSync, readFileSync, existsSync, rmSync } from 'node:fs';
 import { dirname } from 'node:path';
 
 const args = process.argv.slice(2);
@@ -86,4 +86,35 @@ items.forEach((i) => { i.channel = channel[i.issue] || ''; });
 
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify({ generated: new Date().toISOString(), items }) + '\n');
-console.log(`news: ${items.length} announcements (${posts.length - items.length} skipped) → ${OUT}`);
+
+// one page a post, news/<id>.html, for links pasted into chats and forums: a link preview never sees news.html's
+// #<id>, so it would show the page's title for every post. Each page carries its post's title, text and first image
+// in the preview tags and sends a reader on to news.html#<id>. Rewritten whole, so a deleted post loses its page.
+const SITE = opt('--site', 'https://milic.info/musicbrainz-userscripts/');
+const attr = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const text = (html) => html.replace(/<sub>\s*Issue:[\s\S]*?<\/sub>/gi, ' ').replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ').replace(/<[^>]+>/g, ' ')
+  .replace(/&nbsp;/g, ' ').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
+  .replace(/\s+/g, ' ').trim();
+const cut = (s, n) => s.length <= n ? s : s.slice(0, s.lastIndexOf(' ', n - 1) > n / 2 ? s.lastIndexOf(' ', n - 1) : n - 1) + '…';
+const dir = dirname(OUT) + '/news';
+rmSync(dir, { recursive: true, force: true });
+mkdirSync(dir, { recursive: true });
+for (const i of items) {
+  const to = '../news.html#' + i.id, img = (/<img[^>]+src="([^"]+)"/i.exec(i.html) || [])[1] || '';
+  const title = i.title + ' · ' + i.script, desc = cut(text(i.html), 200);
+  writeFileSync(`${dir}/${i.id}.html`, `<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>${attr(title)}</title>
+<meta name="description" content="${attr(desc)}">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="MusicBrainz userscripts">
+<meta property="og:title" content="${attr(title)}">
+<meta property="og:description" content="${attr(desc)}">
+<meta property="og:url" content="${attr(SITE + 'news/' + i.id)}">
+<meta property="article:published_time" content="${attr(i.at)}">
+${img ? `<meta property="og:image" content="${attr(img)}">\n<meta name="twitter:card" content="summary_large_image">` : '<meta name="twitter:card" content="summary">'}
+<meta http-equiv="refresh" content="0; url=${attr(to)}">
+</head><body><p><a href="${attr(to)}">${attr(i.title)}</a></p><script>location.replace(${JSON.stringify(to)})</script></body></html>
+`);
+}
+console.log(`news: ${items.length} announcements (${posts.length - items.length} skipped) → ${OUT}, ${dir}/`);
