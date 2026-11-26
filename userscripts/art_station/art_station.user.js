@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.26.172303
+// @version      2026.11.26.173140
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -9960,6 +9960,9 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   .as-gv-seg button{font:12px var(--mbu-font);padding:4px 10px;border:0;background:transparent;color:var(--mbu-text);cursor:pointer}
   .as-gv-seg button+button{border-left:1px solid var(--mbu-border)}
   .as-gv-seg button.on{background:var(--mbu-accent);color:var(--mbu-text-on-accent)}
+  .as-gv-chip,.as-gv-seg button{display:inline-flex;align-items:center;gap:5px}
+  .as-gv-bar.mbu-compact :is(.as-gv-l,.as-gv-lbl){display:none}
+  .as-gv-bar.mbu-compact :is(.as-gv-chip,.as-gv-seg button,.as-gv-dl){padding:4px 8px}
   .as-gv-chip{font:12px var(--mbu-font);padding:4px 10px;border:1px solid var(--mbu-border);border-radius:999px;background:transparent;color:var(--mbu-text);cursor:pointer}
   .as-gv-chip.on{border-color:var(--mbu-accent);background:var(--mbu-accent);color:var(--mbu-text-on-accent)}
   .as-gv-seg button:not(.on):hover,.as-gv-chip:not(.on):hover{background:var(--mbu-bg-hover)}
@@ -10103,6 +10106,12 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     dl: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>',
     pause: '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>',
     play: '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>',
+    type: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V3h9l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor"/></svg>',
+    release: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg>',
+    none: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5"/><rect x="13.5" y="4" width="6.5" height="6.5"/><rect x="4" y="13.5" width="6.5" height="6.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5"/></svg>',
+    merge: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg>',
+    book: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h14v14H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h14v-4"/></svg>',
+    doc: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/></svg>',
     edit: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>',
   };
   // every image of every read release, in release order
@@ -10364,15 +10373,17 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     const { items, tiles } = gvTiles(d), shown = gvShown(tiles), secs = gvSections(shown), p = d.progress || {};
     GV.secs = secs;
     for (const k of [...GV.sel]) if (!tiles.some(t => t.key === k)) GV.sel.delete(k);
-    const seg = (v, l) => `<button type="button" data-gvby="${v}" aria-pressed="${GV.by === v}" class="${GV.by === v ? 'on' : ''}">${l}</button>`;
-    const chip = (k, l) => `<button type="button" class="as-gv-chip${GV[k] ? ' on' : ''}" data-gvchip="${k}" aria-pressed="${GV[k]}">${l}</button>`;
+    const L = t => `<span class="as-gv-l">${t}</span>`;   // a label: hidden when the bar would wrap (gvFitHead)
+    const seg = (v, l) => `<button type="button" data-gvby="${v}" aria-pressed="${GV.by === v}" class="${GV.by === v ? 'on' : ''}" data-tip="Group by ${l.toLowerCase()}">${GV_SVG[v]}${L(l)}</button>`;
+    const chip = (k, ico, l, n, tip) => `<button type="button" class="as-gv-chip${GV[k] ? ' on' : ''}" data-gvchip="${k}" aria-pressed="${GV[k]}" data-tip="${tip}">${GV_SVG[ico]}${L(l)}${n ? `<span>${n}</span>` : ''}</button>`;
     const nb = tiles.filter(t => t.kind === 'stack').length, np = tiles.filter(t => t.kind === 'pdf').length;
-    const bar = `<div class="as-gv-bar"><span class="as-gv-lbl">Group by</span><div class="as-gv-seg">${seg('type', 'Type')}${seg('release', 'Release')}${seg('none', 'None')}</div>${GV.by === 'none' ? '' : `<div class="as-gv-toc"><button type="button" class="as-gv-chip${GV.toc ? ' on' : ''}" data-gvtoc aria-expanded="${!!GV.toc}" data-tip="Jump to a ${GV.by === 'release' ? 'release' : 'type'}">${GV_TOC_SVG} Jump to</button><div class="as-gv-menu as-gv-tocm${GV.toc ? ' open' : ''}"></div></div>`}
-      ${GV.edit ? '' : chip('merge', 'Merge look-alikes') + chip('book', 'Booklets only' + (nb ? ' ' + nb : ''))}${np && !GV.edit ? chip('pdf', 'PDF ' + np) : ''}
+    const bar = `<div class="as-gv-bar"><span class="as-gv-lbl">Group by</span><div class="as-gv-seg">${seg('type', 'Type')}${seg('release', 'Release')}${seg('none', 'None')}</div>${GV.by === 'none' ? '' : `<div class="as-gv-toc"><button type="button" class="as-gv-chip${GV.toc ? ' on' : ''}" data-gvtoc aria-expanded="${!!GV.toc}" data-tip="Jump to a ${GV.by === 'release' ? 'release' : 'type'}">${GV_TOC_SVG}${L('Jump to')}</button><div class="as-gv-menu as-gv-tocm${GV.toc ? ' open' : ''}"></div></div>`}
+      ${GV.edit ? '' : chip('merge', 'merge', 'Merge look-alikes', 0, `Merge look-alikes
+Copies of one image across releases show as one`) + chip('book', 'book', 'Booklets only', nb, 'Booklets only')}${np && !GV.edit ? chip('pdf', 'doc', 'PDF', np, 'PDF booklets only') : ''}
       <button type="button" class="as-gv-chip as-gv-edc${GV.edit ? ' on' : ''}" data-gvedmode aria-pressed="${GV.edit}"${GV.edit || (!d.wait && !(p.read < p.total)) ? '' : ' disabled'} data-tip="${GV.edit ? `Stop editing
 Staged changes are dropped (it asks first)` : `Edit every release's art here, in Art Station's gallery
-Types, comments and removals in any grouping; the order grouped by release`}">${GV_SVG.edit} Edit</button>
-      <span class="as-gv-sp"></span><span class="as-size" data-tip="${SIZE_TIP}">${TILE_SIZES.map(([n], i) => `<button type="button" data-gvsize="${i}" class="${i === tileIdx() ? 'on' : ''}" aria-label="${n}">${tileIcon(i)}</button>`).join('')}</span><div class="as-gv-dlw"><button type="button" class="as-gv-dl" data-gvdl${items.length ? '' : ' disabled'}>${GV_SVG.dl} Download zip</button>
+Types, comments and removals in any grouping; the order grouped by release`}">${GV_SVG.edit}${L('Edit')}</button>
+      <span class="as-gv-sp"></span><span class="as-size" data-tip="${SIZE_TIP}">${TILE_SIZES.map(([n], i) => `<button type="button" data-gvsize="${i}" class="${i === tileIdx() ? 'on' : ''}" aria-label="${n}">${tileIcon(i)}</button>`).join('')}</span><div class="as-gv-dlw"><button type="button" class="as-gv-dl" data-gvdl${items.length ? '' : ' disabled'}>${GV_SVG.dl}${L('Download zip')}</button>
       <div class="as-gv-menu${GV.menu ? ' open' : ''}"><button type="button" data-gvzip="sel"${GV.sel.size ? '' : ' disabled'}>Selected (${GV.sel.size})</button><button type="button" data-gvzip="big">Largest of each (${shown.length})</button><button type="button" data-gvzip="all">Everything (${items.length})</button></div></div></div>
       <div class="as-gv-note">${gvNote(d, items, tiles)}</div>`;
     const body = secs.map((sec, si) => `<section class="as-gv-sec">${sec.name ? `<h3>${sec.icon || ''}<span>${esc(sec.name)}</span>${sec.sub ? `<span class="as-gv-sub">${esc(sec.sub)}</span>` : ''}<span class="as-gv-cnt">${sec.tiles.length}</span>${sec.id ? `<a class="as-gv-edit" href="/release/${esc(sec.id)}/cover-art" target="_blank" rel="noopener" data-gvedit="${esc(sec.id)}" data-tip="Edit this release's art
@@ -10381,7 +10392,7 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
     // .as-gv-as holds Art Station's gallery while editing (grpEnter), in place of the tiles
     if (!el.firstChild) el.innerHTML = '<div class="as-gv-head"></div><div class="as-gv-as"></div><div class="as-gv-body"></div>';
     if (!GV.headRO && window.ResizeObserver) { GV.headRO = new ResizeObserver(() => el.style.setProperty('--as-gv-headh', el.querySelector('.as-gv-head').getBoundingClientRect().height + 'px')); GV.headRO.observe(el.querySelector('.as-gv-head')); }
-    if (bar !== GV.bar) { GV.bar = bar; el.querySelector('.as-gv-head').innerHTML = bar; }
+    if (bar !== GV.bar) { GV.bar = bar; el.querySelector('.as-gv-head').innerHTML = bar; gvFitHead(); }
     el.classList.toggle('editing', GV.edit);
     el.querySelector('.as-gv-body').hidden = GV.edit;
     if (!GV.edit && body !== GV.html) { GV.html = body; el.querySelector('.as-gv-body').innerHTML = body; }
@@ -10422,6 +10433,8 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
     asLog.debug(`Group gallery: read the size of ${got} of ${want.length} merged copies`);
     if (got) gvRender();
   }
+  // icons only when the labels would wrap the bar, as Art Station's toolbar does (a phone)
+  function gvFitHead() { const b = GV.el && GV.el.querySelector('.as-gv-bar'); if (b) mbuFitToolbar(b, { spacer: '.as-gv-sp', gap: 8, pad: 0 }); }
   const GV_TOC_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg>';
   // the sections on screen, read view or Art Station's while editing, with their names and counts
   function gvTocTargets() {
@@ -10585,7 +10598,8 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
       if (GV.toc && !e.target.closest('.as-gv-toc')) { GV.toc = false; gvRender(); }
     });
     // the toolbar pins under the bar, whose height changes as it wraps
-    const ro = new ResizeObserver(() => { const h = el.querySelector('.as-gv-head'); if (h) el.style.setProperty('--as-gv-headh', h.getBoundingClientRect().height + 'px'); });
+    let fitW = 0;
+    const ro = new ResizeObserver(() => { if (el.clientWidth !== fitW) { fitW = el.clientWidth; gvFitHead(); } const h = el.querySelector('.as-gv-head'); if (h) el.style.setProperty('--as-gv-headh', h.getBoundingClientRect().height + 'px'); });
     ro.observe(el);
     slot.append(el);
     return el;

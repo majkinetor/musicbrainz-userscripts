@@ -105,6 +105,16 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   await page.route('**/*', r => { if (r.request().method() === 'POST') { posts.push(r.request().url()); return r.abort(); } return r.continue(); });
   // Edit keeps in view the image that was at the top
   const tiles = gv.locator('.as-gv-body .as-gv-t[data-gvid]'), ti = Math.min(3, await tiles.count() - 1), aid = await tiles.nth(ti).getAttribute('data-gvid');
+  // a phone: the bar drops its labels for icons, so it takes a row or two, not five
+  const vp = page.viewportSize();
+  await page.setViewportSize({ width: 390, height: 800 });
+  const compact = await until(() => gv.locator('.as-gv-bar.mbu-compact').count(), Boolean);
+  const barH = (await gv.locator('.as-gv-bar').boundingBox()).height;
+  console.log('phone bar height', barH);
+  await attachShot(testInfo, gv.locator('.as-gv-head'), 'phone head');
+  check(compact && barH < 70, `at phone width the bar shows icons and fits in two rows (${Math.round(barH)}px)`);
+  await page.setViewportSize(vp);
+  check(await until(() => gv.locator('.as-gv-bar.mbu-compact').count(), n => !n) === 0, 'at full width the labels come back');
   await tiles.nth(ti).evaluate(e => { const h = document.querySelector('.as-gv-head').getBoundingClientRect().bottom; window.scrollBy(0, e.getBoundingClientRect().top - h - 10); });
   const ay = (await tiles.nth(ti).boundingBox()).y;
   await gv.locator('[data-gvedmode]').click();
