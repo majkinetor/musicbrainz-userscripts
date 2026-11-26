@@ -104,7 +104,7 @@ In [Event Horizon](../event_horizon/README.md), a release group's **Artwork** ta
 
 The thumbnail sizes work as in the main gallery: the size buttons, the wheel over them, or right-click + wheel anywhere.
 
-**Edit** changes every release's art in place. Each image gets its own tile; click tiles to select them, then set their types, write a comment, or mark them for removal. Grouped by release, drag a cover to move it within its release. **Submit…** opens the same commit window as the main gallery, with an edit per release; **Discard** drops what you staged. After submitting, the cover art archive can take a while to show the changes.
+**Edit** opens the main gallery over every image of every release, with nothing merged or stacked, and you edit them the same way: selection, **Type ▾**, **Comment ▾**, the type pills, the trash, the viewer and the commit window all work as on a release's page. The grouping buttons above it still apply. Grouped by type or not at all, each cover shows its release; grouped by release, you can drag a cover to move it within its release. Adding, sourcing, upscaling, AI scan, rotating, downloading and reporting are left out. **Edit** again leaves, and asks first if changes are staged. After you commit, the cover art archive can take a while to show the changes.
 
 ## File names ⇄ types
 

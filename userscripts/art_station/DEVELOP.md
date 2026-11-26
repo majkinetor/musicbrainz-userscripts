@@ -96,6 +96,8 @@ On Event Horizon's `/release-group/<mbid>/artwork` tab, Event Horizon reads the 
 
 Art Station draws into `#as-gslot` and answers with `preventDefault()`; unanswered, Event Horizon shows its own card. Started after the tab, Art Station sends `mbu-art-group-ask` and gets the snapshot again. **Pause** sends `mbu-art-group-pause` with `{ rg, paused }`.
 
+**Edit** (`grpEnter`) points the gallery at the whole group: it saves the page's state (`MODEL`, `CAA`, `VIEW_ONLY`, an embedded release's gallery…), fills `MODEL` with every image, each with its release (`_rel`, `_R` for the edit URLs), and mounts `#as-root` in the group gallery's `.as-gv-as`; `grpExit` puts it all back. While `_grp` is set, `buildPlan` makes a reorder per release whose order changed, and the commit window runs as usual. After a live run, each release that changed gets `mbu-art-group-edit` with `{ rg, release, now: true }`, so Event Horizon reads it again; what went in is kept over the snapshot (`_grp.done`) until the archive shows it too.
+
 ## AI scan
 
 The ✦ menu prepares the image and the prompt as it opens, so a provider's click only has to write the clipboard and open the tab, inside the click's activation. The image goes on the clipboard as PNG (the one image type every browser's clipboard takes), at most 2400 px on its long side; the prompt goes in the chat's `?q=`, or with the image on the clipboard for Gemini, which has none. The release's title, artist credit and tracklist come from one ws/2 `release?inc=recordings+artist-credits` read per page, through the gate.
