@@ -24,6 +24,8 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   });
   await page.goto(`https://test.musicbrainz.org/release-group/${RG}`, { waitUntil: 'domcontentloaded' });
   await idle(page);
+  // the listings an earlier run kept: read from them, the gallery never asks the archive, and the ghost above never reaches it
+  await page.evaluate(() => new Promise(ok => { const q = indexedDB.deleteDatabase('eh-kept'); q.onsuccess = q.onerror = q.onblocked = () => ok(); }));
   await inject('event_horizon');
   // the table's Has booklet switch reads the listings; the Art column then says what each release has
   await page.locator('#app [data-edview="table"]').first().click();
@@ -216,7 +218,8 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   await page.click('#as-commit .as-cm-more');
   await page.click('#as-commit .as-cm-dryrun');
   const done = await until(() => page.evaluate(() => [...document.querySelectorAll('#as-commit .as-cm-op .as-cm-st')].every(e => e.textContent === '👁')), Boolean, { timeout: 60000 });
-  check(done, 'Dry run previews every operation');
+  const sts = done || await page.evaluate(() => [...document.querySelectorAll('#as-commit .as-cm-op')].map(e => (e.querySelector('.as-cm-st') || {}).textContent + ' ' + e.textContent.trim().slice(0, 80)));
+  check(done, `Dry run previews every operation (${JSON.stringify(sts)})`);
   await attachShot(testInfo, page.locator('#as-commit .as-cm-box'), 'group dry run');
   check(await page.locator('#as-commit .as-cm-rel').count() > 0 && !/: (Edit|Remove)/.test(await page.locator('#as-commit .as-cm-lb').first().textContent()), 'the commit window gives the release its own line');
   check(!posts.length, `nothing was submitted (${posts.length} POSTs)`);
