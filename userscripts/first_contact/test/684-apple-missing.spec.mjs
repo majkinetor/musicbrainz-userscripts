@@ -6,7 +6,7 @@
 import { test, check } from '../../../dev/test/harness.mjs';
 
 test.use({
-  gm: { name: 'First Contact', persist: 'tabs', values: { 'fc.settings': { server: 'test.musicbrainz.org', archive: false } } },
+  gm: { name: 'First Contact', persist: 'tabs', values: { 'fc.settings': { server: 'test.musicbrainz.org', archive: false, check: 'off' } } },   // #801's check is 801-mb-check's: test has this album now, and its question would come next
   bypassCSP: true,
   pageErrors: 'ignore',   // music.apple.com's own scripts
 });
