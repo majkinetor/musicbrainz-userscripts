@@ -12,7 +12,7 @@
 //
 // test.musicbrainz.org, on a sandbox release with ten ISRCs. The edit forms are real;
 // the removal POSTs are answered here and never sent, so the ISRCs stay for next time.
-import { test, check, requireLogin, answerGm, until, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, answerGm, until, frames, mbJson } from '../../../dev/test/harness.mjs';
 import { openScout } from './is.mjs';
 
 test.use({ gm: { name: 'ISRC Scout' } });
@@ -73,7 +73,11 @@ test('a removal asks MusicBrainz for nothing extra, and remembers nothing after 
   const urls = [];
   answerGm(context, async ({ url, method }) => {
     urls.push(method + ' ' + url);
-    return method === 'POST' ? { status: 200, body: '<html></html>', url: url.replace(/\/edit$/, ''), headers: 'content-type: text/html' } : null;
+    if (method === 'POST') return { status: 200, body: '<html></html>', url: url.replace(/\/edit$/, ''), headers: 'content-type: text/html' };
+    // the release read is answered from here, after any 503/429 is waited out: the gate's retry of a busy answer
+    // would be a second request, which is not a second lookup
+    if (/\/ws\/2\/release\//.test(url)) return { status: 200, body: JSON.stringify(await mbJson(url)), url, headers: 'content-type: application/json' };
+    return null;
   });
   page.on('dialog', d => d.accept());
   await openScout(page, inject);
