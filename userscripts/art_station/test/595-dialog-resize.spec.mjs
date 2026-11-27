@@ -28,7 +28,7 @@ import { openArtStation } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
 
-test('a drag that starts inside the commit window never closes it, and its size is kept', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+test('a drag that starts inside the commit window never closes it, and a reopen fits the changes again', { tag: ['@sandbox'] }, async ({ page, inject }) => {
   let posts = 0;
   await page.route(u => u.pathname === '/ws/js/edit/create', r => { posts++; return r.fulfill({ status: 200, contentType: 'application/json', body: '{"edits":[]}' }); });
   await page.route(u => /\/edit-cover-art\//.test(u.pathname), r => { if (r.request().method() !== 'POST') return r.fallback(); posts++; return r.fulfill({ status: 200, contentType: 'text/html', body: 'blocked' }); });
@@ -39,7 +39,7 @@ test('a drag that starts inside the commit window never closes it, and its size 
     await page.evaluate(() => document.getElementById('as-commit')?.remove());
     await page.click('.as-commit');
     await page.waitForSelector('#as-commit .as-cm-box', { timeout: 10000 });
-    await frames(page);   // sized (a remembered size is applied as it opens)
+    await frames(page);   // sized to its changes as it opens (#1127)
   };
   // the first card that can be edited (one with an open edit can't), by position
   const idx = await page.evaluate(() => [...document.querySelectorAll('.as-card')].findIndex(c => c.querySelector('.as-pencil')));
@@ -92,19 +92,16 @@ test('a drag that starts inside the commit window never closes it, and its size 
   const grew = !!after && (after.w > before.w || after.h > before.h);
   check(grew, `and the box actually got bigger (${before.w}x${before.h} -> ${after && after.w + 'x' + after.h})`);
 
-  // ── 3. the size survives a reopen ──────────────────────────────────────────
-  // "When then clicking the 'Enter edit' button again, it starts with the
-  // original size again."
+  // ── 3. a reopen fits the changes again ─────────────────────────────────────
+  // #1127 (majkinetor): the dialog sizes itself to its changes each time it opens
+  // and no longer remembers a size, so a resize lasts only while it is open.
   if (grew) {
-    const resized = await boxRect();
     await openDialog();
     const reopened = await boxRect();
-    console.log(`reopened: ${JSON.stringify({ w: reopened.w, h: reopened.h })} (was ${JSON.stringify({ w: resized.w, h: resized.h })})`);
-    check(Math.abs(reopened.w - resized.w) <= 4 && Math.abs(reopened.h - resized.h) <= 4,
-      'the resized size is remembered and restored on the next open');
+    console.log(`reopened: ${JSON.stringify({ w: reopened.w, h: reopened.h })} (first opened ${JSON.stringify(before)})`);
+    check(Math.abs(reopened.w - before.w) <= 4, 'a reopen fits the changes again, not the resized width (#1127)');
     const stored = await page.evaluate(() => { try { return JSON.parse(window.GM_getValue('artstation:dialogSize', '{}')); } catch (e) { return 'THREW'; } });
-    console.log('stored: ' + JSON.stringify(stored));
-    check(!!stored && stored !== 'THREW' && !!stored.commit, 'and it is persisted, not just kept in the page');
+    check(stored !== 'THREW' && !(stored && stored.commit), `and no commit size is stored (${JSON.stringify(stored)})`);
   } else {
     check(false, 'could not resize the box, so the reopen half could not be checked');
   }

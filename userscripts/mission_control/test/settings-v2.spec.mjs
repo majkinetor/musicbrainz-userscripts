@@ -16,5 +16,5 @@ test('settings v2: the old stored defaults give way to the new ones, once', { ta
   const s = await page.evaluate(() => window.__mcTest.settings());
   check(s.autoProbe === true && s.reloadAfter === true, `probe on open and the reload are on (${s.autoProbe}, ${s.reloadAfter})`);
   check(s.platforms === 'auto', `the Platforms step is Auto (${s.platforms})`);
-  check(s.consAfter === false && s.fusion === 'ask' && s.v === 3, `another stored choice stays, and the settings are v3 (${s.consAfter}, ${s.fusion}, ${s.v})`);
+  check(s.consAfter === false && s.fusion === 'ask' && s.v === 4, `another stored choice stays, and the settings are v4 (${s.consAfter}, ${s.fusion}, ${s.v})`);
 });

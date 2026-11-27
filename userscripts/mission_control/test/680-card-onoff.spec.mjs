@@ -37,7 +37,7 @@ test('#680: a card switched off is left out of Execute', { tag: ['@sandbox'] }, 
   check(await exec.textContent() === 'Execute (2)', `both cards count (${await exec.textContent()})`);
 
   const sw = id => page.locator(`#mc-root .mc-sect[data-sect="${id}"] .mc-sect-h .mc-icsw`);
-  check(await page.locator('#mc-root .mc-sect-h .mc-icsw').count() === 4, "every card's icon is its switch: tracks, links, cover art, release credits");
+  { const n = await page.locator('#mc-root .mc-sect-h .mc-icsw').count(); check(n === 5, `every card's icon is its switch: tracks, links, cover art, release credits, genres (${n}: ${await page.locator('#mc-root .mc-sect').evaluateAll(e => e.map(x => x.dataset.sect))})`); }
   check(await sw('pc').getAttribute('aria-pressed') === 'true', 'on to begin with');
   await sw('pc').locator('.ic').click();   // the icon
   check(await sw('pc').getAttribute('aria-pressed') === 'false' && /Left out/.test(await sw('pc').getAttribute('data-tip')), 'a click on the icon switches it off, and its tooltip says so');
