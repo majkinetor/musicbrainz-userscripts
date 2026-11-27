@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.26.172003
+// @version      2026.11.27.124625
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -3168,6 +3168,55 @@
   //
   //   var off = mbuDismissOn(popoverEl, close);   // off() to detach early
   //
+  // A full-screen modal overlay (position:fixed;inset:0, its window centred) pinned to what the reader sees.
+  // In a same-origin frame sized to its page (Mission Control), the frame's viewport is the whole page, so
+  // inset:0 centres the window far from the screen. The pin measures the frame against the parent's screen,
+  // skips the parent's fixed bars, and follows scroll and resize in both windows until the overlay is removed.
+  // It also fixes a theme that makes fixed elements scroll with the page.
+  function mbuPinOverlay(ov) {
+      if (!ov || ov._mbuPin) return;
+      var pw = null;
+      try { pw = window.frameElement ? window.frameElement.ownerDocument.defaultView : null; } catch (e) { pw = null; }
+      var off = function () {
+          window.removeEventListener('scroll', pin, true); window.removeEventListener('resize', pin);
+          if (pw) { try { pw.removeEventListener('scroll', pin, true); pw.removeEventListener('resize', pin); } catch (e) {} }
+      };
+      var pin = function () {
+          if (!ov.isConnected) { off(); return; }
+          try {
+              var r = ov.getBoundingClientRect();
+              var w = document.documentElement.clientWidth, h = window.innerHeight, vt = 0, vl = 0;
+              try {
+                  var fe = window.frameElement;
+                  if (fe) {
+                      var fr = fe.getBoundingClientRect(), fw = fe.ownerDocument.defaultView, pd = fe.ownerDocument;
+                      vt = Math.max(0, -fr.top); vl = Math.max(0, -fr.left);
+                      h = Math.max(100, Math.min(h - vt, fw.innerHeight - Math.max(0, fr.top)));
+                      w = Math.max(100, Math.min(w - vl, fw.innerWidth - Math.max(0, fr.left)));
+                      var x = Math.round((Math.max(0, fr.left) + Math.min(fw.innerWidth, fr.right)) / 2), y0 = Math.max(0, fr.top);
+                      var cut = 0, hit;
+                      while (cut < 240 && cut < h - 100) { hit = pd.elementFromPoint(x, y0 + cut); if (!hit || hit === fe) break; cut += 4; }
+                      vt += cut; h -= cut;
+                      var cutB = 0;
+                      while (cutB < 240 && cutB < h - 100) { hit = pd.elementFromPoint(x, y0 + cut + h - 1 - cutB); if (!hit || hit === fe) break; cutB += 4; }
+                      h -= cutB;
+                  }
+              } catch (e) {}
+              if (Math.abs(r.top - vt) <= 1 && Math.abs(r.left - vl) <= 1 && Math.abs(r.height - h) <= 1 && Math.abs(r.width - w) <= 1) return;
+              var t0 = parseFloat(ov.style.top) || 0, l0 = parseFloat(ov.style.left) || 0;   // read first: inset resets them
+              ov.style.inset = 'auto'; ov.style.top = (t0 - r.top + vt) + 'px'; ov.style.left = (l0 - r.left + vl) + 'px';
+              ov.style.width = w + 'px'; ov.style.height = h + 'px';
+              // a window capped in vh is capped to the page in a page-tall frame: cap the overlay's children to the pinned height
+              for (var i = 0; i < ov.children.length; i++) ov.children[i].style.maxHeight = Math.round(h * 0.9) + 'px';
+          } catch (e) {}
+      };
+      ov._mbuPin = pin;
+      pin(); requestAnimationFrame(function () { pin(); setTimeout(pin, 300); });
+      window.addEventListener('scroll', pin, { capture: true, passive: true }); window.addEventListener('resize', pin, { passive: true });
+      if (pw) { try { pw.addEventListener('scroll', pin, { capture: true, passive: true }); pw.addEventListener('resize', pin, { passive: true }); } catch (e) {} }
+      return pin;
+  }
+
   // #305: a popover torn down on mousedown removes what was under the cursor, so
   // the click that follows lands on whatever the page reflowed into that spot and
   // activates it. Tearing down on click instead just moves the problem. So: close
@@ -10526,7 +10575,7 @@ async function tidalTokenFetch() {
       box.querySelector('[data-a="go"]').addEventListener('click', () => done('go'));
       ov.addEventListener('mousedown', e => { if (e.target === ov) done(false); });
       ov.appendChild(box);
-      document.body.appendChild(ov);
+      document.body.appendChild(ov); mbuPinOverlay(ov);
       box.querySelector('[data-a="review"]').focus();
     });
   }

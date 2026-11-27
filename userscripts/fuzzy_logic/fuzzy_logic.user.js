@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.26.172003
+// @version      2026.11.27.124625
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm, RateYourMusic and Album of the Year, read when you open their pages), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -2651,6 +2651,55 @@
   //
   //   var off = mbuDismissOn(popoverEl, close);   // off() to detach early
   //
+  // A full-screen modal overlay (position:fixed;inset:0, its window centred) pinned to what the reader sees.
+  // In a same-origin frame sized to its page (Mission Control), the frame's viewport is the whole page, so
+  // inset:0 centres the window far from the screen. The pin measures the frame against the parent's screen,
+  // skips the parent's fixed bars, and follows scroll and resize in both windows until the overlay is removed.
+  // It also fixes a theme that makes fixed elements scroll with the page.
+  function mbuPinOverlay(ov) {
+      if (!ov || ov._mbuPin) return;
+      var pw = null;
+      try { pw = window.frameElement ? window.frameElement.ownerDocument.defaultView : null; } catch (e) { pw = null; }
+      var off = function () {
+          window.removeEventListener('scroll', pin, true); window.removeEventListener('resize', pin);
+          if (pw) { try { pw.removeEventListener('scroll', pin, true); pw.removeEventListener('resize', pin); } catch (e) {} }
+      };
+      var pin = function () {
+          if (!ov.isConnected) { off(); return; }
+          try {
+              var r = ov.getBoundingClientRect();
+              var w = document.documentElement.clientWidth, h = window.innerHeight, vt = 0, vl = 0;
+              try {
+                  var fe = window.frameElement;
+                  if (fe) {
+                      var fr = fe.getBoundingClientRect(), fw = fe.ownerDocument.defaultView, pd = fe.ownerDocument;
+                      vt = Math.max(0, -fr.top); vl = Math.max(0, -fr.left);
+                      h = Math.max(100, Math.min(h - vt, fw.innerHeight - Math.max(0, fr.top)));
+                      w = Math.max(100, Math.min(w - vl, fw.innerWidth - Math.max(0, fr.left)));
+                      var x = Math.round((Math.max(0, fr.left) + Math.min(fw.innerWidth, fr.right)) / 2), y0 = Math.max(0, fr.top);
+                      var cut = 0, hit;
+                      while (cut < 240 && cut < h - 100) { hit = pd.elementFromPoint(x, y0 + cut); if (!hit || hit === fe) break; cut += 4; }
+                      vt += cut; h -= cut;
+                      var cutB = 0;
+                      while (cutB < 240 && cutB < h - 100) { hit = pd.elementFromPoint(x, y0 + cut + h - 1 - cutB); if (!hit || hit === fe) break; cutB += 4; }
+                      h -= cutB;
+                  }
+              } catch (e) {}
+              if (Math.abs(r.top - vt) <= 1 && Math.abs(r.left - vl) <= 1 && Math.abs(r.height - h) <= 1 && Math.abs(r.width - w) <= 1) return;
+              var t0 = parseFloat(ov.style.top) || 0, l0 = parseFloat(ov.style.left) || 0;   // read first: inset resets them
+              ov.style.inset = 'auto'; ov.style.top = (t0 - r.top + vt) + 'px'; ov.style.left = (l0 - r.left + vl) + 'px';
+              ov.style.width = w + 'px'; ov.style.height = h + 'px';
+              // a window capped in vh is capped to the page in a page-tall frame: cap the overlay's children to the pinned height
+              for (var i = 0; i < ov.children.length; i++) ov.children[i].style.maxHeight = Math.round(h * 0.9) + 'px';
+          } catch (e) {}
+      };
+      ov._mbuPin = pin;
+      pin(); requestAnimationFrame(function () { pin(); setTimeout(pin, 300); });
+      window.addEventListener('scroll', pin, { capture: true, passive: true }); window.addEventListener('resize', pin, { passive: true });
+      if (pw) { try { pw.addEventListener('scroll', pin, { capture: true, passive: true }); pw.addEventListener('resize', pin, { passive: true }); } catch (e) {} }
+      return pin;
+  }
+
   // #305: a popover torn down on mousedown removes what was under the cursor, so
   // the click that follows lands on whatever the page reflowed into that spot and
   // activates it. Tearing down on click instead just moves the problem. So: close

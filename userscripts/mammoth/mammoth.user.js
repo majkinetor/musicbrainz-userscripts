@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.26.172003
+// @version      2026.11.27.124625
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg==
@@ -1898,6 +1898,55 @@
   //
   //   var off = mbuDismissOn(popoverEl, close);   // off() to detach early
   //
+  // A full-screen modal overlay (position:fixed;inset:0, its window centred) pinned to what the reader sees.
+  // In a same-origin frame sized to its page (Mission Control), the frame's viewport is the whole page, so
+  // inset:0 centres the window far from the screen. The pin measures the frame against the parent's screen,
+  // skips the parent's fixed bars, and follows scroll and resize in both windows until the overlay is removed.
+  // It also fixes a theme that makes fixed elements scroll with the page.
+  function mbuPinOverlay(ov) {
+      if (!ov || ov._mbuPin) return;
+      var pw = null;
+      try { pw = window.frameElement ? window.frameElement.ownerDocument.defaultView : null; } catch (e) { pw = null; }
+      var off = function () {
+          window.removeEventListener('scroll', pin, true); window.removeEventListener('resize', pin);
+          if (pw) { try { pw.removeEventListener('scroll', pin, true); pw.removeEventListener('resize', pin); } catch (e) {} }
+      };
+      var pin = function () {
+          if (!ov.isConnected) { off(); return; }
+          try {
+              var r = ov.getBoundingClientRect();
+              var w = document.documentElement.clientWidth, h = window.innerHeight, vt = 0, vl = 0;
+              try {
+                  var fe = window.frameElement;
+                  if (fe) {
+                      var fr = fe.getBoundingClientRect(), fw = fe.ownerDocument.defaultView, pd = fe.ownerDocument;
+                      vt = Math.max(0, -fr.top); vl = Math.max(0, -fr.left);
+                      h = Math.max(100, Math.min(h - vt, fw.innerHeight - Math.max(0, fr.top)));
+                      w = Math.max(100, Math.min(w - vl, fw.innerWidth - Math.max(0, fr.left)));
+                      var x = Math.round((Math.max(0, fr.left) + Math.min(fw.innerWidth, fr.right)) / 2), y0 = Math.max(0, fr.top);
+                      var cut = 0, hit;
+                      while (cut < 240 && cut < h - 100) { hit = pd.elementFromPoint(x, y0 + cut); if (!hit || hit === fe) break; cut += 4; }
+                      vt += cut; h -= cut;
+                      var cutB = 0;
+                      while (cutB < 240 && cutB < h - 100) { hit = pd.elementFromPoint(x, y0 + cut + h - 1 - cutB); if (!hit || hit === fe) break; cutB += 4; }
+                      h -= cutB;
+                  }
+              } catch (e) {}
+              if (Math.abs(r.top - vt) <= 1 && Math.abs(r.left - vl) <= 1 && Math.abs(r.height - h) <= 1 && Math.abs(r.width - w) <= 1) return;
+              var t0 = parseFloat(ov.style.top) || 0, l0 = parseFloat(ov.style.left) || 0;   // read first: inset resets them
+              ov.style.inset = 'auto'; ov.style.top = (t0 - r.top + vt) + 'px'; ov.style.left = (l0 - r.left + vl) + 'px';
+              ov.style.width = w + 'px'; ov.style.height = h + 'px';
+              // a window capped in vh is capped to the page in a page-tall frame: cap the overlay's children to the pinned height
+              for (var i = 0; i < ov.children.length; i++) ov.children[i].style.maxHeight = Math.round(h * 0.9) + 'px';
+          } catch (e) {}
+      };
+      ov._mbuPin = pin;
+      pin(); requestAnimationFrame(function () { pin(); setTimeout(pin, 300); });
+      window.addEventListener('scroll', pin, { capture: true, passive: true }); window.addEventListener('resize', pin, { passive: true });
+      if (pw) { try { pw.addEventListener('scroll', pin, { capture: true, passive: true }); pw.addEventListener('resize', pin, { passive: true }); } catch (e) {} }
+      return pin;
+  }
+
   // #305: a popover torn down on mousedown removes what was under the cursor, so
   // the click that follows lands on whatever the page reflowed into that spot and
   // activates it. Tearing down on click instead just moves the problem. So: close

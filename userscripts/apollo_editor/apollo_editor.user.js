@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.26.172003
+// @version      2026.11.27.124625
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -7218,6 +7218,55 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   //
   //   var off = mbuDismissOn(popoverEl, close);   // off() to detach early
   //
+  // A full-screen modal overlay (position:fixed;inset:0, its window centred) pinned to what the reader sees.
+  // In a same-origin frame sized to its page (Mission Control), the frame's viewport is the whole page, so
+  // inset:0 centres the window far from the screen. The pin measures the frame against the parent's screen,
+  // skips the parent's fixed bars, and follows scroll and resize in both windows until the overlay is removed.
+  // It also fixes a theme that makes fixed elements scroll with the page.
+  function mbuPinOverlay(ov) {
+      if (!ov || ov._mbuPin) return;
+      var pw = null;
+      try { pw = window.frameElement ? window.frameElement.ownerDocument.defaultView : null; } catch (e) { pw = null; }
+      var off = function () {
+          window.removeEventListener('scroll', pin, true); window.removeEventListener('resize', pin);
+          if (pw) { try { pw.removeEventListener('scroll', pin, true); pw.removeEventListener('resize', pin); } catch (e) {} }
+      };
+      var pin = function () {
+          if (!ov.isConnected) { off(); return; }
+          try {
+              var r = ov.getBoundingClientRect();
+              var w = document.documentElement.clientWidth, h = window.innerHeight, vt = 0, vl = 0;
+              try {
+                  var fe = window.frameElement;
+                  if (fe) {
+                      var fr = fe.getBoundingClientRect(), fw = fe.ownerDocument.defaultView, pd = fe.ownerDocument;
+                      vt = Math.max(0, -fr.top); vl = Math.max(0, -fr.left);
+                      h = Math.max(100, Math.min(h - vt, fw.innerHeight - Math.max(0, fr.top)));
+                      w = Math.max(100, Math.min(w - vl, fw.innerWidth - Math.max(0, fr.left)));
+                      var x = Math.round((Math.max(0, fr.left) + Math.min(fw.innerWidth, fr.right)) / 2), y0 = Math.max(0, fr.top);
+                      var cut = 0, hit;
+                      while (cut < 240 && cut < h - 100) { hit = pd.elementFromPoint(x, y0 + cut); if (!hit || hit === fe) break; cut += 4; }
+                      vt += cut; h -= cut;
+                      var cutB = 0;
+                      while (cutB < 240 && cutB < h - 100) { hit = pd.elementFromPoint(x, y0 + cut + h - 1 - cutB); if (!hit || hit === fe) break; cutB += 4; }
+                      h -= cutB;
+                  }
+              } catch (e) {}
+              if (Math.abs(r.top - vt) <= 1 && Math.abs(r.left - vl) <= 1 && Math.abs(r.height - h) <= 1 && Math.abs(r.width - w) <= 1) return;
+              var t0 = parseFloat(ov.style.top) || 0, l0 = parseFloat(ov.style.left) || 0;   // read first: inset resets them
+              ov.style.inset = 'auto'; ov.style.top = (t0 - r.top + vt) + 'px'; ov.style.left = (l0 - r.left + vl) + 'px';
+              ov.style.width = w + 'px'; ov.style.height = h + 'px';
+              // a window capped in vh is capped to the page in a page-tall frame: cap the overlay's children to the pinned height
+              for (var i = 0; i < ov.children.length; i++) ov.children[i].style.maxHeight = Math.round(h * 0.9) + 'px';
+          } catch (e) {}
+      };
+      ov._mbuPin = pin;
+      pin(); requestAnimationFrame(function () { pin(); setTimeout(pin, 300); });
+      window.addEventListener('scroll', pin, { capture: true, passive: true }); window.addEventListener('resize', pin, { passive: true });
+      if (pw) { try { pw.addEventListener('scroll', pin, { capture: true, passive: true }); pw.addEventListener('resize', pin, { passive: true }); } catch (e) {} }
+      return pin;
+  }
+
   // #305: a popover torn down on mousedown removes what was under the cursor, so
   // the click that follows lands on whatever the page reflowed into that spot and
   // activates it. Tearing down on click instead just moves the problem. So: close

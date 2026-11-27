@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.27.122442
+// @version      2026.11.27.124625
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -5830,7 +5830,7 @@
       <div class="as-cm-f"><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><span class="as-cm-split"><button class="as-btn as-cm-go">Submit edits</button><button type="button" class="as-btn as-cm-more" data-tip="More ways to run">▾</button><div class="as-cm-menu" hidden><button type="button" class="as-cm-mi as-cm-dryrun" data-tip="Show what each edit would send, without submitting anything">👁 Dry run</button></div></span></div>
       <div class="as-cm-ar"></div>
     </div>`;
-    document.body.appendChild(ov);
+    document.body.appendChild(ov); mbuPinOverlay(ov);
     // a cover whose CAA thumbnail isn't generated yet falls back to the original, then to nothing
     ov.querySelectorAll('.as-cm-th img').forEach(img => img.addEventListener('error', () => {
       const alt = img.dataset.alt; img.dataset.alt = '';
@@ -7040,7 +7040,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
       <textarea class="as-rp-out" rows="9" spellcheck="false" readonly></textarea>
       <div class="as-cm-f"><span class="as-rp-note">${omitted ? `${omitted} unsaved upload${omitted===1?'':'s'} omitted (no CAA URL yet)` : ''}</span><span class="as-sp"></span><button class="as-btn as-rp-copy">📋 Copy</button><button class="as-btn as-cm-cancel">Close</button></div>
     </div>`;
-    document.body.appendChild(ov);
+    document.body.appendChild(ov); mbuPinOverlay(ov);
     mbuControls(ov);
     const close = () => { ov.remove(); maybeClearSel(); };   // #277: report counts as "using" the selection → clear on close
     // #595: same box (.as-cm-box is resize:both) and a textarea people select
@@ -8703,6 +8703,55 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   //
   //   var off = mbuDismissOn(popoverEl, close);   // off() to detach early
   //
+  // A full-screen modal overlay (position:fixed;inset:0, its window centred) pinned to what the reader sees.
+  // In a same-origin frame sized to its page (Mission Control), the frame's viewport is the whole page, so
+  // inset:0 centres the window far from the screen. The pin measures the frame against the parent's screen,
+  // skips the parent's fixed bars, and follows scroll and resize in both windows until the overlay is removed.
+  // It also fixes a theme that makes fixed elements scroll with the page.
+  function mbuPinOverlay(ov) {
+      if (!ov || ov._mbuPin) return;
+      var pw = null;
+      try { pw = window.frameElement ? window.frameElement.ownerDocument.defaultView : null; } catch (e) { pw = null; }
+      var off = function () {
+          window.removeEventListener('scroll', pin, true); window.removeEventListener('resize', pin);
+          if (pw) { try { pw.removeEventListener('scroll', pin, true); pw.removeEventListener('resize', pin); } catch (e) {} }
+      };
+      var pin = function () {
+          if (!ov.isConnected) { off(); return; }
+          try {
+              var r = ov.getBoundingClientRect();
+              var w = document.documentElement.clientWidth, h = window.innerHeight, vt = 0, vl = 0;
+              try {
+                  var fe = window.frameElement;
+                  if (fe) {
+                      var fr = fe.getBoundingClientRect(), fw = fe.ownerDocument.defaultView, pd = fe.ownerDocument;
+                      vt = Math.max(0, -fr.top); vl = Math.max(0, -fr.left);
+                      h = Math.max(100, Math.min(h - vt, fw.innerHeight - Math.max(0, fr.top)));
+                      w = Math.max(100, Math.min(w - vl, fw.innerWidth - Math.max(0, fr.left)));
+                      var x = Math.round((Math.max(0, fr.left) + Math.min(fw.innerWidth, fr.right)) / 2), y0 = Math.max(0, fr.top);
+                      var cut = 0, hit;
+                      while (cut < 240 && cut < h - 100) { hit = pd.elementFromPoint(x, y0 + cut); if (!hit || hit === fe) break; cut += 4; }
+                      vt += cut; h -= cut;
+                      var cutB = 0;
+                      while (cutB < 240 && cutB < h - 100) { hit = pd.elementFromPoint(x, y0 + cut + h - 1 - cutB); if (!hit || hit === fe) break; cutB += 4; }
+                      h -= cutB;
+                  }
+              } catch (e) {}
+              if (Math.abs(r.top - vt) <= 1 && Math.abs(r.left - vl) <= 1 && Math.abs(r.height - h) <= 1 && Math.abs(r.width - w) <= 1) return;
+              var t0 = parseFloat(ov.style.top) || 0, l0 = parseFloat(ov.style.left) || 0;   // read first: inset resets them
+              ov.style.inset = 'auto'; ov.style.top = (t0 - r.top + vt) + 'px'; ov.style.left = (l0 - r.left + vl) + 'px';
+              ov.style.width = w + 'px'; ov.style.height = h + 'px';
+              // a window capped in vh is capped to the page in a page-tall frame: cap the overlay's children to the pinned height
+              for (var i = 0; i < ov.children.length; i++) ov.children[i].style.maxHeight = Math.round(h * 0.9) + 'px';
+          } catch (e) {}
+      };
+      ov._mbuPin = pin;
+      pin(); requestAnimationFrame(function () { pin(); setTimeout(pin, 300); });
+      window.addEventListener('scroll', pin, { capture: true, passive: true }); window.addEventListener('resize', pin, { passive: true });
+      if (pw) { try { pw.addEventListener('scroll', pin, { capture: true, passive: true }); pw.addEventListener('resize', pin, { passive: true }); } catch (e) {} }
+      return pin;
+  }
+
   // #305: a popover torn down on mousedown removes what was under the cursor, so
   // the click that follows lands on whatever the page reflowed into that spot and
   // activates it. Tearing down on click instead just moves the problem. So: close

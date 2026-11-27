@@ -18,6 +18,7 @@ import { _hideBar }                        from './progress-bar.js';
 import { MB, DISCOGS_CHANNEL, pageWindow, MATCH_LEVELS } from './constants.js';
 import { log, logDebug }                   from './log.js';
 import { splitCreditName, splitKey }       from './split-credit.js';
+import { pinOverlay }                    from './ui-bar.js';
 
 // Session-level URL check cache (avoids localStorage key mismatches across sessions)
 const _urlCheckSessionCache = new Map();
@@ -1852,7 +1853,7 @@ Right-click: submit it in the background, with no alias type`;
                     modal.appendChild(btnRow);
 
                     overlay.appendChild(modal);
-                    document.body.appendChild(overlay);
+                    document.body.appendChild(overlay); pinOverlay(overlay);   // centred on screen inside Mission Control's page-tall frame
 
                     // ── Cleanup + submit handlers ───────────────────────────
                     const close = () => {
