@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.27.195254
+// @version      2026.11.27.200536
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -30,6 +30,7 @@
 // @match        https://*.musicbrainz.org/cdtoc/*
 // @match        https://bandcamp.com/EmbeddedPlayer/*
 // @match        https://widget.deezer.com/widget/*
+// @match        https://open.spotify.com/embed/*
 // @match        https://www.youtube-nocookie.com/embed/*
 // @exclude-match https://picard.musicbrainz.org/*
 // @run-at       document-start
@@ -202,6 +203,30 @@ if (window.top !== window && (location.hostname === 'bandcamp.com' && location.p
         }
         const play = ev.data.ehPlyCmd === 'play';
         if (press(play) === false) { let n = 0; const iv = setInterval(() => { if (press(play) !== false || ++n > 60) clearInterval(iv); }, 250); }
+    });
+    return;
+}
+// Inside Spotify's player widget: Spotify's embed takes no volume, but it plays through an <audio> (or, signed in, a
+// <video>) element that it never adds to the page. Every element it plays is kept here and gets the player's volume.
+// A widget on any other site is left alone: nothing changes until a parent sends {ehPlyCmd: 'vol'}.
+if (window.top !== window && location.hostname === 'open.spotify.com' && location.pathname.startsWith('/embed/')) {
+    const W = (typeof unsafeWindow !== 'undefined' && unsafeWindow) || window;
+    const els = new Set();
+    let vol = -1;   // the page's volume, 0 to 1; -1 until the page sends one
+    const put = a => { if (vol >= 0 && Math.abs(a.volume - vol) > 0.005) try { a.volume = vol; } catch (e) {} };
+    try {
+        const P = W.HTMLMediaElement.prototype, play = P.play;
+        const hook = function () {
+            if (!els.has(this)) { els.add(this); this.addEventListener('volumechange', () => put(this)); }   // the widget sets its own
+            put(this);
+            return play.apply(this, arguments);
+        };
+        P.play = typeof exportFunction === 'function' ? exportFunction(hook, W) : hook;
+    } catch (e) {}
+    window.addEventListener('message', ev => {
+        if (ev.source !== window.parent || !ev.data || ev.data.ehPlyCmd !== 'vol' || !(ev.data.v >= 0)) return;
+        vol = Math.min(1, ev.data.v);
+        for (const a of els) put(a);
     });
     return;
 }
@@ -14951,8 +14976,8 @@ function plyCmd(play) {
     else if (k === 'soundcloud') plyPost(JSON.stringify({ method: play ? 'play' : 'pause' }));
     else plyPost({ ehPlyCmd: play ? 'play' : 'pause' });
 }
-// the volume, in each widget's words; Spotify's and Apple's can't be told
-const plyHasVol = () => ply.ctl && ply.kind !== 'spotify';
+// the volume, in each widget's words (Spotify's is set on its audio, by this script inside the widget)
+const plyHasVol = () => ply.ctl;
 function plyVol() {
     if (plyRemote && !PLY_WINDOW) { plyControl('volume', +S.playerVol); return; }
     if (!plyHasVol()) return;
@@ -15033,7 +15058,7 @@ window.addEventListener('message', ev => {
         plyVolOnce();
         if (st === 1 && ply.volPlay !== ply.gen) { ply.volPlay = ply.gen; plyVol(); }   // on its first word, before it sounds
     } else if (k === 'spotify') {
-        if (m.type === 'ready' && !t.kicked) { t.kicked = true; PLOG.debug('Spotify ready, started'); plyPost({ command: 'toggle' }); }
+        if (m.type === 'ready' && !t.kicked) { t.kicked = true; PLOG.debug('Spotify ready, started'); plyVolOnce(); plyPost({ command: 'toggle' }); }
         else if (m.type === 'playback_update' && m.payload) {
             const { isPaused, position, duration } = m.payload;
             if (position > 0) t.played = position;
