@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.27.163853
+// @version      2026.11.27.154156
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -10352,6 +10352,7 @@ const U_NIC = {
     edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
     preferences: '<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
     applications: '<circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.8-9.8M17 6l3 3M14.5 8.5l2 2"/>',
+    notes: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
     donation: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
 };
 const U_CARET = '<svg class="u-car" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
@@ -10359,6 +10360,7 @@ function userNavKind(h) {
     const p = h.replace(/^https?:\/\/[^/]+/, '').replace(/[?#].*$/, '').replace(/\/$/, '');
     const a = p.match(/^\/account\/(edit|preferences|donation|applications)$/);
     if (a) return a[1] === 'edit' ? 'edit' : a[1];
+    if (p === '/edit/notes-received') return 'notes';
     const u = p.match(/^\/user\/[^/]+(?:\/(subscriptions|subscribers|collections|tags|ratings))?(?:\/|$)/);
     return !u ? '' : !u[1] ? (p.split('/').length === 3 ? 'profile' : '') : u[1] === 'subscribers' ? 'fans' : u[1] === 'subscriptions' ? 'subs' : u[1];
 }
@@ -10388,7 +10390,7 @@ function userNav(tabs) {
 function userTabsComplete(name, tabs) {
     if (name !== ME) return tabs || [];
     const base = '/user/' + encodeURIComponent(name), result = (tabs || []).slice();
-    const defaults = [['Profile', base], ['Subscriptions', base + '/subscriptions'], ['Subscribers', base + '/subscribers'], ['Collections', base + '/collections'], ['Tags', base + '/tags'], ['Ratings', base + '/ratings'], ['Edit profile', '/account/edit'], ['Preferences', '/account/preferences'], ['Donation check', '/account/donation'], ['Applications', '/account/applications']];
+    const defaults = [['Profile', base], ['Subscriptions', base + '/subscriptions'], ['Subscribers', base + '/subscribers'], ['Collections', base + '/collections'], ['Tags', base + '/tags'], ['Ratings', base + '/ratings'], ['Notes received', '/edit/notes-received'], ['Edit profile', '/account/edit'], ['Preferences', '/account/preferences'], ['Donation check', '/account/donation'], ['Applications', '/account/applications']];
     const path = h => { try { return new URL(h, location.href).pathname.replace(/\/$/, ''); } catch (_) { return ''; } };
     for (const [label, href] of defaults) if (!result.some(t => path(t[1]) === href)) result.push([label, href, path(location.href) === href]);
     return result;
