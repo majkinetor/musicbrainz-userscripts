@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.27.201841
+// @version      2026.11.27.203449
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -14744,7 +14744,7 @@ const plyYtMedia = t => plyPost(JSON.stringify({ ehPlyCmd: 'media', media: plyWi
 function plyMedia(t, again, w = PW) {
     // YouTube's widget sets the phone's session from these (#1104), again and again for its clock
     // Bandcamp's and Deezer's too: a preloaded widget that takes over has none of its own, and the card then shows the page's title
-    if (w === PW && t && t === ply.q[ply.i]) { if (ply.yt) plyYtMedia(t); else if (ply.kind === 'bandcamp' || ply.kind === 'deezer') plyPost({ ehPlyCmd: 'media', media: plyWidgetMedia(t) }); }
+    if (w === PW && t && t === ply.q[ply.i]) { if (ply.yt) plyYtMedia(t); else if (ply.kind === 'bandcamp' || ply.kind === 'deezer' || ply.kind === 'apple') plyPost({ ehPlyCmd: 'media', media: plyWidgetMedia(t) }); }
     const ms = w === PW ? msPage() : w.navigator.mediaSession; if (!ms || !t) { if (!again) LOG.warn('player: Media Session unavailable'); return; }
     try {
         ms.metadata = new (w.MediaMetadata || MediaMetadata)(msObj({ title: t.title || '', artist: t.artist || '', album: t.relTitle || '',
@@ -14873,11 +14873,11 @@ function plyDock(e) {
             ask();
             const c = ply.q[ply.i]; if (c && gen === ply.gen) plyYtMedia(c);
         }
-        if (kind === 'bandcamp' || kind === 'deezer') plyArm(gen, kind, kind === 'bandcamp' ? (ply.q[ply.i]?.resume || 0) / 1000 : 0);
+        if (kind === 'bandcamp' || kind === 'deezer' || kind === 'apple') plyArm(gen, kind, kind === 'bandcamp' ? (ply.q[ply.i]?.resume || 0) / 1000 : 0);
     }, { once: true });
 }
 const plyIframe = (url, h, cls) => `<iframe src="${esc(url)}" height="${h}"${cls ? ` class="${cls}"` : ''} allow="autoplay; encrypted-media; clipboard-write; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" title="Player"></iframe>`;
-// the bridge in Bandcamp's and Deezer's widget may load after the frame does: asked again until it answers
+// the bridge in Bandcamp's, Deezer's and Apple's widget may load after the frame does: asked again until it answers
 function plyArm(gen, kind, pos) {
     const start = () => plyPost({ ehPlyCmd: 'play', pos, v: plyVolNow() / 100 });
     let n = 0; const iv = setInterval(() => { if (gen !== ply.gen || ply.bridged === gen || ++n > 10) { if (n > 10) PLOG.warn('no answer from the', kind, 'widget; its track ends by its length'); clearInterval(iv); return; } start(); }, 1000);
