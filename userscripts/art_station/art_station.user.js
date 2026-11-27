@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.27.175423
+// @version      2026.11.27.180607
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -2274,6 +2274,10 @@
   // reads in place of .as-bar:has(.as-selback): that :has, with its bare :not() subject, made Chrome restyle the whole page
   // on every DOM insertion anywhere, about 150ms each on a phone.
   const anySel = () => MODEL.some(it => it._sel && !(it._del && it._mcOffer));
+  // a running zip's progress ("Zipping 3/10…"): the toolbar is redrawn on every select or size change, so the button
+  // reads it each time it is drawn, and stays on the bar until the zip is saved, even with nothing selected
+  let _zipProg = '';
+  const dlBtn = () => `<button class="as-btn as-bk-dl" data-tip="Download the selected ${ITEMS}"${_zipProg ? ' disabled' : ''}><span class="as-bi">⬇</span><span class="mbu-bt"${_zipProg ? ' style="display:inline"' : ''}>${_zipProg || 'Download'}</span></button>`;
   function selBox() {
     const sel = MODEL.filter(it => it._sel && !it._del), kept = MODEL.filter(it => it._sel && it._del && !it._mcOffer);   // #787 marked ones can be selected, to keep them
     const all = sel.length + kept.length;
@@ -2283,9 +2287,9 @@
       ${kept.length ? `<button class="as-btn as-bk-keep" data-tip="Keep the selected ${ITEMS} marked for removal"><span class="as-bi">↺</span><span class="mbu-bt">Keep${sel.length ? ` (${kept.length})` : ''}</span></button>` : ''}
       ${sel.length ? `<button class="as-btn as-bk-type" data-tip="Set the type of the selection">Type ▾</button>
       <button class="as-btn as-bk-cmt" data-tip="Set a comment on the selection"><span class="as-bi">✎</span><span class="mbu-bt">Comment ▾</span></button>
-      <button class="as-btn as-bk-dl" data-tip="Download the selected ${ITEMS}"><span class="as-bi">⬇</span><span class="mbu-bt">Download</span></button>
+      ${dlBtn()}
       <button class="as-btn as-bk-report" data-tip="A report of the selection\nMarkdown or HTML, ready to post"><span class="as-bi">📋</span><span class="mbu-bt">Report</span></button>
-      <button class="as-btn as-bk-rm" data-tip="Mark the selected ${ITEMS} for removal\nDelete: the same"><span class="as-bi">${trashSvg(16)}</span><span class="mbu-bt">Delete</span></button>` : ''}
+      <button class="as-btn as-bk-rm" data-tip="Mark the selected ${ITEMS} for removal\nDelete: the same"><span class="as-bi">${trashSvg(16)}</span><span class="mbu-bt">Delete</span></button>` : _zipProg ? dlBtn() : ''}
       ${all ? '<button class="as-ic as-selmore" aria-label="More">⋯</button>' : ''}`;
   }
   function section(type, items, detailed) {
@@ -2754,13 +2758,14 @@
     q('.as-bk-keep') && (q('.as-bk-keep').onclick = () => { let n = 0; MODEL.forEach(it => { if (it._sel && it._del && !it._mcOffer) { it._del = false; it._sel = false; n++; } }); asLog.info(`Batch: kept ${n} ${n === 1 ? ITEM : ITEMS} marked for removal`); render(); });   // #787
     q('.as-bk-rm')  && (q('.as-bk-rm').onclick  = () => { let n = 0; MODEL.forEach(it => { if (it._sel && !it._del && !it._rmOpen) { it._del = true; it._sel = false; n++; } }); asLog.info(`Batch: marked ${n} ${n === 1 ? ITEM : ITEMS} for removal`); render(); });
     q('.as-bk-dl')  && (q('.as-bk-dl').onclick  = async e => {
+      if (_zipProg) return;
       const sel = MODEL.filter(it => it._sel && !it._del && !it._sourcing); if (!sel.length) return;   // include NEW covers (download their local blob)
       if (sel.length === 1) { dlOne(sel[0]); maybeClearSel(); return; }   // single → save the image directly
-      const b = e.currentTarget, lbl = b.querySelector('.mbu-bt'), old = lbl ? lbl.textContent : '';
-      b.disabled = true; if (lbl) lbl.style.display = 'inline';   // show progress even in compact mode
-      const prog = (d, t) => { if (lbl) lbl.textContent = `Zipping ${d}/${t}…`; };
+      // the label shows even in compact mode; it is looked up on every step, as a redraw replaces the button
+      const prog = (d, t) => { _zipProg = `Zipping ${d}/${t}…`; const b = root.querySelector('.as-bk-dl'), lbl = b && b.querySelector('.mbu-bt');
+        if (b) b.disabled = true; if (lbl) { lbl.textContent = _zipProg; lbl.style.display = 'inline'; } };
       prog(0, sel.length);
-      try { await dlZip(sel, prog); } finally { b.disabled = false; if (lbl) { lbl.textContent = old; lbl.style.display = ''; } }   // multiple → one .zip (#240)
+      try { await dlZip(sel, prog); } finally { _zipProg = ''; syncSel(); }   // multiple → one .zip (#240)
       maybeClearSel();   // #277
     });
     q('.as-bk-type') && (q('.as-bk-type').onclick = e => { e.stopPropagation(); openBulkTypePop(q('.as-bk-type')); });
