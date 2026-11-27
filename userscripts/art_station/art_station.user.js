@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.27.163238
+// @version      2026.11.27.175423
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -3103,16 +3103,37 @@
   // intermittently — a transient 5xx / network hiccup / slow large transfer.
   // Without a retry those covers were silently dropped from the archive. Retry
   // with backoff, and abort a stalled attempt so it retries instead of hanging.
+  const DL_STALL_MS = 30000;   // a cover download is given up after this long with no new bytes
+  // read a Response body chunk by chunk, calling arm() on every chunk (resets the stall timer)
+  async function readBodyArmed(r, arm) {
+    const rd = r.body && r.body.getReader ? r.body.getReader() : null;
+    if (!rd) return new Uint8Array(await r.arrayBuffer());
+    const len = +r.headers.get('content-length') || 0;
+    let buf = new Uint8Array(len || 1 << 20), n = 0;
+    for (;;) {
+      const { done, value } = await rd.read();
+      if (done) break;
+      arm();
+      if (n + value.length > buf.length) { const b = new Uint8Array(Math.max(buf.length * 2, n + value.length)); b.set(buf.subarray(0, n)); buf = b; }
+      buf.set(value, n); n += value.length;
+    }
+    return n === buf.length ? buf : buf.slice(0, n);
+  }
   async function fetchBytes(url, attempts = 4) {
     let lastErr;
     for (let i = 0; i < attempts; i++) {
       const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 120000);   // 2 min per attempt
+      // Give up only when the download STALLS (no bytes for DL_STALL_MS), never on total
+      // time: a 30 MB original from a slow archive.org node legitimately takes minutes, and
+      // a fixed 2-minute cap threw that progress away and started the file again from zero.
+      let timer = 0; const arm = () => { clearTimeout(timer); timer = setTimeout(() => ctrl.abort(), DL_STALL_MS); };
+      arm();
       try {
         const r = await mbnLog(url, { cache: 'no-store', signal: ctrl.signal });
-        clearTimeout(timer);
         if (!r.ok) throw new Error('HTTP ' + r.status);
-        return new Uint8Array(await r.arrayBuffer());
+        const data = await readBodyArmed(r, arm);
+        clearTimeout(timer);
+        return data;
       } catch (e) { clearTimeout(timer); lastErr = e; }
       // #274: plain fetch() is CORS-bound — a PDF booklet on archive.org carries
       // no Access-Control-Allow-Origin, so fetch() ALWAYS fails it even though the
@@ -3234,10 +3255,15 @@
       const gx = mbnGmFn((typeof GM !== 'undefined' && GM.xmlHttpRequest && GM.xmlHttpRequest.bind(GM))
               || (typeof GM_xmlhttpRequest !== 'undefined' && GM_xmlhttpRequest) || null);
       if (!gx) { mbnLog(url).then(r => r.ok ? r.blob() : Promise.reject(new Error('HTTP ' + r.status))).then(resolve, reject); return; }
-      gx({ method: 'GET', url, responseType: 'blob', timeout: 180000,
-        onprogress: e => { if (e.lengthComputable && onProgress) onProgress(e.loaded, e.total); },
-        onload: r => (r.status >= 200 && r.status < 300) ? resolve(r.response) : reject(new Error('HTTP ' + r.status)),
-        onerror: () => reject(new Error('network error')), ontimeout: () => reject(new Error('timed out')) });
+      // stall timeout, not a total one: a big original on a slow server keeps going as long as bytes arrive
+      let req = null, timer = 0;
+      const stop = () => clearTimeout(timer);
+      const arm = () => { stop(); timer = setTimeout(() => { try { req && req.abort && req.abort(); } catch (e) {} reject(new Error(`stalled, no data for ${DL_STALL_MS / 1000} s`)); }, DL_STALL_MS); };
+      arm();
+      req = gx({ method: 'GET', url, responseType: 'blob',
+        onprogress: e => { arm(); if (e.lengthComputable && onProgress) onProgress(e.loaded, e.total); },
+        onload: r => { stop(); (r.status >= 200 && r.status < 300) ? resolve(r.response) : reject(new Error('HTTP ' + r.status)); },
+        onerror: () => { stop(); reject(new Error('network error')); }, ontimeout: () => { stop(); reject(new Error('timed out')); } });
     });
   }
   // ── session log (#283) ────────────────────────────────────────────────────
