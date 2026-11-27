@@ -145,7 +145,8 @@ async function importAndHold(page, inject) {
 const TL = '#tc-bar [data-act="match"], #tc-hdr [data-act="match"]', REC = '#tc-recwrap .tc-rec-am';
 const labelOf = (page, sel) => page.evaluate(s => { const b = document.querySelector(s); return b ? ((b.querySelector('.tc-rec-am-lbl') || b).textContent || '').trim().replace(/\s+/g, ' ') : null; }, sel);
 const waitLabel = (page, sel, re, ms = 90000) => page.waitForFunction(([s, src]) => { const b = document.querySelector(s); return b && new RegExp(src).test(b.textContent) ? b.textContent.trim() : null; }, [sel, re.source], { timeout: ms }).then(h => h.jsonValue()).catch(() => null);
-// the first label that no longer says Stop, within 2 s: well inside one held read
+// the first label that no longer says Stop, within 2 s: well inside one held read. "Stopping…" while a read the
+// pass waits for is on its way; "Match" at once when only background reads are, which a Stop no longer waits for
 async function ack(page, sel) {
   const t0 = Date.now();
   for (;;) {
@@ -167,7 +168,7 @@ test.describe('round 4: Stop answers at once', () => {
     const before = await page.evaluate(() => window.__apolloEditor.model.tracks.filter(t => t.slots.some(s => s.committed)).length);
     await page.click(TL);
     const a = await ack(page, TL);
-    check(/Stopping/.test(a.label || ''), `the press is answered in ${a.ms} ms (${a.label})`);
+    check(/Stopping|Match/.test(a.label || ''), `the press is answered in ${a.ms} ms (${a.label})`);
     check(!!await waitLabel(page, TL, /Match/), 'and the pass ends');
     const after = await page.evaluate(() => window.__apolloEditor.model.tracks.filter(t => t.slots.some(s => s.committed)).length);
     check(after >= before, `nothing is undone (${before} → ${after})`);
@@ -181,7 +182,7 @@ test.describe('round 4: Stop answers at once', () => {
     check(!!await waitLabel(page, REC, /Stop/), 'its pass runs by itself, offering Stop');
     await page.click(REC);
     const a = await ack(page, REC);
-    check(/Stopping/.test(a.label || ''), `the press is answered in ${a.ms} ms (${a.label})`);
+    check(/Stopping|Match/.test(a.label || ''), `the press is answered in ${a.ms} ms (${a.label})`);
     check(!!await waitLabel(page, REC, /Match/), 'and the pass ends');
     const status = await page.evaluate(() => document.querySelector('#tc-recwrap .tc-rec-amstatus')?.textContent.trim() || '');
     check(!/scanning duplicates/.test(status), `the pane doesn't claim to be scanning duplicates (${status})`);
