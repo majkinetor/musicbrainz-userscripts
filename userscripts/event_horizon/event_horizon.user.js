@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.27.203449
+// @version      2026.11.27.205150
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -143,6 +143,21 @@ if (window.top !== window && location.hostname === 'www.youtube-nocookie.com' &&
 if (window.top !== window && (location.hostname === 'bandcamp.com' && location.pathname.startsWith('/EmbeddedPlayer/') || location.hostname === 'widget.deezer.com' || location.hostname === 'embed.music.apple.com')) {
     const APPLE = location.hostname === 'embed.music.apple.com';
     const BTN = location.hostname === 'bandcamp.com' ? '#big_play_button, #play' : '[data-testid="widget-player-play"]';
+    // A hidden tab runs no animation frames and slows timers to one a second, and Apple's embed draws its play button
+    // over many frames: a next track that loaded in the background took about 20 s to start. While the tab is hidden, its
+    // frames run from a message channel, which the browser does not slow down. Only for the widget's first 15 s: an
+    // animation that asks for frames all the time would otherwise spin a hidden tab; after that they run on a timer.
+    if (APPLE) try {
+        const W = (typeof unsafeWindow !== 'undefined' && unsafeWindow) || window;
+        const raf = W.requestAnimationFrame.bind(W), caf = W.cancelAnimationFrame.bind(W);
+        const ex = fn => typeof exportFunction === 'function' ? exportFunction(fn, W) : fn;
+        const due = new Map(), ch = new MessageChannel();
+        let seq = 0;
+        const t0 = performance.now();
+        ch.port1.onmessage = () => { const now = performance.now(), run = [...due.values()]; due.clear(); for (const cb of run) try { cb(now); } catch (e) {} };
+        W.requestAnimationFrame = ex(cb => { if (!document.hidden) return raf(cb); if (performance.now() - t0 > 15000) return -1e9 - setTimeout(() => cb(performance.now()), 16); const id = -(++seq); if (!due.size) ch.port2.postMessage(0); due.set(id, cb); return id; });
+        W.cancelAnimationFrame = ex(id => id <= -1e9 ? clearTimeout(-1e9 - id) : id < 0 ? due.delete(id) : caf(id));
+    } catch (e) {}
     const button = a => APPLE ? (a ? null : document.querySelector('embed-root')?.shadowRoot?.querySelector('button.play-initial')) : document.querySelector(BTN);
     let armed = false, last = 0, restoring = false, restoreMute = null, restoreReady = false, vol = -1, media = null, told = '';   // vol: the page's volume, 0 to 1, put on the audio before it sounds
     const post = (state, a) => { if (armed) try { window.parent.postMessage({ ehPly: state, pos: a ? a.currentTime : 0, dur: a ? a.duration : 0 }, '*'); } catch (e) {} };
@@ -14669,6 +14684,9 @@ function plyGo(i, want) {
     if (ply.cur && !ply.q.includes(ply.cur)) { ply.cur = null; ply.hist = []; }   // a new playlist starts shuffle afresh
     if (S.playerShuffle) { if (ply.cur && ply.cur !== t && !plyBack) ply.hist.push(ply.cur); t.sh = true; }
     ply.cur = t;
+    // a track that follows one that played (or just ended) shows Pause while its widget starts, for up to 15 s
+    ply.starting = ply.i >= 0 && (!ply.paused || ply.q[ply.i]?.done) ? gen : 0;
+    clearTimeout(ply.startIv); if (ply.starting) ply.startIv = setTimeout(() => { if (ply.starting === gen) { ply.starting = 0; plyDraw(); } }, 15000);
     ply.i = i; ply.src = ply.kind = p.key; ply.paused = !e.yt; ply.yt = !!e.yt;
     ply.ctl = true; ply.ends = !!e.yt || p.key === 'spotify' || p.key === 'soundcloud';
     t.src = p.key; t.url = p.urls[0].url;
@@ -14821,7 +14839,7 @@ function plyRepeat() {
     S.playerRepeat = S.playerRepeat === 'off' ? 'all' : S.playerRepeat === 'all' ? 'one' : 'off';
     save(); PLOG.info('repeat', S.playerRepeat); plyDraw();
 }
-const plyState = paused => { if (paused === ply.paused) return; ply.paused = paused; try { msPage().playbackState = paused ? 'paused' : 'playing'; } catch (e) {}
+const plyState = paused => { ply.starting = 0; if (paused === ply.paused) return; ply.paused = paused; try { msPage().playbackState = paused ? 'paused' : 'playing'; } catch (e) {}
     // the YouTube widget's session too, so the phone's play works after a pause
     const c = ply.q[ply.i]; if (ply.yt && c) plyYtMedia(c);
  PLOG.debug(paused ? 'paused' : 'plays'); plyDraw(); };
@@ -15133,7 +15151,7 @@ function plyDraw() {
     document.documentElement.classList.toggle('eh-ply-bar', bar);
     const p = t.srcs.find(x => x.key === ply.src) || t.srcs[0], lb = S.playerLb || S.playerScrobble;
     const rep = S.playerRepeat === 'one' ? 'Repeat one' : S.playerRepeat === 'all' ? 'Repeat all' : 'Play once';
-    const play = plyB(ply.paused ? 'play' : 'pause', (ply.paused ? 'Play' : 'Pause') + '\n' + rep + '\nRight-click: change repeat', '', ' big').replace('</button>', S.playerRepeat === 'off' ? '</button>' : `<span class="ply-repeat" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M20.5 2.5v4h-4"/>${S.playerRepeat === 'one' ? '<text x="12" y="15.6" text-anchor="middle">1</text>' : ''}</svg></span></button>`);
+    const shown = ply.paused && ply.starting !== ply.gen, play = plyB(shown ? 'play' : 'pause', (shown ? 'Play' : 'Pause') + '\n' + rep + '\nRight-click: change repeat', '', ' big').replace('</button>', S.playerRepeat === 'off' ? '</button>' : `<span class="ply-repeat" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M20.5 2.5v4h-4"/>${S.playerRepeat === 'one' ? '<text x="12" y="15.6" text-anchor="middle">1</text>' : ''}</svg></span></button>`);
     const sh = S.playerShuffle, back = sh ? (plyRemote && !PLY_WINDOW ? !!ply.back : ply.hist.length > 0) : ply.i > 0;
     const more = sh ? plyShufLeft() || (S.playerRepeat === 'all' && ply.q.length > 1) : ply.i + 1 < ply.q.length;
     const nav = plyB('prev', back ? (ply.ctl ? 'Restart track, then previous track' : 'Previous track') : 'Restart track', back || ply.ctl ? '' : ' disabled')
@@ -15246,7 +15264,7 @@ function plyClick(ev) {
     if (k === 'prev') plyStep(-1);
     else if (k === 'next') plyStep(1);
     else if (k === 'shuffle') { PLOG.info('shuffle: button clicked, shows', b.getAttribute('aria-pressed')); plyShuffle(); }
-    else if (k === 'play' || k === 'pause') { plyCmd(k === 'play'); ply.paused = k === 'pause'; plyDraw(); }
+    else if (k === 'play' || k === 'pause') { ply.starting = 0; plyCmd(k === 'play'); ply.paused = k === 'pause'; plyDraw(); }
     else if (k === 'video') plyVideo();
     else if (k === 'x') plyClose();
     else if (k === 'src') plySrcMenu(b, ply.q[ply.i], plySrc);
