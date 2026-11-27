@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.27.205150
+// @version      2026.11.27.210050
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -142,6 +142,10 @@ if (window.top !== window && location.hostname === 'www.youtube-nocookie.com' &&
 // A widget on any other site is left alone: nothing happens until a parent sends {ehPlyCmd}.
 if (window.top !== window && (location.hostname === 'bandcamp.com' && location.pathname.startsWith('/EmbeddedPlayer/') || location.hostname === 'widget.deezer.com' || location.hostname === 'embed.music.apple.com')) {
     const APPLE = location.hostname === 'embed.music.apple.com';
+    // Apple's widget tells the page's log how it starts: each step once, with the time since the frame loaded, whether
+    // the tab is hidden, and how many animation frames ran (fast: from the channel below, slow: on a timer, native)
+    const T0 = performance.now(), noted = new Set(), fr = { fast: 0, slow: 0, native: 0 };
+    const note = (k, s) => { if (!APPLE || noted.has(k)) return; noted.add(k); try { window.parent.postMessage({ ehPlyLog: `${((performance.now() - T0) / 1000).toFixed(1)} s: ${s || k}; hidden: ${document.hidden}; frames fast ${fr.fast}, slow ${fr.slow}, native ${fr.native}` }, '*'); } catch (e) {} };
     const BTN = location.hostname === 'bandcamp.com' ? '#big_play_button, #play' : '[data-testid="widget-player-play"]';
     // A hidden tab runs no animation frames and slows timers to one a second, and Apple's embed draws its play button
     // over many frames: a next track that loaded in the background took about 20 s to start. While the tab is hidden, its
@@ -154,10 +158,10 @@ if (window.top !== window && (location.hostname === 'bandcamp.com' && location.p
         const due = new Map(), ch = new MessageChannel();
         let seq = 0;
         const t0 = performance.now();
-        ch.port1.onmessage = () => { const now = performance.now(), run = [...due.values()]; due.clear(); for (const cb of run) try { cb(now); } catch (e) {} };
-        W.requestAnimationFrame = ex(cb => { if (!document.hidden) return raf(cb); if (performance.now() - t0 > 15000) return -1e9 - setTimeout(() => cb(performance.now()), 16); const id = -(++seq); if (!due.size) ch.port2.postMessage(0); due.set(id, cb); return id; });
+        ch.port1.onmessage = () => { const now = performance.now(), run = [...due.values()]; due.clear(); fr.fast++; for (const cb of run) try { cb(now); } catch (e) {} };
+        W.requestAnimationFrame = ex(cb => { if (!document.hidden) return raf(ex(t => { fr.native++; cb(t); })); if (performance.now() - t0 > 15000) return -1e9 - setTimeout(() => { fr.slow++; cb(performance.now()); }, 16); const id = -(++seq); if (!due.size) ch.port2.postMessage(0); due.set(id, cb); return id; });
         W.cancelAnimationFrame = ex(id => id <= -1e9 ? clearTimeout(-1e9 - id) : id < 0 ? due.delete(id) : caf(id));
-    } catch (e) {}
+    } catch (e) { note('frames', 'frames not patched: ' + e.message); }
     const button = a => APPLE ? (a ? null : document.querySelector('embed-root')?.shadowRoot?.querySelector('button.play-initial')) : document.querySelector(BTN);
     let armed = false, last = 0, restoring = false, restoreMute = null, restoreReady = false, vol = -1, media = null, told = '';   // vol: the page's volume, 0 to 1, put on the audio before it sounds
     const post = (state, a) => { if (armed) try { window.parent.postMessage({ ehPly: state, pos: a ? a.currentTime : 0, dur: a ? a.duration : 0 }, '*'); } catch (e) {} };
@@ -188,12 +192,14 @@ if (window.top !== window && (location.hostname === 'bandcamp.com' && location.p
         if (a && vol >= 0) a.volume = vol;
         if (a && a.paused !== want) return;   // already as asked
         const b = button(a);
-        if (b) b.click(); else if (a) want ? a.play().catch(() => {}) : a.pause();
+        if (want) note(b ? 'click' : a ? 'audio' : 'none', b ? 'play button clicked' : a ? 'audio played' : 'no play button yet');
+        if (b) b.click(); else if (a) want ? a.play().catch(e => note('refused', 'audio refused: ' + e.message)) : a.pause();
         return !!(b || a);
     };
+    if (APPLE) for (const k of ['play', 'playing', 'waiting', 'stalled']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement) note('audio ' + k); }, true);
     window.addEventListener('message', ev => {
         if (ev.source !== window.parent || !ev.data || typeof ev.data.ehPlyCmd !== 'string') return;
-        if (!armed) { armed = true; post('hello'); }
+        if (!armed) { armed = true; post('hello'); note('armed', 'first word from the page'); }
         if (ev.data.ehPlyCmd === 'media') { media = ev.data.media; mediaSetup(); return; }
         if (ev.data.v >= 0) vol = Math.min(1, ev.data.v);
         if (ev.data.ehPlyCmd === 'vol') { const a = document.querySelector('audio'); if (a && vol >= 0) a.volume = vol; return; }
@@ -15061,6 +15067,7 @@ window.addEventListener('message', ev => {
     if (pi) setTimeout(plyFadeCheck);
     if (k === 'bandcamp' || k === 'deezer' || k === 'apple' || ply.yt) {
         if (typeof m.ehPlyMedia === 'string') { LOG.info('player: Media Session', m.ehPlyMedia); return; }
+        if (typeof m.ehPlyLog === 'string') { PLOG.debug(k, 'widget at', m.ehPlyLog); return; }
         if (typeof m.ehPlyAction === 'string') {
             LOG.info('player: widget system media action', m.ehPlyAction, 'track:', t.title, 'source:', k);
             if (m.ehPlyAction === 'play') plyCmd(true);
