@@ -1,6 +1,7 @@
 // String Theory's command palette (#890): a hotkey (Ctrl+K by default) opens a list of commands, filtered as
 // you type, as in VS Code. build.mjs writes this file into the bundle after settings.js, in the same scope.
-// Its setting is the GM value 'string_theory.palette': { on, key: { ctrl, alt, shift, meta, key }, pins, recent, last }.
+// Its setting is the GM value 'string_theory.palette': { on, key: { ctrl, alt, shift, meta, key }, pins, recent, last, keys },
+// keys being { <command id>: { ctrl, alt, shift, meta, key } }, the hotkeys of your own (#1119).
 // Plain ES5, as the rest of the bundle's own code.
 var ST_PAL_KEY = 'string_theory.palette';
 var ST_PAL_HOTKEY = { ctrl: true, alt: false, shift: false, meta: false, key: 'k' };
@@ -10,8 +11,27 @@ function stPalRead() {
   var v; try { v = GM_getValue(ST_PAL_KEY, null); } catch (e) { v = null; }
   v = v && typeof v === 'object' ? v : {};
   var list = function (a) { return Array.isArray(a) ? a.filter(function (x) { return typeof x === 'string'; }) : []; };
-  stPal = { on: v.on !== false, key: v.key && v.key.key ? v.key : ST_PAL_HOTKEY, pins: list(v.pins), recent: list(v.recent), last: typeof v.last === 'string' ? v.last : '' };
+  // keys: a hotkey of your own per command, by its id (#1119)
+  var keys = {};
+  if (v.keys && typeof v.keys === 'object') Object.keys(v.keys).forEach(function (id) { var h = v.keys[id]; if (h && typeof h.key === 'string' && h.key) keys[id] = h; });
+  stPal = { on: v.on !== false, key: v.key && v.key.key ? v.key : ST_PAL_HOTKEY, pins: list(v.pins), recent: list(v.recent), last: typeof v.last === 'string' ? v.last : '', keys: keys };
   return stPal;
+}
+// a command that can take a hotkey of your own: one that is there on every page like it, not made from what
+// the page or the logs hold (a linked entity, a starred page, a search, a log), and without a fixed key already
+// A member's command that keeps its own key (Event Horizon's) sets that key instead
+function stPalKeyable(c) { return !!c && (!!c.setHotkey || (!c.pinless && !c.recentless && !c.keys && !c.fill)); }
+// the shortcuts the palette's own keys take: its hotkey, and the theme chooser's and the Network log's
+function stPalKeyTaken(h) {
+  if (stKeySame(h, stPalRead().key)) return 'the command palette';
+  if (h.ctrl && h.alt && !h.shift && !h.meta && (h.key === 't' || h.key === 'n')) return h.key === 't' ? 'the theme chooser' : 'the Network log';
+  return '';
+}
+// the command a hotkey of your own runs, by its id
+function stPalKeyOwner(h) {
+  var keys = stPalRead().keys, id = null;
+  Object.keys(keys).some(function (k) { if (stKeySame(h, keys[k])) { id = k; return true; } return false; });
+  return id;
 }
 function stPalSet(patch) {
   var p = stPalRead();
@@ -23,15 +43,17 @@ function stKeyOf(e) {
   var c = /^(Key|Digit)(.)$/.exec(e.code || ''), k = c ? c[2].toLowerCase() : String(e.key || '').toLowerCase();
   return { ctrl: e.ctrlKey, alt: e.altKey, shift: e.shiftKey, meta: e.metaKey, key: k === ' ' ? 'space' : k };
 }
+var ST_KEY_SYM = { arrowleft: '←', arrowright: '→', arrowup: '↑', arrowdown: '↓' };
 function stKeyLabel(h) {
-  var k = h.key.length === 1 ? h.key.toUpperCase() : h.key.charAt(0).toUpperCase() + h.key.slice(1);
+  var k = ST_KEY_SYM[h.key] || (h.key.length === 1 ? h.key.toUpperCase() : h.key.charAt(0).toUpperCase() + h.key.slice(1));
   return [h.ctrl && 'Ctrl', h.alt && 'Alt', h.shift && 'Shift', h.meta && 'Meta', k].filter(Boolean).join('+');
 }
-function stKeyIs(e, h) {
-  var k = stKeyOf(e);
-  return k.key === h.key && k.ctrl === !!h.ctrl && k.alt === !!h.alt && k.shift === !!h.shift && k.meta === !!h.meta;
+function stKeySame(k, h) {
+  return k.key === h.key && !!k.ctrl === !!h.ctrl && !!k.alt === !!h.alt && !!k.shift === !!h.shift && !!k.meta === !!h.meta;
 }
+function stKeyIs(e, h) { return stKeySame(stKeyOf(e), h); }
 
+var ST_PAL_KEY_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><rect x="1.5" y="4" width="13" height="8.5" rx="1.5"/><path d="M4 6.75h.01M6.5 6.75h.01M9 6.75h.01M11.5 6.75h.01M5 9.75h6"/></svg>';
 var ST_PAL_CSS = ''
   // above every window, a config window included: they share the modal z-index, where the later one wins
   + '#st-pal-ov{z-index:2147483600;align-items:flex-start;padding-top:12vh;background:none}'
@@ -50,6 +72,13 @@ var ST_PAL_CSS = ''
   + '#st-pal-list .st-pal-pin:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}'
   + '#st-pal-list .st-pal-i:hover .st-pal-pin,#st-pal-list .st-pal-i[aria-selected=true] .st-pal-pin,#st-pal-list .st-pal-pin[aria-pressed=true]{visibility:visible}'
   + '#st-pal-list .st-pal-pin[aria-pressed=true]{color:var(--mbu-accent-text)}'
+  // a hotkey of your own (#1119): the keyboard beside the pin sets it, a right-click on it removes it
+  + '#st-pal-list .st-pal-kb{flex:0 0 auto;width:24px;height:22px;display:inline-flex;align-items:center;justify-content:center;margin:0;padding:0;border:0;border-radius:var(--mbu-radius);background:none;color:var(--mbu-text-weak);cursor:pointer;visibility:hidden}'
+  + '#st-pal-list .st-pal-kb svg{width:15px;height:15px}'
+  + '#st-pal-list .st-pal-kb:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}'
+  + '#st-pal-list .st-pal-i:hover .st-pal-kb,#st-pal-list .st-pal-i[aria-selected=true] .st-pal-kb{visibility:visible}'
+  + '#st-pal-list .st-pal-k.st-pal-rec{color:var(--mbu-accent-text)}'
+  + '#st-pal-foot .st-pal-msg{color:var(--mbu-text-dim)}#st-pal-foot .st-pal-msg.st-pal-warn{color:var(--mbu-warn)}'
   + '#st-pal-list .st-pal-i.st-pal-drag{opacity:.55;background:var(--mbu-accent-soft)}'
   + '#st-pal-list.st-pal-dragging,#st-pal-list.st-pal-dragging .st-pal-i{cursor:grabbing}'
   + '#st-pal-list .st-pal-none{padding:10px 14px;color:var(--mbu-text-dim)}'
@@ -127,15 +156,17 @@ function stPalCommands() {
     var hint = c.error ? c.error + (c.error > 1 ? ' errors' : ' error') : c.warn ? c.warn + (c.warn > 1 ? ' warnings' : ' warning') : c.n ? '' : 'empty';
     add({ id: 'log:' + sm[0], cat: 'Log', label: sm[1], hint: hint, run: function () { setTimeout(l.open, 0); } });
   });
-
-  // each member's own commands: window.__mbuPalette = { <script name>: function () { return [{ id, label, cat?, hint?, recentless?, run }] } },
-  // asked again every time the palette opens, so a script lists what its page and windows offer now
+  // each member's own commands: window.__mbuPalette = { <script name>: function () { return [{ id, label, cat?, hint?, recentless?, run, hotkey?, setHotkey? }] } },
+  // asked again every time the palette opens, so a script lists what its page and windows offer now; a command whose key the
+  // member keeps itself gives hotkey(), its key as { ctrl, alt, shift, meta, key } or null, and setHotkey(key or null)
   var reg = {}; try { reg = window.__mbuPalette || {}; } catch (e) { /* none */ }
   Object.keys(reg).forEach(function (name) {
     var list = []; try { list = reg[name]() || []; } catch (e) { try { console.error('[String Theory] ' + name + "'s commands failed:", e); } catch (x) { /* no console */ } }
     list.forEach(function (c) {
       if (!c || !c.id || !c.label || typeof c.run !== 'function') return;
-      add({ id: 'x:' + name + ':' + c.id, cat: c.cat || name, label: c.label, hint: c.hint || '', recentless: !!c.recentless, run: c.run });
+      var x = { id: 'x:' + name + ':' + c.id, cat: c.cat || name, label: c.label, hint: c.hint || '', recentless: !!c.recentless, run: c.run };
+      if (typeof c.hotkey === 'function' && typeof c.setHotkey === 'function') { x.hotkey = c.hotkey; x.setHotkey = c.setHotkey; }
+      add(x);
     });
   });
 
@@ -454,6 +485,8 @@ function stPalette() {
   var input = ov.querySelector('#st-pal-q'), list = ov.querySelector('#st-pal-list');
   var focusBack = document.activeElement, shown = [], active = -1, previewed = null, done = false, keyed = false;
   var pinCount = 0, drag = null, dragged = false;   // the pinned rows at the top (none while filtering), a drag of one
+  var foot = ov.querySelector('#st-pal-foot'), footHtml = foot.innerHTML;
+  var rec = null, clash = null;   // the id of the command whose hotkey is being recorded; a key already another's, pressed once
 
   var unpreview = function () { if (previewed) { previewed = null; try { __stTheme.preview(null); } catch (e) { /* no themes */ } } };
   var close = function () {
@@ -463,13 +496,16 @@ function stPalette() {
     unpreview();
     ov.remove();
     window.removeEventListener('keydown', onKey, true);
+    rec = null;
     if (focusBack && focusBack.focus && focusBack.isConnected) try { focusBack.focus(); } catch (e) { /* gone */ }
   };
   var row = function (c, hits, movable) {
-    var pinned = stPalRead().pins.indexOf(c.id) >= 0;
+    var pinned = stPalRead().pins.indexOf(c.id) >= 0, mine = stPalOwnKey(c);
     return '<li class="st-pal-i" role="option" aria-selected="false" data-id="' + stEsc(c.id) + '"' + (movable ? ' data-pinned=""' : '') + '>' + stPalMark(c, hits)
       + (c.hint ? '<span class="st-pal-h">' + stEsc(c.hint) + '</span>' : '')
-      + (c.keys ? '<kbd class="st-pal-k">' + stEsc(c.keys) + '</kbd>' : '')
+      + (rec === c.id ? '<kbd class="st-pal-k st-pal-rec">Press keys…</kbd>' : mine ? '<kbd class="st-pal-k">' + stEsc(stKeyLabel(mine)) + '</kbd>' : c.keys ? '<kbd class="st-pal-k">' + stEsc(c.keys) + '</kbd>' : '')
+      + (stPalKeyable(c) ? '<button type="button" class="st-pal-kb" tabindex="-1" aria-label="' + (mine ? 'Change the hotkey' : 'Set a hotkey') + '" data-tip="'
+        + (mine ? 'Change the hotkey&#10;Right-click: no hotkey' : 'Set a hotkey that runs this command on any page') + '">' + ST_PAL_KEY_ICON + '</button>' : '')
       + (c.pinless ? '' : '<button type="button" class="st-pal-pin" tabindex="-1" aria-pressed="' + pinned + '" aria-label="' + (pinned ? 'Unpin' : 'Pin') + '" data-tip="' + (pinned ? 'Unpin' : 'Pin to the top') + '">' + (pinned ? '★' : '☆') + '</button>')
       + '</li>';
   };
@@ -557,11 +593,68 @@ function stPalette() {
     ids.splice(to, 0, ids.splice(active, 1)[0]);
     reorder(ids);
   };
+  // a hotkey of your own: the next key pressed, with Ctrl, Alt or Meta; Backspace or Delete removes it, Esc keeps it as it was
+  var say = function (text, warn) {
+    foot.innerHTML = '<span class="st-pal-msg' + (warn ? ' st-pal-warn' : '') + '" aria-live="polite">' + stEsc(text) + '</span>'
+      + '<span><kbd>Backspace</kbd> no hotkey</span><span><kbd>Esc</kbd> cancel</span>';
+  };
+  var name = function (id) { var c = byId[id]; return c ? c.cat + ': ' + c.label : 'a command this page doesn’t offer'; };
+  var recStart = function (c) {
+    if (!stPalKeyable(c)) return;
+    rec = c.id; clash = null;
+    say('Press the hotkey for ' + c.label);
+    render(true);
+  };
+  var recEnd = function () { rec = null; clash = null; foot.innerHTML = footHtml; render(true); };
+  var unkey = function (id) {
+    var c = byId[id];
+    if (c && c.setHotkey) {
+      if (!stPalOwnKey(c)) return;
+      try { c.setHotkey(null); console.info('[String Theory] palette: no hotkey for ' + name(id)); } catch (x) { /* no console */ }
+      return;
+    }
+    var keys = {}, now = stPalRead().keys;
+    if (!now[id]) return;
+    Object.keys(now).forEach(function (k) { if (k !== id) keys[k] = now[k]; });
+    stPalSet({ keys: keys });
+    try { console.info('[String Theory] palette: no hotkey for ' + name(id)); } catch (x) { /* no console */ }
+  };
+  var recKey = function (e) {
+    var keys = {}, now = stPalRead().keys, label = name(rec), tgt = byId[rec], kept = !!(tgt && tgt.setHotkey);
+    Object.keys(now).forEach(function (k) { keys[k] = now[k]; });
+    if (e.key === 'Escape') return recEnd();
+    if (e.key === 'Backspace' || e.key === 'Delete') {
+      unkey(rec);
+      return recEnd();
+    }
+    var h = stKeyOf(e), shown = stKeyLabel(h);
+    if (!kept && !h.ctrl && !h.alt && !h.meta) return say('A hotkey needs Ctrl, Alt or Meta: press another', true);
+    var taken = stPalKeyTaken(h);
+    if (taken) return say(shown + ' opens ' + taken + ': press another', true);
+    // a key of your own, or one a member keeps for another of its commands
+    var owner = stPalKeyOwner(h);
+    if (!owner || owner === rec) cmds.some(function (c) { var k = c.id !== rec && c.setHotkey && stPalOwnKey(c); if (k && stKeySame(h, k)) { owner = c.id; return true; } return false; });
+    if (owner && owner !== rec && clash !== owner + ' ' + shown) {
+      clash = owner + ' ' + shown;
+      return say(shown + ' runs ' + name(owner) + ': press it again to move it here', true);
+    }
+    if (owner && byId[owner] && byId[owner].setHotkey) { if (owner !== rec) try { byId[owner].setHotkey(null); } catch (x) { /* kept */ } } else if (owner) delete keys[owner];
+    if (kept) { try { tgt.setHotkey({ ctrl: h.ctrl, alt: h.alt, shift: h.shift, meta: h.meta, key: h.key }); } catch (x) { /* kept */ } } else keys[rec] = { ctrl: h.ctrl, alt: h.alt, shift: h.shift, meta: h.meta, key: h.key };
+    stPalSet({ keys: keys });
+    try { console.info('[String Theory] palette: ' + shown + ' runs ' + label + (owner && owner !== rec ? ', no longer ' + name(owner) : '')); } catch (x) { /* no console */ }
+    recEnd();
+  };
   var page = function () { return Math.max(1, Math.floor(list.clientHeight / 30) - 1); };
   // on the window, in the capture phase: before the page's own keys and String Theory's settings window
   var onKey = function (e) {
     if (!ov.contains(e.target) && e.target !== document.body && e.target !== document.documentElement) return;
     var k = e.key, nav = true;
+    if (rec) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!/^(Control|Alt|Shift|Meta|OS|AltGraph)$/.test(k)) recKey(e);
+      return;
+    }
     if (/^(Arrow(Up|Down)|Page(Up|Down)|Home|End)$/.test(k)) keyed = true;
     if (k === 'Escape') close();
     else if (e.altKey && (k === 'ArrowUp' || k === 'ArrowDown')) movePin(k === 'ArrowUp' ? -1 : 1);
@@ -592,12 +685,24 @@ function stPalette() {
     var li = e.target.closest('.st-pal-i');
     if (!li || dragged) { dragged = false; return; }   // the click a drag ends with runs nothing
     var c = shown[Array.prototype.indexOf.call(list.querySelectorAll('.st-pal-i'), li)];
+    if (e.target.closest('.st-pal-kb')) { recStart(c); return; }
+    if (rec) { recEnd(); return; }
     if (e.target.closest('.st-pal-pin')) pin(c); else run(c);
+  });
+  // a right-click on the keyboard removes the hotkey
+  list.addEventListener('contextmenu', function (e) {
+    var li = e.target.closest('.st-pal-i');
+    if (!li || !e.target.closest('.st-pal-kb')) return;
+    e.preventDefault();
+    var c = shown[Array.prototype.indexOf.call(list.querySelectorAll('.st-pal-i'), li)];
+    if (rec) { rec = null; clash = null; foot.innerHTML = footHtml; }
+    unkey(c.id);
+    render(true);
   });
   // a pinned row drags up and down among the pinned; the order is kept when it's dropped
   list.addEventListener('pointerdown', function (e) {
     var li = e.target.closest('.st-pal-i[data-pinned]');
-    if (!li || e.button !== 0 || e.target.closest('.st-pal-pin')) return;
+    if (!li || e.button !== 0 || e.target.closest('.st-pal-pin, .st-pal-kb')) return;
     drag = { li: li, id: e.pointerId, y: e.clientY, on: false };
   });
   list.addEventListener('pointermove', function (e) {
@@ -645,14 +750,61 @@ function stPalette() {
   input.focus();
   input.select();
 }
+// a command's hotkey: the one its member keeps, else yours
+function stPalOwnKey(c) {
+  if (c.setHotkey) { try { return c.hotkey() || null; } catch (e) { return null; } }
+  return stPalRead().keys[c.id] || null;
+}
+// a new key for the palette's hotkey (id null) or a command's of yours (key null removes it), as Event Horizon's Ctrl+/ sets it:
+// { err } when it can't be, { clash: label } when another holds it and move isn't set, {} when done
+function stPalKeyPut(id, h, move) {
+  var p = stPalRead(), keys = {}, label;
+  Object.keys(p.keys).forEach(function (k) { keys[k] = p.keys[k]; });
+  if (!h) {
+    if (!id) return { err: 'The command palette needs a key' };
+    delete keys[id]; stPalSet({ keys: keys }); return {};
+  }
+  h = { ctrl: !!h.ctrl, alt: !!h.alt, shift: !!h.shift, meta: !!h.meta, key: h.key };
+  if (!h.ctrl && !h.alt && !h.meta) return { err: 'A palette key needs Ctrl, Alt or Meta: press another' };
+  var taken = stPalKeyTaken(h);
+  if (taken && !(taken === 'the command palette' && !id)) return { err: stKeyLabel(h) + ' opens ' + taken + ': press another' };
+  var owner = stPalKeyOwner(h);
+  if (owner && owner !== id) {
+    if (!move) { label = owner; try { stPalCommands().some(function (c) { if (c.id === owner) { label = c.cat + ': ' + c.label; return true; } return false; }); } catch (e) { /* the id */ } return { clash: label }; }
+    delete keys[owner];
+  }
+  if (id) keys[id] = h;
+  stPalSet(id ? { keys: keys } : { key: h, keys: keys });
+  return {};
+}
+// the palette's keys for Event Horizon's Ctrl+/ list: its hotkey, the fixed ones and yours, each as
+// { label, keys, hot, run, set? }; set(key, move) is stPalKeyPut's, and takes a keydown event for the key too
+function stPalKeysList() {
+  var p = stPalRead(), out = [];
+  if (!p.on) return out;
+  var setter = function (id) { return function (h, move) { return stPalKeyPut(id, h && h.type === 'keydown' ? stKeyOf(h) : h, move); }; };
+  out.push({ label: 'Command palette', keys: stKeyLabel(p.key), hot: p.key, run: function () { stPalette(); }, set: setter(null) });
+  if (ST_ON_MB) {
+    out.push({ label: 'Theme chooser', keys: 'Ctrl+Alt+T', hot: { ctrl: true, alt: true, shift: false, meta: false, key: 't' }, run: function () { stThemeChooser(); } });
+    out.push({ label: 'Network log', keys: 'Ctrl+Alt+N', hot: { ctrl: true, alt: true, shift: false, meta: false, key: 'n' }, run: function () { stGateOpen(); } });
+  }
+  var ids = Object.keys(p.keys || {}), cmds = [];
+  if (ids.length) try { cmds = stPalCommands(); } catch (e) { /* none */ }
+  ids.forEach(function (id) {
+    cmds.some(function (c) { if (c.id !== id) return false; out.push({ label: c.cat + ': ' + c.label, keys: stKeyLabel(p.keys[id]), hot: p.keys[id], run: c.run, set: setter(id) }); return true; });
+  });
+  return out;
+}
 // the hotkey, in the top frame only; not while the settings window records a new one
 function stPalListen() {
+  try { window.__mbuPaletteKeys = stPalKeysList; } catch (e) { /* not shared */ }
   if (__stTheme.chooser()) {
     var resume = function () { try { stThemeChooser(); } catch (e) { /* no chooser */ } };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', resume, { once: true }); else resume();
   }
   window.addEventListener('keydown', function (e) {
-    if (stPalRecording || e.repeat || (stPalOv && stPalOv.isConnected)) return;
+    // nor while Event Horizon's Ctrl+/ waits for a key
+    if (stPalRecording || e.repeat || (stPalOv && stPalOv.isConnected) || document.querySelector('#eh-keys button.rec')) return;
     var p = stPalRead();
     if (!p.on) return;
     // Ctrl+Alt+T: the theme chooser, Ctrl+Alt+N: the Network log (MusicBrainz only, like their commands)
@@ -662,6 +814,18 @@ function stPalListen() {
       e.preventDefault();
       e.stopPropagation();
       try { direct(); } catch (err) { try { console.error('[String Theory] shortcut failed:', err); } catch (x) { /* no console */ } }
+      return;
+    }
+    // a hotkey of your own runs its command, when this page offers it (#1119)
+    var own = stPalKeyOwner(stKeyOf(e));
+    if (own) {
+      var cmd = null;
+      try { stPalCommands().some(function (c) { if (c.id === own) { cmd = c; return true; } return false; }); } catch (err) { try { console.error('[String Theory] commands failed:', err); } catch (x) { /* no console */ } }
+      if (!cmd) { try { console.info('[String Theory] palette: ' + stKeyLabel(p.keys[own]) + ' runs ' + own + ', which this page doesn’t offer'); } catch (x) { /* no console */ } return; }
+      e.preventDefault();
+      e.stopPropagation();
+      try { console.info('[String Theory] palette: ' + stKeyLabel(p.keys[own]) + ' runs ' + cmd.cat + ': ' + cmd.label); } catch (x) { /* no console */ }
+      try { cmd.run(); } catch (err) { try { console.error('[String Theory] ' + cmd.cat + ': ' + cmd.label + ' failed:', err); } catch (x) { /* no console */ } }
       return;
     }
     if (!stKeyIs(e, p.key)) return;

@@ -652,7 +652,16 @@ function stSettings(tab) {
         stPalRecording = false;
         if (e.key !== 'Escape') {
           var h = stKeyOf(e);
-          if (!h.ctrl && !h.alt && !h.meta) { try { U.mbuToast('⚠ A hotkey needs Ctrl, Alt or Meta'); } catch (err) { /* no toast */ } } else stPalSet({ key: h });
+          if (!h.ctrl && !h.alt && !h.meta) { try { U.mbuToast('⚠ A hotkey needs Ctrl, Alt or Meta'); } catch (err) { /* no toast */ } }
+          else {
+            // a command that had this key as its own loses it: the palette's hotkey wins (#1119)
+            var owner = stPalKeyOwner(h), keys = {};
+            if (owner) {
+              Object.keys(stPalRead().keys).forEach(function (id) { if (id !== owner) keys[id] = stPalRead().keys[id]; });
+              try { console.info('[String Theory] palette: ' + stKeyLabel(h) + ' opens the palette now, no longer ' + owner); } catch (err) { /* no console */ }
+            }
+            stPalSet(owner ? { key: h, keys: keys } : { key: h });
+          }
         }
         showPal();
       };

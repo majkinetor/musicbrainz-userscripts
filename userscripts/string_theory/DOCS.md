@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-27 21:28 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-27 21:31 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -972,7 +972,7 @@ With **Show pending changes** on, titles, tracks, credits and links with open ed
 
 ### Keyboard shortcuts
 
-Single keys work on an entity's page, in the viewer or on MusicBrainz's. **Ctrl+/** lists them; click a key there to change it.
+Single keys work on an entity's page, in the viewer or on MusicBrainz's. **Ctrl+/** lists them; click a key there to change it, right-click it to remove it. With [String Theory](../string_theory/README.md), they are also String Theory's *Command palette* commands, which show and change the same keys, and Ctrl+/ lists the palette's keys in a section of their own, where the palette's hotkey and your own command keys change the same way; the theme chooser's and Network log's keys only show.
 
 | Key             | Does                                                                                                                         |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------- |
@@ -991,7 +991,7 @@ Single keys work on an entity's page, in the viewer or on MusicBrainz's. **Ctrl+
 | Space           | play or pause                                                                                                                |
 | ← / →           | 5 seconds back or forward                                                                                                    |
 | Ctrl+← / Ctrl+→ | previous or next track                                                                                                       |
-| Ctrl+P          | open or close the player                                                                                                     |
+| Ctrl+P          | toggle the player                                                                                                            |
 | Ctrl+Space      | the playlist: arrows pick, Enter plays                                                                                       |
 | Alt+1 / Alt+2   | the playing release / recording in or out of its default collection                                                          |
 | Alt+3           | love the playing track on ListenBrainz                                                                                       |
