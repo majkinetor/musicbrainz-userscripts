@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.27.144348
+// @version      2026.11.27.150054
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12662,7 +12662,7 @@ function renderDraw(keepPop) {
     // a fresh upload has no thumbnails yet: the full image stands in
     for (const im of app.querySelectorAll('img[data-full]:not([data-relcover])')) im.addEventListener('error', e => { if (im.dataset.full && im.src !== im.dataset.full) { e.stopImmediatePropagation(); im.src = im.dataset.full; } }, true);
     // an artwork image that won't load even at full size: a quiet tile with the picture mark, not a broken image
-    for (const im of app.querySelectorAll('img[data-artimg]')) im.addEventListener('error', () => { LOG.debug('artwork image failed to load', im.src); im.outerHTML = `<span class="art-miss"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></span>`; });
+    for (const im of app.querySelectorAll('img[data-artimg]')) im.addEventListener('error', () => { if (!im.parentNode) return; LOG.debug('artwork image failed to load', im.src); im.outerHTML = `<span class="art-miss"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></span>`; });
     const rc = app.querySelector('[data-relcover]');
     for (const im of app.querySelectorAll('.art [data-relcover], .art .thumbs img, img[data-artimg]')) im.addEventListener('click', e => openGallery(r, im, e));
     // A hero fallback must also reach its edition card without waiting for a redraw.

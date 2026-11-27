@@ -28,11 +28,12 @@ test('recording collection rows show their release group cover', { tag: ['@sandb
         { id: 'c', date: '1999-05', 'release-group': { id: oldRg } }] }] }) });
     });
     const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
-    await page.route('https://coverartarchive.org/release-group/**', route => route.fulfill({ contentType: 'image/png', body: png }));
+    // the sandbox reads its own archive
+    await page.route('https://beta.coverartarchive.org/release-group/**', route => route.fulfill({ contentType: 'image/png', body: png }));
     await page.goto(`${mb}/collection/${gid}`);
     await inject('event_horizon');
     const img = page.locator(`#app td.tc img[data-dgcover="recording"][data-aid="${rec}"]`);
-    await expect(img).toHaveAttribute('src', `https://coverartarchive.org/release-group/${oldRg}/front-250`, { timeout: 30000 });
+    await expect(img).toHaveAttribute('src', `https://beta.coverartarchive.org/release-group/${oldRg}/front-250`, { timeout: 30000 });
     expect(searches).toBe(1);
   } finally {
     await page.request.post(`${mb}/collection/${gid}/own_collection/delete`, { form: {} });
