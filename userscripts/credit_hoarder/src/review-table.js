@@ -1079,7 +1079,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     if (!types)        { label.textContent = 'MB roles: fetch failed'; label.style.color = 'var(--mbu-error)'; wrap.appendChild(label); return; }
                     if (!types.length) { label.textContent = 'MB roles: none'; wrap.appendChild(label); return; }
                     label.textContent = 'MB roles: ';
-                    label.style.whiteSpace = 'nowrap';
+                    label.style.whiteSpace = 'nowrap'; label.style.fontSize = '0.72rem';   // the row's own span rule otherwise sizes it up
                     label.style.flex = '0 0 auto';
                     // Now that the label/header layout is fixed, just show every
                     // role — they wrap onto as many lines as needed rather than
@@ -1089,12 +1089,12 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     wrap.appendChild(label);
                     wrap.dataset.tip = types.join(', ');
                     const chipsBox = document.createElement('span');
-                    chipsBox.style.cssText = 'display:flex;flex-wrap:wrap;gap:0.25rem;min-width:0;';
+                    chipsBox.style.cssText = 'display:flex;flex-wrap:wrap;gap:0.25rem;min-width:0;font-size:0.72rem;';
                     wrap.appendChild(chipsBox);
                     types.forEach(t => {
                         const c = document.createElement('span');
                         c.textContent = t;
-                        c.style.cssText = 'background:var(--mbu-info-bg);border:1px solid var(--mbu-border);border-radius:0.7rem;padding:0 0.4rem;color:var(--mbu-info);white-space:nowrap;';
+                        c.style.cssText = 'font-size:0.72rem;line-height:1.3;background:var(--mbu-info-bg);border:1px solid var(--mbu-border);border-radius:0.7rem;padding:0 0.4rem;color:var(--mbu-info);white-space:nowrap;';
                         chipsBox.appendChild(c);
                     });
                 });
