@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.27.160545
+// @version      2026.11.27.162357
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -18043,7 +18043,7 @@ function histParse(html) {
         return {
             id: +((one ? a.textContent : a.getAttribute('href')).match(/\d+/) || [0])[0], type: a.textContent.replace(/^.*?#\d+\s*[-–]\s*/, '').trim(), tk: c[c.length - 1],
             st: histSt(h.className), ed: ed ? ed.textContent.trim() : '', t: histTime(el) || histNoteTime(notes),
-            can: !!vo, canNote: !!el.querySelector('textarea[name$=".edit_note"]'), cancel: h.querySelector('.cancel-edit a[href$="/cancel"]')?.getAttribute('href') || '', exp: (() => { const x = el.querySelector('.edit-expiration'), tt = x && x.querySelector('[title]'), m = x && ((tt && tt.title) || x.textContent).match(/(\d{4}-\d\d-\d\d) (\d\d:\d\d)/); return m ? Date.parse(m[1] + 'T' + m[2] + 'Z') : 0; })(), mine: !vo && /^n\/?a$/i.test(mvt), my: my ? my.value : vo ? '-2' : '', myt: mvt,
+            can: !!vo, canNote: !!el.querySelector('textarea[name$=".edit_note"]'), cancel: (h.querySelector('.cancel-edit a[href$="/cancel"]') || (one && doc.querySelector('#sidebar a[href*="/edit/"][href$="/cancel"], #content a[href*="/edit/"][href$="/cancel"]')))?.getAttribute('href') || '', exp: (() => { const x = el.querySelector('.edit-expiration'), tt = x && x.querySelector('[title]'), m = x && ((tt && tt.title) || x.textContent).match(/(\d{4}-\d\d-\d\d) (\d\d:\d\d)/); return m ? Date.parse(m[1] + 'T' + m[2] + 'Z') : 0; })(), mine: !vo && /^n\/?a$/i.test(mvt), my: my ? my.value : vo ? '-2' : '', myt: mvt,
             notes, voters, votes: vc ? (one ? vc.textContent : vc.textContent.replace(/^.*?:\s*/, '')).replace(/\s+/g, ' ').trim() : '', det: det ? det.innerHTML : '',
         };
     }).filter(Boolean);
