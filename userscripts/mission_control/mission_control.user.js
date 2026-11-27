@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.27.124625
+// @version      2026.11.27.144550
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -142,6 +142,7 @@ document.addEventListener('mc:provider', e => {
 // { id, run, findings } when done. Events from an older run are ignored.
 const results = {};   // provider id -> { state: 'busy' | 'done', note, findings }
 const picked = {};    // provider id -> Set of finding keys selected for Execute
+const handPicks = {}; // provider id -> Map key -> taken in (true) or left out (false) by hand: kept when the provider answers again in the run
 const fxOpen = new Set();   // tracks (recording MBIDs) whose Fusion comparison is open under their row
 const fxBusy = new Set();   // tracks whose group Fusion is checking (or is queued to check) for ISRCs and AcoustIDs
 const fxWaiters = new Map();   // track -> resolves when Fusion answers that track's check
@@ -198,6 +199,7 @@ document.addEventListener('mc:findings', e => {
     picked[d.id] = new Set(findings.filter(x => x.state === 'new' && (!catOf(x) || catPick.get(catOf(x)) === x)).map(x => x.key));
     if (d.id === 'is') isrcRunPicks(findings).forEach(k => picked.is.add(k));
     if (findings.some(x => x.state === 'new' && catOf(x) && catPick.get(catOf(x)) !== x)) Log.cat('Probe').debug('catalog numbers: one per label selected, ' + [...catPick.values()].map(x => x.label.name + ' ' + x.code).join(', '));
+    if (handPicks[d.id]) handPicks[d.id].forEach((on, k) => { const x = findings.find(y => y.key === k); if (!x || !PICKABLE[x.state]) return; if (on) picked[d.id].add(k); else picked[d.id].delete(k); });
     afterPicks(d.id);
     const tally = findings.reduce((t, x) => (t[x.state] = (t[x.state] || 0) + 1, t), {});
     Log.cat('Probe').ok('findings ' + d.id + ': ' + findings.length + ' ' + JSON.stringify(tally));
@@ -261,6 +263,7 @@ function probe() {
     fxCheckGen++;   // the last answer's check queue stops
     for (const k in results) delete results[k];
     for (const k in picked) delete picked[k];
+    for (const k in handPicks) delete handPicks[k];
     const ask = PROVIDERS.filter(p => found[p.id] && modeOf(p) === 'auto').map(p => p.id);
     ask.forEach(id => { results[id] = { state: 'busy', note: '', at: Date.now() }; });
     // ISRC Scout and Art Station wait for Platform Check's album links, so they are asked once, with them
@@ -883,7 +886,7 @@ document.addEventListener('mbu-release-refreshed', e => {
     if (id !== RELEASE || id !== mcShown()) return;
     mcRefreshed = id; mcApi = null;
     // An open review may contain selections or edits: leave it intact until it is closed.
-    if (!ui && !executing) { rel = null; run = null; Object.keys(results).forEach(k => delete results[k]); Object.keys(picked).forEach(k => delete picked[k]); }
+    if (!ui && !executing) { rel = null; run = null; Object.keys(results).forEach(k => delete results[k]); Object.keys(picked).forEach(k => delete picked[k]); Object.keys(handPicks).forEach(k => delete handPicks[k]); }
 });
 // the release Event Horizon shows, when it isn't MC's: switched to while MC is shut and idle; false while it can't
 // one read at a time: the launcher starts it on hover, so the click usually finds it done
@@ -908,7 +911,7 @@ async function mcFollowRun() {
         if (ui || executing) { Log.cat('Release').warn('Event Horizon shows release ' + r + ': not followed while ' + (executing ? 'an Execute runs' : 'the window is open')); return false; }
         Log.cat('Release').info('Event Horizon shows release ' + r + ': following it (read from the API)');
         RELEASE = r; rel = null; selected = null; lastRun = null; AFTER = null; run = null; fxCheckGen++;
-        Object.keys(results).forEach(k => delete results[k]); Object.keys(picked).forEach(k => delete picked[k]);
+        Object.keys(results).forEach(k => delete results[k]); Object.keys(picked).forEach(k => delete picked[k]); Object.keys(handPicks).forEach(k => delete handPicks[k]);
         Object.assign(CMP, { waiting: false, cons: null, isrcs: null, title: null, picks: {} }); clearTimeout(CMP.timer);
     }
     if ((mcOwnPage() && !pageCut()) || (mcApi && mcApi.id === RELEASE)) return true;
@@ -2482,7 +2485,7 @@ function close() {
     if (!ui) return;
     if (trackObs) { trackObs.disconnect(); trackObs = null; }
     ui.remove(); ui = null;
-    if (mcRefreshed === RELEASE && !mcApi) { rel = null; run = null; Object.keys(results).forEach(k => delete results[k]); Object.keys(picked).forEach(k => delete picked[k]); }
+    if (mcRefreshed === RELEASE && !mcApi) { rel = null; run = null; Object.keys(results).forEach(k => delete results[k]); Object.keys(picked).forEach(k => delete picked[k]); Object.keys(handPicks).forEach(k => delete handPicks[k]); }
     document.documentElement.style.overflow = '';
     document.documentElement.classList.remove('mc-open');
     if (openScroll) { scrollTo(openScroll[0], openScroll[1]); openScroll = null; }
@@ -2507,11 +2510,13 @@ function selectTrack(i, open = true) {
     paintInspector();
     Log.cat('UI').debug('selected track ' + rel.tracks[selected].pos + ' (' + rel.tracks[selected].rec + ')');
 }
+const handPick = (id, k, on) => (handPicks[id] || (handPicks[id] = new Map())).set(k, on);
 const isPicked = pk => !!(picked[pk.dataset.prov] && picked[pk.dataset.prov].has(pk.dataset.key));
 // takes every pick in `pks` in (on) or leaves it out, then paints once
 function setPicks(pks, on) {
     if (!pks.length) return;
     pks.forEach(pk => {
+        handPick(pk.dataset.prov, pk.dataset.key, on);
         const set = picked[pk.dataset.prov] || (picked[pk.dataset.prov] = new Set());
         if (on) set.add(pk.dataset.key); else set.delete(pk.dataset.key);
         // #709: a release has one barcode, so taking one in leaves the others out
@@ -2645,7 +2650,7 @@ function onClick(e) {
             if (!r || !r.findings) break;
             const keys = r.findings.filter(x => !x.entity && laneTakes(x) && norm(x.barcode) === k).map(x => x.key);
             const set = picked.pc || (picked.pc = new Set()), all = keys.every(x => set.has(x));
-            keys.forEach(x => all ? set.delete(x) : set.add(x));
+            keys.forEach(x => { if (all) set.delete(x); else set.add(x); handPick('pc', x, !all); });
             Log.cat('UI').debug((all ? 'left out ' : 'taken in ') + 'pc lane ' + (k || '(no barcode)') + ': ' + keys.join(', '));
             paintCards(); paintExec(); syncLinks(700);
             break;
