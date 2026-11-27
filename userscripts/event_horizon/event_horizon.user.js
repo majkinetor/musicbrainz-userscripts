@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.27.151754
+// @version      2026.11.27.160545
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -17270,7 +17270,7 @@ function rgartPage(app, d) {
 document.addEventListener('mbu-art-group-ask', () => { if (data && data.kind === 'rgart') render(); });
 // a release opened from the gallery's pencil: its art is read again when the tab comes back, so what was
 // added, removed or retyped there shows here
-const RGA_EDITED = new Set();
+const RGA_EDITED = new Set(), RGA_RETRY = new Map();
 document.addEventListener('mbu-art-group-edit', e => {
     let x = {}; try { x = JSON.parse(e.detail || '{}'); } catch (_) {}
     if (x.release) { RGA_EDITED.add(x.release); LOG.info(`Group artwork: editing release ${x.release}; read again on return`); }
@@ -17286,6 +17286,15 @@ async function rgaRefresh() {
         CAA_JSON.delete(key); CAA_JSON_KEPT.delete(key); CAA_LIST.delete(key); CAA_CV.delete(key); CAA_FRESH.delete(key);
         const sig = l => JSON.stringify((l || []).map(i => [i.id, i.types, i.comment]));
         const was = sig(RGA_REL.get(id)), j = await caaJson('release', id, true), im = rgaList(id, j);
+        // no listing (a failed read, or the archive rewriting it just after the edit; a release whose images are all
+        // removed still lists none): keep what it had, else the release drops out of the group; read again in 20 s
+        if (!j && (RGA_REL.get(id) || []).length) {
+            const n = (RGA_RETRY.get(id) || 0) + 1; RGA_RETRY.set(id, n);
+            LOG.warn(`Group artwork: release ${id} read again, no listing from the archive; kept its ${RGA_REL.get(id).length} images` + (n <= 5 ? ', trying again in 20 s' : ''));
+            if (n <= 5) setTimeout(() => { RGA_EDITED.add(id); rgaRefresh(); }, 20000);
+            continue;
+        }
+        RGA_RETRY.delete(id);
         if (RGA_REL.has(id) && sig(im) === was) { LOG.debug(`Group artwork: release ${id} read again, unchanged`); continue; }
         RGA_REL.set(id, im);
         const e = (d.editions || []).find(x => x.id === id);
