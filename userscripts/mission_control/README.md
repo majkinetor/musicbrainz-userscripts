@@ -41,7 +41,7 @@ Open Mission Control with its corner icon on a release page. On a phone it fills
 | Credits                  | [Credit Hoarder](../credit_hoarder/README.md) | per-track credits                                      |
 | Genres                   | [Fuzzy Logic](../fuzzy_logic/README.md)       | genres from the release's linked pages                 |
 
-Platforms, Fusion, Credit Hoarder and Fuzzy Logic are slow, so each has a switch under its step: **Auto** fetches during the probe, **Ask** waits for its button (**Compare**, **Fetch RG** and **Fetch credits** in the Tracks header, **Fetch genres** in the Genres card), **Off** leaves it out. Platforms starts on Auto, the others on Ask.
+Platforms, Fusion, Credit Hoarder and Fuzzy Logic are slow, so each has a switch under its step: **Auto** fetches during the probe, **Ask** waits for its button (**Compare**, **Fetch RG** and **Fetch credits** in the Tracks header, **Fetch genres** in the Genres card), **Off** leaves it out. Platforms and Fuzzy Logic start on Auto, the others on Ask.
 
 Click a step in the header to switch it off for this page, right-click to switch it off for good; click it again to switch it back on. The format icon left of the release title shows or hides the Execution order.
 

@@ -1,5 +1,5 @@
-// Mission Control ↔ Fuzzy Logic. FL answers on the release page as provider fl, Ask mode by default: the Genres card
-// offers Fetch genres. The sandbox copy of Mocky's "Music Will Explain" links Deezer and Apple, which FL reads.
+// Mission Control ↔ Fuzzy Logic. FL answers on the release page as provider fl, Auto mode by default: the probe on
+// open collects the genres. The sandbox copy of Mocky's "Music Will Explain" links Deezer and Apple, which FL reads.
 // The findings are the MusicBrainz genres the links gave; a dry-run apply is answered without a vote.
 import { test, check, until } from '../../../dev/test/harness.mjs';
 
@@ -7,7 +7,7 @@ test.use({ gm: { name: 'Mission Control' } });
 
 const RELEASE = '54b7bca2-7ed6-4484-bdd3-fe35a3f33dda';
 
-test('Fuzzy Logic reports genres in the Genres card on Fetch genres', { tag: ['@sandbox', '@web'] }, async ({ page, inject }) => {
+test('Fuzzy Logic reports genres in the Genres card on the probe', { tag: ['@sandbox', '@web'] }, async ({ page, inject }) => {
   await page.goto(`https://test.musicbrainz.org/release/${RELEASE}`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#content table.medium');
   await inject('mission_control', { waitFor: '__mcTest' });
@@ -18,9 +18,7 @@ test('Fuzzy Logic reports genres in the Genres card on Fetch genres', { tag: ['@
   await page.waitForSelector('#mc-root');
   check(await page.locator('#mc-root .mc-ttl a[href*="/release/"]').count() === 1, 'the header title links the release');
   check(await page.locator('#mc-root .mc-art a[href*="/artist/"]').count() >= 1, 'the header artist links the artist');
-  const fetch = page.locator('#mc-root [data-card="fl"] [data-fetch="fl"]');
-  check(await fetch.count() === 1, 'Ask mode: the Genres card offers Fetch genres');
-  await fetch.click();
+  check(await page.locator('#mc-root [data-card="fl"] [data-fetch="fl"]').count() === 0, 'Auto mode: no Fetch genres button');
   const r = await until(() => page.evaluate(() => window.__mcTest.results().fl), v => v && v.state === 'done', 120_000);
   check(r && r.state === 'done', 'Fuzzy Logic answered the probe');
   const findings = (r && r.findings) || [];
