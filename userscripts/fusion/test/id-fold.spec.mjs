@@ -39,5 +39,6 @@ test('a long AcoustID list folds behind "+N more"', { tag: ['@sandbox'] }, async
   await page.click('.fs-grow[data-gid="zzfold-a"] .fs-idmore');
   const shut = await until(() => read('zzfold-a'), x => x && x.ids.length === 3);
   check(shut.more === '+23 more', `"less" folds it back (${shut.more})`);
-  await page.locator('.fs-grow[data-gid="zzfold-a"]').screenshot({ path: 'test-results/id-fold.png' });
+  // a background render can mount the row again while the screenshot waits for it to be stable: take it again
+  await until(() => page.locator('.fs-grow[data-gid="zzfold-a"]').screenshot({ path: 'test-results/id-fold.png', timeout: 3000 }).then(() => true, () => false), Boolean);
 });
