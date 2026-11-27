@@ -1,5 +1,12 @@
 # Apollo Editor Changelog
 
+## [2026.11.27](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.27)
+
+### Fixes
+
+1. Duplicate clear field button ([#1129](https://github.com/majkinetor/musicbrainz-userscripts/issues/1129))
+1. Stop icon not aligned ([#1128](https://github.com/majkinetor/musicbrainz-userscripts/issues/1128))
+
 ## [2026.11.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.25)
 
 ### Features

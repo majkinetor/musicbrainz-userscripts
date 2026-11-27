@@ -1,5 +1,80 @@
 # String Theory Changelog
 
+## [2026.11.27](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.27)
+
+### Features
+
+1. Announcements served from the project site ([#1123](https://github.com/majkinetor/musicbrainz-userscripts/issues/1123))
+
+### [Apollo Editor](../apollo_editor/README.md)
+
+#### Fixes
+
+1. Duplicate clear field button ([#1129](https://github.com/majkinetor/musicbrainz-userscripts/issues/1129))
+1. Stop icon not aligned ([#1128](https://github.com/majkinetor/musicbrainz-userscripts/issues/1128))
+
+### [Art Station](../art_station/README.md)
+
+#### Features
+
+1. Auto size commit dialog ([#1127](https://github.com/majkinetor/musicbrainz-userscripts/issues/1127))
+1. Trim cover margins in the viewer ([#1121](https://github.com/majkinetor/musicbrainz-userscripts/issues/1121))
+1. Release group consolidated artwork ([#1116](https://github.com/majkinetor/musicbrainz-userscripts/issues/1116))
+
+### [Credit Hoarder](../credit_hoarder/README.md)
+
+1. Small improvements
+
+### [Event Horizon](../event_horizon/README.md)
+
+#### Features
+
+1. Player support for more providers with all options  ([#1125](https://github.com/majkinetor/musicbrainz-userscripts/issues/1125))
+1. Hotkies for command pallete items ([#1119](https://github.com/majkinetor/musicbrainz-userscripts/issues/1119))
+1. Release group consolidated artwork ([#1116](https://github.com/majkinetor/musicbrainz-userscripts/issues/1116))
+1. Persistent mobile playback ([#1104](https://github.com/majkinetor/musicbrainz-userscripts/issues/1104))
+
+### [Falcon](../falcon/README.md)
+
+1. Small improvements
+
+### [First Contact](../first_contact/README.md)
+
+1. Small improvements
+
+### [Fusion](../fusion/README.md)
+
+1. Small improvements
+
+### [Fuzzy Logic](../fuzzy_logic/README.md)
+
+#### Features
+
+1. Genres step with votes on Execute ([#1126](https://github.com/majkinetor/musicbrainz-userscripts/issues/1126))
+
+### [Group Therapy](../group_therapy/README.md)
+
+1. Small improvements
+
+### [ISRC Scout](../isrc_scout/README.md)
+
+1. Small improvements
+
+### [Mammoth](../mammoth/README.md)
+
+1. Small improvements
+
+### [Mission Control](../mission_control/README.md)
+
+#### Features
+
+1. Genres step with votes on Execute ([#1126](https://github.com/majkinetor/musicbrainz-userscripts/issues/1126))
+1. Consolidation by barcode ([#1118](https://github.com/majkinetor/musicbrainz-userscripts/issues/1118))
+
+### [Platform Check](../platform_check/README.md)
+
+1. Small improvements
+
 ## [2026.11.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.25)
 
 ### Features

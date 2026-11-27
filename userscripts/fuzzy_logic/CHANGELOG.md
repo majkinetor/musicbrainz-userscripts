@@ -1,5 +1,11 @@
 # Fuzzy Logic Changelog
 
+## [2026.11.27](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.27)
+
+### Features
+
+1. Genres step with votes on Execute ([#1126](https://github.com/majkinetor/musicbrainz-userscripts/issues/1126))
+
 ## [2026.11.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.25)
 
 - Small improvements

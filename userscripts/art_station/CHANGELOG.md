@@ -1,5 +1,13 @@
 # Art Station Changelog
 
+## [2026.11.27](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.27)
+
+### Features
+
+1. Auto size commit dialog ([#1127](https://github.com/majkinetor/musicbrainz-userscripts/issues/1127))
+1. Trim cover margins in the viewer ([#1121](https://github.com/majkinetor/musicbrainz-userscripts/issues/1121))
+1. Release group consolidated artwork ([#1116](https://github.com/majkinetor/musicbrainz-userscripts/issues/1116))
+
 ## [2026.11.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.25)
 
 - Small improvements

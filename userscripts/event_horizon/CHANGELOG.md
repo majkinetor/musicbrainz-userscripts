@@ -1,5 +1,14 @@
 # Event Horizon Changelog
 
+## [2026.11.27](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.27)
+
+### Features
+
+1. Player support for more providers with all options  ([#1125](https://github.com/majkinetor/musicbrainz-userscripts/issues/1125))
+1. Hotkies for command pallete items ([#1119](https://github.com/majkinetor/musicbrainz-userscripts/issues/1119))
+1. Release group consolidated artwork ([#1116](https://github.com/majkinetor/musicbrainz-userscripts/issues/1116))
+1. Persistent mobile playback ([#1104](https://github.com/majkinetor/musicbrainz-userscripts/issues/1104))
+
 ## [2026.11.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.25)
 
 - Small improvements
