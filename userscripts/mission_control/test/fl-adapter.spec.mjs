@@ -16,6 +16,8 @@ test('Fuzzy Logic reports genres in the Genres card on Fetch genres', { tag: ['@
 
   await page.click('#mc-launch');
   await page.waitForSelector('#mc-root');
+  check(await page.locator('#mc-root .mc-ttl a[href*="/release/"]').count() === 1, 'the header title links the release');
+  check(await page.locator('#mc-root .mc-art a[href*="/artist/"]').count() >= 1, 'the header artist links the artist');
   const fetch = page.locator('#mc-root [data-card="fl"] [data-fetch="fl"]');
   check(await fetch.count() === 1, 'Ask mode: the Genres card offers Fetch genres');
   await fetch.click();
@@ -28,6 +30,7 @@ test('Fuzzy Logic reports genres in the Genres card on Fetch genres', { tag: ['@
   const picked = ((await page.evaluate(() => window.__mcTest.picked())).fl || []).sort();
   check(JSON.stringify(picked) === JSON.stringify(fresh), `the genres not voted yet start selected (${picked.join(', ')})`);
   if (fresh.length) check(await page.locator('#mc-root [data-card="fl"] .mc-line.new').count() === fresh.length, 'a row per new genre');
+  if (fresh.length) check(await page.locator('#mc-root [data-card="fl"] .mc-line.new .mc-srcs svg').count() >= fresh.length, 'each genre shows its sources as icons');
 
   // a dry run is answered without a vote
   if (fresh.length) {
