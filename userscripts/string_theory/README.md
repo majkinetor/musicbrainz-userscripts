@@ -108,6 +108,7 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 | Settings                      | String Theory's tabs and every script's settings                  |
 | Theme                         | the mode, and each light and dark theme                           |
 | Open                          | the window of each launcher on the page                           |
+| Log                           | the log window of each script on the page, with its errors        |
 | Fusion                        | its boards, adding from this page, the open window's buttons      |
 | This release, This artist     | the open entity's pages: edit, relationships, cover art and more  |
 | Go to                         | linked entities, your pages, the edit queues, the website         |

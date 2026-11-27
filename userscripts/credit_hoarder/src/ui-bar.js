@@ -1722,7 +1722,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         try {
             var me = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.name) || o.name || o.header || 'script';
             var reg = window.__mbuLogs = window.__mbuLogs || {};
-            reg[me] = { markdown: function () { return buf.length ? markdown() : ''; } };
+            // open and counts: String Theory's palette opens the window from its Log commands
+            reg[me] = { markdown: function () { return buf.length ? markdown() : ''; }, open: function () { open(); }, counts: function () { return { warn: warn, error: error, n: buf.length }; } };
         } catch (e) { /* no window */ }
         if (H && !H.store && o.name) {
             try {

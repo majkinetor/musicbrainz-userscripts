@@ -118,6 +118,16 @@ function stPalCommands() {
     add({ id: 'open:' + n, cat: 'Open', label: n, run: function () { el.click(); } });
   });
 
+  // Log: the log window of each script running on this page (window.__mbuLogs, filled by every mbuLog)
+  var pageLogs = {}; try { pageLogs = window.__mbuLogs || {}; } catch (e) { /* none */ }
+  stMembers.forEach(function (sm) {
+    var l = pageLogs[sm[1] + '*'] || pageLogs[sm[1]];   // a bundled script's name ends in *
+    if (!l || typeof l.open !== 'function') return;
+    var c = {}; try { c = l.counts() || {}; } catch (e) { /* no counts */ }
+    var hint = c.error ? c.error + (c.error > 1 ? ' errors' : ' error') : c.warn ? c.warn + (c.warn > 1 ? ' warnings' : ' warning') : c.n ? '' : 'empty';
+    add({ id: 'log:' + sm[0], cat: 'Log', label: sm[1], hint: hint, run: function () { setTimeout(l.open, 0); } });
+  });
+
   // each member's own commands: window.__mbuPalette = { <script name>: function () { return [{ id, label, cat?, hint?, recentless?, run }] } },
   // asked again every time the palette opens, so a script lists what its page and windows offer now
   var reg = {}; try { reg = window.__mbuPalette || {}; } catch (e) { /* none */ }
