@@ -75,13 +75,14 @@ test('an open edit takes your vote and a note in place, and your votes open as a
   check(await until(() => ed.locator('.hvote button.' + pick).getAttribute('aria-checked'), v => v === 'true') === 'true', 'the vote button lights');
   const note = 'EH test note ' + Date.now();
   // the note icon beside the date opens the form. It shows only under the mouse, and the vote can mount the row
-  // again a moment later: the new row is not hovered until the mouse moves, so hover and click again until it opens
+  // again a moment later, with the form shut: the new row is not hovered until the mouse moves, so hover, open,
+  // fill and send again until the send goes out (a click that fails sends nothing)
   await until(async () => {
+    const ok = p => p.then(() => true, () => false);
     await ed.locator('summary .hty').hover();
-    return ed.locator('summary .hnico').click({ timeout: 2000 }).then(() => ed.locator('.hnadd textarea').isVisible(), () => false);
+    if (!await ed.locator('.hnadd textarea').isVisible() && !await ok(ed.locator('summary .hnico').click({ timeout: 2000 }))) return false;
+    return await ok(ed.locator('.hnadd textarea').fill(note, { timeout: 2000 })) && ok(ed.locator('.hnadd > button[type="submit"]').click({ timeout: 2000 }));
   }, Boolean);
-  await ed.locator('.hnadd textarea').fill(note);
-  await ed.locator('.hnadd > button[type="submit"]').click();
   check(await until(() => ed.locator('.hnote', { hasText: note }).count(), n => n > 0) > 0, 'the note shows under the edit');
   await page.goto('https://test.musicbrainz.org/edit/' + id);
   const mine = await until(() => page.evaluate(() => (document.querySelector('.voteopts input:checked') || {}).value), v => v != null);
