@@ -79,7 +79,7 @@ The header's **Show** menu picks the columns: **Artist** shows by itself on a Va
 
 The player is on unless **Enable player** is turned off in the settings. The play button on a track number plays that recording; **Play** in the tracklist's header plays the release; right-click either to add to the queue. On a recording or release collection, **Play** queues the collection.
 
-It plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music, SoundCloud, Bandcamp and the Internet Archive. A release linked to an Internet Archive item plays each track from the item, in the best quality that your browser plays (FLAC first). On YouTube, Bandcamp, Deezer, Apple Music and Spotify the next track loads ahead and **Crossfade** blends them.
+It plays from the sources in [Player sources](#player-sources). When a track has links to several of them, **Sources** in the settings decides which one plays: drag a source to move it, click it to turn it off. The tracklist's link order does not matter. The next track loads ahead, and **Crossfade** blends the two tracks, except on SoundCloud and the Internet Archive.
 
 Click the track name for the queue. Its head counts the releases and loose recordings: the releases count shows their covers as a grid in place of the tracks, and a cover jumps to its release, right-click removes its tracks; the recordings count jumps to them. While a collection loads, the head shows how many of its entries are loaded. Right-click Play to cycle repeat; **Shuffle** plays each track once in random order; the wheel winds five seconds. The source menu also has:
 
@@ -88,6 +88,25 @@ Click the track name for the queue. Its head counts the releases and loose recor
 - **Recent playlists…**: the last five queues.
 
 **Send listens to ListenBrainz** scrobbles what plays, after half a track or four minutes. **Get token** opens ListenBrainz's settings for the token.
+
+### Player sources
+
+The player uses a recording's link to each source. For Tidal, Amazon Music and the Internet Archive, a link on the release also plays each track by its place in the release, when the recording has no link of its own. A preview is a short part of the track, which the site plays when you are not signed in to it.
+
+| Source           | Links                       | Plays                                                              | Crossfade |
+| ---------------- | --------------------------- | ------------------------------------------------------------------ | --------- |
+| Bandcamp         | track                       | the full track, as the track page plays it                         | yes       |
+| YouTube Music    | video                       | the full track                                                     | yes       |
+| Spotify          | track, album                | the full track when signed in, else a 30 s preview                 | yes       |
+| YouTube          | video                       | the full track                                                     | yes       |
+| Apple Music      | song                        | the full track when signed in, else a 90 s preview                 | yes       |
+| Tidal            | track; album on the release | a 30 s preview when signed out                                     | yes       |
+| Deezer           | track, album                | the full track when signed in, else a 30 s preview                 | yes       |
+| Amazon Music     | track; album on the release | a 30 s preview                                                     | yes       |
+| SoundCloud       | track                       | the full track                                                     | no        |
+| Internet Archive | file; item on the release   | the file, in the best quality that your browser plays (FLAC first) | no        |
+
+The table lists the sources in the default order of **Sources**. 7digital is not a source, because it has no embedded player.
 
 ## Releases and discography
 
@@ -191,6 +210,7 @@ Right-click the corner icon.
 | Player → Show playlist track number   | off                                                       | the playing track's number in the playlist    |
 | Player → Left click                   | Replace queue                                             | replace the queue or add to it                |
 | Player → Crossfade                    | 5 s                                                       | **Off** for none                              |
+| Player → Sources                      | as in [Player sources](#player-sources)                   | which plays first; a click turns one off      |
 | Player → Collection playlist limit    | 1000                                                      | most tracks taken from a collection           |
 | Player → Show ListenBrainz menu items | on                                                        | the player's ListenBrainz links               |
 | Player → Send listens to ListenBrainz | off                                                       | with the **LB token** beside it               |

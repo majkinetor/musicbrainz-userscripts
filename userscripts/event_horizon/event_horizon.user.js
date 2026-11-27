@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.27.213108
+// @version      2026.11.27.222715
 // @version      2026.11.25.190634
 // @version      2026.11.25.190934
 // @description  An alternative MusicBrainz viewer.
@@ -35,6 +35,19 @@
 // @match        https://open.spotify.com/embed/*
 // @match        https://embed.music.apple.com/*
 // @match        https://www.youtube-nocookie.com/embed/*
+// @match        https://embed.tidal.com/*
+// @match        https://music.amazon.com/embed/*
+// @match        https://music.amazon.co.uk/embed/*
+// @match        https://music.amazon.de/embed/*
+// @match        https://music.amazon.fr/embed/*
+// @match        https://music.amazon.it/embed/*
+// @match        https://music.amazon.es/embed/*
+// @match        https://music.amazon.ca/embed/*
+// @match        https://music.amazon.co.jp/embed/*
+// @match        https://music.amazon.com.au/embed/*
+// @match        https://music.amazon.com.br/embed/*
+// @match        https://music.amazon.com.mx/embed/*
+// @match        https://music.amazon.in/embed/*
 // @exclude-match https://picard.musicbrainz.org/*
 // @run-at       document-start
 // @grant        GM_getValue
@@ -142,14 +155,29 @@ if (window.top !== window && location.hostname === 'www.youtube-nocookie.com' &&
 // says when a track ends. Once the page asks, this presses the widget's play button and tells the page how its audio
 // plays. Apple's button is in its embed's shadow root, and once its <audio> exists, that is played and paused instead.
 // A widget on any other site is left alone: nothing happens until a parent sends {ehPlyCmd}.
-if (window.top !== window && (location.hostname === 'bandcamp.com' && location.pathname.startsWith('/EmbeddedPlayer/') || location.hostname === 'widget.deezer.com' || location.hostname === 'embed.music.apple.com')) {
-    const APPLE = location.hostname === 'embed.music.apple.com';
+// Tidal's and Amazon Music's widgets (#1125) go the same way. Their play buttons are found by the track's place in an
+// album (the frame's #eh-pos=N), and Amazon's <audio> never joins the page, so it is caught when it plays.
+if (window.top !== window && (location.hostname === 'bandcamp.com' && location.pathname.startsWith('/EmbeddedPlayer/') || location.hostname === 'widget.deezer.com' || location.hostname === 'embed.music.apple.com' || location.hostname === 'embed.tidal.com' || /^music\.amazon\.[a-z.]+$/.test(location.hostname) && location.pathname.startsWith('/embed/'))) {
+    const APPLE = location.hostname === 'embed.music.apple.com', TIDAL = location.hostname === 'embed.tidal.com', AMAZON = location.hostname.startsWith('music.amazon.');
+    const OWN = TIDAL || AMAZON;   // the bridge controls the element that played, never the page's first <audio>
+    const POS = +((location.hash.match(/eh-pos=(\d+)/) || [])[1]) || 0;   // the track's place in an album embed; 0 for a track embed
+    let cur = null;   // the media element the widget played last
+    const deep = (s, r = document) => { const x = r.querySelector(s); if (x) return x; for (const e of r.querySelectorAll('*')) if (e.shadowRoot) { const y = deep(s, e.shadowRoot); if (y) return y; } return null; };
+    const deepAll = (s, r = document, out = []) => { out.push(...r.querySelectorAll(s)); for (const e of r.querySelectorAll('*')) if (e.shadowRoot) deepAll(s, e.shadowRoot, out); return out; };
+    const aud = () => OWN ? cur : document.querySelector('audio');
     // Apple's widget tells the page's log how it starts: each step once, with the time since the frame loaded and
     // whether the tab is hidden
     const T0 = performance.now(), noted = new Set();
     const note = (k, s) => { if (!APPLE || noted.has(k)) return; noted.add(k); try { window.parent.postMessage({ ehPlyLog: `${((performance.now() - T0) / 1000).toFixed(1)} s: ${s || k}; hidden: ${document.hidden}` }, '*'); } catch (e) {} };
     const BTN = location.hostname === 'bandcamp.com' ? '#big_play_button, #play' : '[data-testid="widget-player-play"]';
-    const button = a => APPLE ? (a ? null : document.querySelector('embed-root')?.shadowRoot?.querySelector('button.play-initial')) : document.querySelector(BTN);
+    const button = a => {
+        if (OWN && a) return null;   // once the widget played, its element is driven directly
+        // Tidal: a <tidal-play-trigger> in shadow roots, one per album track (product-type="track") and one for the embed
+        if (TIDAL) return POS ? deepAll('tidal-play-trigger[product-type="track"]')[POS - 1] || null : deep('tidal-play-trigger') || deep('.play-icon');
+        // Amazon: the album's track rows, or the round play button
+        if (AMAZON) return POS ? document.querySelectorAll('ul[role=list] > li')[POS - 1] || null : document.querySelector('.controlsContainer');
+        return APPLE ? (a ? null : document.querySelector('embed-root')?.shadowRoot?.querySelector('button.play-initial')) : document.querySelector(BTN);
+    };
     let armed = false, last = 0, restoring = false, restoreMute = null, restoreReady = false, vol = -1, media = null, told = '';   // vol: the page's volume, 0 to 1, put on the audio before it sounds
     const post = (state, a) => { if (armed) try { window.parent.postMessage({ ehPly: state, pos: a ? a.currentTime : 0, dur: a ? a.duration : 0 }, '*'); } catch (e) {} };
     const mediaSetup = () => {
@@ -174,16 +202,45 @@ if (window.top !== window && (location.hostname === 'bandcamp.com' && location.p
     // Apple's widget that starts writes mk-player-tsid to its storage, and every other Apple widget that sees the change
     // pauses: a crossfade's old track stopped, or the new one. The change never reaches the widget's own code here.
     if (APPLE) window.addEventListener('storage', ev => { if (ev.key === 'mk-player-tsid') ev.stopImmediatePropagation(); }, true);
-    for (const k of ['play', 'pause', 'ended']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement) { if (k === 'play' && vol >= 0) ev.target.volume = vol; if (k === 'play' && restoring && !restoreReady) { if (restoreMute === null) restoreMute = ev.target.muted; ev.target.muted = true; } if (k === 'play') mediaSetup(); post(k, ev.target); } }, true);
-    for (const k of ['playing', 'loadedmetadata']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement && vol >= 0 && Math.abs(ev.target.volume - vol) > 0.005) ev.target.volume = vol; }, true);
-    document.addEventListener('timeupdate', ev => { if (ev.target instanceof HTMLMediaElement && Date.now() - last > 900) { last = Date.now(); post(ev.target.paused ? 'pause' : 'time', ev.target); } }, true);
+    // Tidal's widget keeps more than one media element: only the one that played speaks for it
+    const onEv = (k, a) => {
+        if (k === 'play') cur = a; else if (OWN && a !== cur) return;
+        if (k === 'play' && vol >= 0) a.volume = vol; if (k === 'play' && restoring && !restoreReady) { if (restoreMute === null) restoreMute = a.muted; a.muted = true; } if (k === 'play') mediaSetup(); post(k, a);
+    };
+    const onLevel = a => { if (vol >= 0 && Math.abs(a.volume - vol) > 0.005) a.volume = vol; };
+    const onTime = a => { if ((!OWN || a === cur) && Date.now() - last > 900) { last = Date.now(); post(a.paused ? 'pause' : 'time', a); } };
+    for (const k of ['play', 'pause', 'ended']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement) onEv(k, ev.target); }, true);
+    for (const k of ['playing', 'loadedmetadata']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement) onLevel(ev.target); }, true);
+    document.addEventListener('timeupdate', ev => { if (ev.target instanceof HTMLMediaElement) onTime(ev.target); }, true);
+    // Amazon's <audio> never joins the page, so its events never reach the document: it is caught when it plays, as in
+    // Spotify's widget, and heard on the element itself
+    if (AMAZON) try {
+        const W = (typeof unsafeWindow !== 'undefined' && unsafeWindow) || window, P = W.HTMLMediaElement.prototype, play = P.play, seen = new WeakSet();
+        const hook = function () {
+            const a = this;
+            if (!seen.has(a)) {
+                seen.add(a);
+                for (const k of ['play', 'pause', 'ended']) a.addEventListener(k, () => { if (!a.isConnected) onEv(k, a); });
+                for (const k of ['playing', 'loadedmetadata']) a.addEventListener(k, () => { if (!a.isConnected) onLevel(a); });
+                a.addEventListener('timeupdate', () => { if (!a.isConnected) onTime(a); });
+            }
+            if (!a.isConnected) onLevel(a);
+            return play.apply(a, arguments);
+        };
+        P.play = typeof exportFunction === 'function' ? exportFunction(hook, W) : hook;
+    } catch (e) {}
+    let wanted = false, kicks = 0;
     const press = want => {
-        const a = document.querySelector('audio');
+        const a = aud();
+        wanted = want;
+        if (OWN && !want && !a) return true;   // nothing played yet: nothing to pause
         if (a && vol >= 0) a.volume = vol;
         if (a && a.paused !== want) return;   // already as asked
         const b = button(a);
         if (want) note(b ? 'click' : a ? 'audio' : 'none', b ? 'play button clicked' : a ? 'audio played' : 'no play button yet');
         if (b) b.click(); else if (a) want ? a.play().catch(e => note('refused', 'audio refused: ' + e.message)) : a.pause();
+        // Tidal's and Amazon's buttons are drawn before the widget can play: a click that started nothing is repeated
+        if (OWN && b && want) setTimeout(() => { if (wanted && !cur && ++kicks <= 6) press(true); }, 2500);
         return !!(b || a);
     };
     if (APPLE) for (const k of ['play', 'playing', 'waiting', 'stalled']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement) note('audio ' + k); }, true);
@@ -192,14 +249,14 @@ if (window.top !== window && (location.hostname === 'bandcamp.com' && location.p
         if (!armed) { armed = true; post('hello'); note('armed', 'first word from the page'); }
         if (ev.data.ehPlyCmd === 'media') { media = ev.data.media; mediaSetup(); return; }
         if (ev.data.v >= 0) vol = Math.min(1, ev.data.v);
-        if (ev.data.ehPlyCmd === 'vol') { const a = document.querySelector('audio'); if (a && vol >= 0) a.volume = vol; return; }
-        if (ev.data.ehPlyCmd === 'seek') { const a = document.querySelector('audio'); if (a && ev.data.pos >= 0) a.currentTime = ev.data.pos; return; }
+        if (ev.data.ehPlyCmd === 'vol') { const a = aud(); if (a && vol >= 0) a.volume = vol; return; }
+        if (ev.data.ehPlyCmd === 'seek') { const a = aud(); if (a && ev.data.pos >= 0) a.currentTime = ev.data.pos; return; }
         if (ev.data.ehPlyCmd === 'play' && ev.data.pos > 0) {
             if (restoring) return;
             restoring = true; restoreReady = false;
             let n = 0, sought = false;
             const restore = () => {
-                const a = document.querySelector('audio');
+                const a = aud();
                 if (a) {
                     if (!restoreReady) { if (restoreMute === null) restoreMute = a.muted; a.muted = true; }
                     if (!sought && a.readyState >= 1) {
@@ -5343,7 +5400,7 @@ S.fxCur = ''; // the effect preset being worked on: Save writes a change into it
 S.colW = {}; // the widths dragged in a table, by section; the title takes what they leave, and none means the table fits itself
 S.colPick = {}; // the tables' column choice, by section: { order, off }; none is the usual table
 S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one more request per page
-VIEW.push('player', 'playerPlace', 'playerCover', 'playerNo', 'playerClick', 'playerRepeat', 'playerShuffle', 'playerLb', 'playerScrobble', 'playerVideo', 'playerVol', 'playerMax', 'playerFade');
+VIEW.push('player', 'playerPlace', 'playerCover', 'playerNo', 'playerClick', 'playerRepeat', 'playerShuffle', 'playerLb', 'playerScrobble', 'playerVideo', 'playerVol', 'playerMax', 'playerFade', 'playerSrc', 'playerSrcOff');
 S.player = true; // the play buttons on a release's tracks, and the player they start
 S.playerPlace = 'bar'; // where the player shows: 'bar' at the bottom, 'chip' at the top right
 S.playerCover = true; // the top bar's player shows the playing track's cover before its title
@@ -5355,6 +5412,8 @@ S.playerShuffle = false; // the player picks the next track at random, each once
 S.playerLb = true; // the player's links to the track and the release in ListenBrainz
 S.playerVol = 100; // the player's volume, 0 to 100; 0 is muted
 S.playerFade = 5; // seconds of crossfade from one track into the next; 0 is off
+S.playerSrc = ['bandcamp', 'ytmusic', 'spotify', 'youtube', 'apple', 'tidal', 'deezer', 'amazonmusic', 'soundcloud', 'archive']; // which source a track plays from first, when it has several (majkinetor)
+S.playerSrcOff = []; // the sources the player never uses
 S.playerVideo = false; // YouTube's video stays hidden until the menu's Show the video turns it on
 S.playerScrobble = false; // what the player plays goes to ListenBrainz as listens, under the token kept apart in 'lbToken'
 // the page's width; --eh-wn is the same as a length (the screen's for Full), for the launchers' column
@@ -14073,7 +14132,14 @@ function redrawTracks() {
 }
 // ---- the player: a release's tracks played from their streaming links, in a bar at the bottom or a chip at the top right
 // it lives on <html>, outside both bodies, so it plays on through navigation and Event Horizon turned off
-const PLY_SRC = ['youtube', 'ytmusic', 'spotify', 'deezer', 'apple', 'soundcloud', 'bandcamp', 'archive'];
+const PLY_SRC = ['youtube', 'ytmusic', 'spotify', 'deezer', 'apple', 'tidal', 'amazonmusic', 'soundcloud', 'bandcamp', 'archive'];
+const PLY_NAME = { youtube: 'YouTube', ytmusic: 'YouTube Music', spotify: 'Spotify', deezer: 'Deezer', apple: 'Apple Music', tidal: 'Tidal', amazonmusic: 'Amazon Music', soundcloud: 'SoundCloud', bandcamp: 'Bandcamp', archive: 'Internet Archive' };
+// the sources in the order the player settings give them: a saved order first, then any source it does not name yet
+const plyOrder = () => [...S.playerSrc.filter(k => PLY_SRC.includes(k)), ...PLY_SRC.filter(k => !S.playerSrc.includes(k))];
+const plyRanked = ps => { const o = plyOrder(); return ps.filter(p => !S.playerSrcOff.includes(p.key)).sort((a, b) => o.indexOf(a.key) - o.indexOf(b.key)); };
+// the widgets run through the bridge (top of the script); Amazon Music's hosts are the ones in its @match lines
+const PLY_BRIDGE = ['bandcamp', 'deezer', 'apple', 'tidal', 'amazonmusic'];
+const PLY_AMAZON = ['music.amazon.com', 'music.amazon.co.uk', 'music.amazon.de', 'music.amazon.fr', 'music.amazon.it', 'music.amazon.es', 'music.amazon.ca', 'music.amazon.co.jp', 'music.amazon.com.au', 'music.amazon.com.br', 'music.amazon.com.mx', 'music.amazon.in'];
 // a release's cover with the hover play button, as on a collection's table; c = its cell's class
 const relPlay = id => `<span class="cvp"><button type="button" class="tx" data-colplay data-relplay="${id}" data-tip="${plyClickTip('Play this release')}" aria-label="Play this release">${SVG(PLY_I.play)}</button></span>`;
 const relCv = (e, c = 'tc') => `<td class="${c}"><a href="${esc(relUrl(e.id))}" class="tt"><img src="${esc(e.thumb || caaSrc('release', e.id))}" alt="" loading="lazy" data-dgcover>${relPlay(e.id)}</a></td>`;
@@ -14269,6 +14335,16 @@ function plyEmbed(p) {
         if (p.key === 'spotify') { const m = url.pathname.match(/\/(track|album)\/(\w+)/); return m && { url: `https://open.spotify.com/embed/${m[1]}/${m[2]}?autoplay=1`, h: 80 }; }
         if (p.key === 'deezer') { const m = url.pathname.match(/\/(track|album)\/(\d+)/); return m && { url: `https://widget.deezer.com/widget/auto/${m[1]}/${m[2]}?autoplay=true`, h: 92 }; }
         if (p.key === 'apple') { url.hostname = 'embed.music.apple.com'; return { url: url.href, h: 150 }; }
+        // Tidal and Amazon Music (#1125): a track's own link, or the release's album link with the track's place in it
+        if (p.key === 'tidal') {
+            const tr = url.pathname.match(/\/track\/(\d+)/), al = url.pathname.match(/\/album\/(\d+)/);
+            return tr ? { url: `https://embed.tidal.com/tracks/${tr[1]}`, h: 120 } : al && p.albPos ? { url: `https://embed.tidal.com/albums/${al[1]}#eh-pos=${p.albPos}`, h: 120 } : null;
+        }
+        if (p.key === 'amazonmusic') {
+            const host = PLY_AMAZON.includes(url.hostname) ? url.hostname : 'music.amazon.com';
+            const tr = url.searchParams.get('trackAsin') || (url.pathname.match(/\/tracks\/([A-Z0-9]{10})/) || [])[1], al = (url.pathname.match(/\/albums\/([A-Z0-9]{10})/) || [])[1];
+            return tr ? { url: `https://${host}/embed/${tr}/`, h: 120 } : al && p.albPos ? { url: `https://${host}/embed/${al}/#eh-pos=${p.albPos}`, h: 120 } : null;
+        }
         if (p.key === 'soundcloud') return { url: `https://w.soundcloud.com/player/?url=${encodeURIComponent(u)}&auto_play=true&visual=false`, h: 120 };
         if (p.key === 'bandcamp') return { bc: u, h: 120 };
         if (p.key === 'archive') { const m = url.pathname.match(/^\/details\/([^/]+)(?:\/(.+?))?\/?$/); return m && (m[2] || p.iaPos) && { ia: { id: m[1], file: m[2] ? decodeURIComponent(m[2]) : '', pos: p.iaPos || 0 }, h: 0 }; }
@@ -14279,10 +14355,18 @@ function plyEmbed(p) {
 // a release's Internet Archive item (its archive.org/details link) plays each track by its place in the release,
 // unless the track has an archive.org link of its own (#1086)
 const plyIaItem = r => { for (const p of (r && r.links) || []) if (p.key === 'archive') for (const x of p.urls) if (/archive\.org\/details\/[^/?#]+\/?$/.test(x.url) && !x.ended) return x.url; return ''; };
+// a release's Tidal or Amazon Music album link plays each track by its place in the album embed, unless the track has
+// a playable link of its own on that service (#1125)
+const PLY_ALBUM = { tidal: ['Tidal', /tidal\.com\/(?:browse\/)?album\/\d+/], amazonmusic: ['Amazon Music', /music\.amazon\.[a-z.]+\/albums\/[A-Z0-9]{10}/] };
+const plyAlbumItem = (r, key) => { for (const p of (r && r.links) || []) if (p.key === key) for (const x of p.urls) if (PLY_ALBUM[key][1].test(x.url) && !x.ended) return x.url; return ''; };
 const plySources = (t, r, pos) => {
     let ls = t.links || []; const item = pos && plyIaItem(r);
     if (item && !ls.some(p => p.key === 'archive' && plyEmbed(p))) ls = [...ls.filter(p => p.key !== 'archive'), { key: 'archive', name: 'Internet Archive', kinds: [], urls: [{ url: item }], iaPos: pos }];
-    return plSorted(ls.filter(p => PLY_SRC.includes(p.key) && plyEmbed(p)));
+    if (pos) for (const key in PLY_ALBUM) {
+        const al = plyAlbumItem(r, key);
+        if (al && !ls.some(p => p.key === key && plyEmbed(p))) ls = [...ls.filter(p => p.key !== key), { key, name: PLY_ALBUM[key][0], kinds: [], urls: [{ url: al }], albPos: pos }];
+    }
+    return plyRanked(plSorted(ls.filter(p => PLY_SRC.includes(p.key) && plyEmbed(p))));
 };
 // the release's tracks as a queue; the ones with nothing to play are left out
 function plyQueue(r, all) {
@@ -14319,7 +14403,7 @@ function plyRelChanged(r) {
     if (plyRemote && !PLY_WINDOW) plyControl('queue', { rel: r.id, q: plyQueue(r, true) });
     else if (!PLY_WINDOW) plyRequeue(r.id, plyQueue(r, true));
 }
-const plyPick = (t, want) => t.srcs.find(p => p.key === want) || t.srcs.find(p => p.key === ply.pref) || t.srcs[0];
+const plyPick = (t, want) => { const ss = plyRanked([...t.srcs]); return t.srcs.find(p => p.key === want) || ss.find(p => p.key === ply.pref) || ss[0] || t.srcs[0]; };
 // an Internet Archive item's files (archive.org/metadata, open to any page): the track's best file the browser plays.
 // Each source file and its derivatives are one track; a file with no track number is not a track and is skipped.
 // Best first: FLAC, then MP3 by bitrate, with Ogg Vorbis above the low MP3s
@@ -14758,7 +14842,7 @@ const plyYtMedia = t => plyPost(JSON.stringify({ ehPlyCmd: 'media', media: plyWi
 function plyMedia(t, again, w = PW) {
     // YouTube's widget sets the phone's session from these (#1104), again and again for its clock
     // Bandcamp's and Deezer's too: a preloaded widget that takes over has none of its own, and the card then shows the page's title
-    if (w === PW && t && t === ply.q[ply.i]) { if (ply.yt) plyYtMedia(t); else if (ply.kind === 'bandcamp' || ply.kind === 'deezer' || ply.kind === 'apple') plyPost({ ehPlyCmd: 'media', media: plyWidgetMedia(t) }); }
+    if (w === PW && t && t === ply.q[ply.i]) { if (ply.yt) plyYtMedia(t); else if (PLY_BRIDGE.includes(ply.kind)) plyPost({ ehPlyCmd: 'media', media: plyWidgetMedia(t) }); }
     const ms = w === PW ? msPage() : w.navigator.mediaSession; if (!ms || !t) { if (!again) LOG.warn('player: Media Session unavailable'); return; }
     try {
         ms.metadata = new (w.MediaMetadata || MediaMetadata)(msObj({ title: t.title || '', artist: t.artist || '', album: t.relTitle || '',
@@ -14887,7 +14971,7 @@ function plyDock(e) {
             ask();
             const c = ply.q[ply.i]; if (c && gen === ply.gen) plyYtMedia(c);
         }
-        if (kind === 'bandcamp' || kind === 'deezer' || kind === 'apple') plyArm(gen, kind, kind === 'bandcamp' ? (ply.q[ply.i]?.resume || 0) / 1000 : 0);
+        if (PLY_BRIDGE.includes(kind)) plyArm(gen, kind, kind === 'bandcamp' ? (ply.q[ply.i]?.resume || 0) / 1000 : 0);
     }, { once: true });
 }
 const plyIframe = (url, h, cls) => `<iframe src="${esc(url)}" height="${h}"${cls ? ` class="${cls}"` : ''} allow="autoplay; encrypted-media; clipboard-write; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" title="Player"></iframe>`;
@@ -14902,7 +14986,7 @@ function plyArm(gen, kind, pos) {
 // to draw its play button, which it now does while the track before it plays). At the end it becomes the current widget and gets
 // play at once. With a crossfade set, it starts that many seconds before the end at volume 0, and the two volumes
 // cross; the old widget is then removed.
-const PLY_PRE = ['youtube', 'ytmusic', 'bandcamp', 'deezer', 'apple', 'spotify'];
+const PLY_PRE = ['youtube', 'ytmusic', 'bandcamp', 'deezer', 'apple', 'tidal', 'amazonmusic', 'spotify'];
 function plyPreload() {
     if (plyRemote && !PLY_WINDOW) return;
     const t = ply.q[ply.i]; if (!t || t.done) return;
@@ -15064,7 +15148,7 @@ window.addEventListener('message', ev => {
         : m.type === 'playback_update' && m.payload && k === 'spotify' ? { currentTime: m.payload.position / 1000, duration: m.payload.duration / 1000 } : null;
     if (pi && typeof pi.currentTime === 'number') ply.pos = { gen: ply.gen, pos: pi.currentTime, dur: pi.duration > 0 ? pi.duration : ply.pos?.gen === ply.gen ? ply.pos.dur : 0, when: Date.now() };
     if (pi) setTimeout(plyFadeCheck);
-    if (k === 'bandcamp' || k === 'deezer' || k === 'apple' || ply.yt) {
+    if (PLY_BRIDGE.includes(k) || ply.yt) {
         if (typeof m.ehPlyMedia === 'string') { LOG.info('player: Media Session', m.ehPlyMedia); return; }
         if (typeof m.ehPlyLog === 'string') { PLOG.debug(k, 'widget at', m.ehPlyLog); return; }
         if (typeof m.ehPlyAction === 'string') {
@@ -16028,7 +16112,7 @@ const plyOn = (r, key) => { const t = ply.q[ply.i]; return !!t && t.rel === r.id
 // ---- listens: what the player plays goes to ListenBrainz under the user's token, as ListenBrainz counts a listen
 // (half the track or four minutes, whichever comes first); a pause stops the clock
 const lbToken = v => { if (v === undefined) { try { return GM_getValue('lbToken', '') || ''; } catch (e) { return ''; } } try { GM_setValue('lbToken', v); } catch (e) {} return v; };
-const PLY_SVC = { youtube: 'youtube.com', ytmusic: 'music.youtube.com', spotify: 'spotify.com', deezer: 'deezer.com', apple: 'music.apple.com', soundcloud: 'soundcloud.com', bandcamp: 'bandcamp.com' };
+const PLY_SVC = { youtube: 'youtube.com', ytmusic: 'music.youtube.com', spotify: 'spotify.com', deezer: 'deezer.com', apple: 'music.apple.com', tidal: 'tidal.com', amazonmusic: 'music.amazon.com', soundcloud: 'soundcloud.com', bandcamp: 'bandcamp.com' };
 const lbApi = (path, body, token = lbToken()) => new Promise(ok => mbnGm({
     method: body ? 'POST' : 'GET', url: 'https://api.listenbrainz.org/1/' + path, timeout: 15000,
     headers: { Authorization: 'Token ' + token, ...(body ? { 'Content-Type': 'application/json' } : {}) }, data: body ? JSON.stringify(body) : undefined,
@@ -19255,7 +19339,8 @@ function cfgBody() {
             + ckRow('playerCover', 'Show cover', 'The playing track\'s cover before its title, when the player is in the top bar\nClick it: open the release')
             + ckRow('playerNo', 'Show playlist track number', 'The playing track\'s number in the playlist, before its title')
             + row('Left click', [['replace', 'Replace queue'], ['append', 'Add to queue']].map(([v, l]) => chip('playerClick', v, S.playerClick === v, l)).join(''), 'Right-click does the other action')
-            + row('Crossfade', [[0, 'Off'], [1, '1 s'], [2, '2 s'], [3, '3 s'], [5, '5 s'], [8, '8 s']].map(([n, l]) => chip('playerFade', n, S.playerFade === n, l)).join(''), 'Fades one track into the next\nYouTube and Bandcamp\nOther sources start the next track as before')
+            + row('Crossfade', [[0, 'Off'], [1, '1 s'], [2, '2 s'], [3, '3 s'], [5, '5 s'], [8, '8 s']].map(([n, l]) => chip('playerFade', n, S.playerFade === n, l)).join(''), 'Fades one track into the next\nSoundCloud and the Internet Archive start the next track without a fade')
+            + row('Sources', plyOrder().map(k => { const off = S.playerSrcOff.includes(k), i = plyOrder().filter(x => !S.playerSrcOff.includes(x)).indexOf(k); return `<button type="button" class="chip p" data-g="plySrc" data-k="${k}" aria-pressed="${!off}" data-tip="${off ? 'Not used' : i ? 'Tried ' + (i + 1) + (i === 1 ? 'nd' : i === 2 ? 'rd' : 'th') : 'Played first'}\nClick to ${off ? 'use' : 'turn off'}, drag to reorder">${icon({ key: k, name: PLY_NAME[k] }, 16)}${esc(PLY_NAME[k])}${off ? '' : `<span class="ord">${i + 1}</span>`}</button>`; }).join(''), 'Which source a track plays from, when it has several')
             + row('Collection playlist limit', [100, 500, 1000, 5000].map(n => chip('playerMax', n, S.playerMax === n, String(n))).join(''), 'Maximum tracks loaded into the playlist from a collection')
             + ckRow('playerLb', 'Show ListenBrainz menu items', 'Links in the player to the track and the release in ListenBrainz')
             + `<div class="player-listens">${ckRow('playerScrobble', 'Send listens to ListenBrainz', 'What the player plays goes to your ListenBrainz listens\nNeeds your user token')}<span class="fx-combo"><input type="password" data-lbtok autocomplete="off" spellcheck="false" placeholder="LB token" aria-label="ListenBrainz token" value="${esc(lbToken())}"></span><a href="https://listenbrainz.org/settings" target="_blank" rel="noopener noreferrer" data-lb-get${lbToken() ? ' hidden' : ''}>Get token</a></div>`,
@@ -19497,27 +19582,28 @@ function cfgWire(panel, b, body) {
     // an image provider moves with the pointer: dropped on another, it goes before that one; a click without moving toggles it
     let imgMoved = false;
     panel.addEventListener('pointerdown', ev => {
-        const c = ev.target.closest('[data-g=imgP]'); if (!c || ev.button) return;
+        const c = ev.target.closest('[data-g=imgP],[data-g=plySrc]'); if (!c || ev.button) return; const grp = c.dataset.g;
         const x0 = ev.clientX, y0 = ev.clientY; imgMoved = false;
-        const at = e => { const t = document.elementFromPoint(e.clientX, e.clientY); return t && t.closest('[data-g=imgP]'); };
+        const at = e => { const t = document.elementFromPoint(e.clientX, e.clientY); return t && t.closest(`[data-g=${grp}]`); };
         const move = e => {
             if (!imgMoved && Math.hypot(e.clientX - x0, e.clientY - y0) < 6) return;
             imgMoved = true; c.classList.add('drag');
-            b.querySelectorAll('[data-g=imgP].over').forEach(x => x.classList.remove('over'));
+            b.querySelectorAll(`[data-g=${grp}].over`).forEach(x => x.classList.remove('over'));
             const t = at(e); if (t && t !== c) t.classList.add('over');
         };
         const up = e => {
             removeEventListener('pointermove', move); removeEventListener('pointerup', up);
             if (!imgMoved) return;
             const t = at(e);
-            if (t && t !== c) { const o = imgOrder().filter(k => k !== c.dataset.k); o.splice(o.indexOf(t.dataset.k), 0, c.dataset.k); S.imgOrder = o; imgResort(); save(); if (ehOn) { const sy = scrollY; render(); keepY(sy); } }
+            if (t && t !== c && grp === 'plySrc') { const o = plyOrder().filter(k => k !== c.dataset.k); o.splice(o.indexOf(t.dataset.k), 0, c.dataset.k); S.playerSrc = o; save(); }
+            else if (t && t !== c) { const o = imgOrder().filter(k => k !== c.dataset.k); o.splice(o.indexOf(t.dataset.k), 0, c.dataset.k); S.imgOrder = o; imgResort(); save(); if (ehOn) { const sy = scrollY; render(); keepY(sy); } }
             redo();
         };
         addEventListener('pointermove', move); addEventListener('pointerup', up);
         ev.preventDefault();
     });
     panel.addEventListener('click', ev => {
-        if (imgMoved && ev.target.closest('[data-g=imgP]')) { imgMoved = false; return; }
+        if (imgMoved && ev.target.closest('[data-g=imgP],[data-g=plySrc]')) { imgMoved = false; return; }
         const tb = ev.target.closest('[data-tab]');
         if (tb) { cfgTab = tb.dataset.tab; b.innerHTML = body(); return; }
         if (ev.target.closest('[data-st-themes]')) { panel.closest('.mbu-ov')?.remove(); document.dispatchEvent(new CustomEvent('mbu-st-themes')); return; }   // the window steps aside, as String Theory's does
@@ -19559,6 +19645,7 @@ function cfgWire(panel, b, body) {
             else if (g === 'hexMotion') { S.hexMotion = k; hexApply(); }
             else if (g === 'hexTwo') { S.hexTwo = k === '3' ? 3 : k === '2' ? 2 : k === '1'; if (k === '3') ucolStart('hexColours'); hexApply(); }
             else if (g === 'imgP') { S.imgOff = toggle(S.imgOff, k); imgResort(); }
+            else if (g === 'plySrc') S.playerSrcOff = toggle(S.playerSrcOff, k);
         }
         save();
         redo();
