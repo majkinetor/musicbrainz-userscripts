@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.27.124625
+// @version      2026.11.27.144348
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -38,6 +38,8 @@
 // @grant        GM_xmlhttpRequest
 // @grant        unsafeWindow
 // @connect      api.discogs.com
+// @connect      beta.coverartarchive.org
+// @connect      test.musicbrainz.org
 // @connect      api.deezer.com
 // @connect      tidal.com
 // @connect      music.apple.com
@@ -5551,7 +5553,7 @@ async function keptCover(rel, img) {
 }
 const caa = id => kept('caa:' + id, async () => {
     const t0 = performance.now();
-    try { const r = await mbnLog(caaHost('release') + '/release/' + id, undefined, { entity: 'release' }); fetchLog('CAA release ' + id, t0, r); if (r.status === 404) return '{}'; if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); } catch (e) { fetchLog('CAA release ' + id, t0, null, e); throw e; }
+    try { const r = await caaGet(caaHost('release') + '/release/' + id, false, { entity: 'release' }); fetchLog('CAA release ' + id, t0, r); if (r.status === 404) return '{}'; if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); } catch (e) { fetchLog('CAA release ' + id, t0, null, e); throw e; }
 }).then(t => JSON.parse(t).images || [], () => []);
 // platforms by host; the rest fall back to their name as a monogram
 const HOSTS = [
@@ -6360,6 +6362,13 @@ const CAA_RE = /^https:\/\/(?:coverartarchive\.org\/(release|release-group)|even
 // the sandbox's database doesn't have, whose edit forms there answer 404
 const CAA_ORIGIN = location.hostname === 'test.musicbrainz.org' ? 'https://beta.coverartarchive.org' : 'https://coverartarchive.org';
 const caaHost = k => k === 'event' ? 'https://eventartarchive.org' : CAA_ORIGIN;
+// an archive listing. The sandbox's archive redirects to test.musicbrainz.org, whose browser check a page's fetch can't pass
+// there (a fetch sends no cookies after a redirect from another site): read it through the script manager, which sends them
+function caaGet(u, fresh, o) {
+    if (!/^https:\/\/beta\.coverartarchive\.org\//.test(u)) return mbnLog(u, fresh ? { cache: 'no-cache' } : undefined, o);
+    return new Promise((ok, no) => mbnGm({ method: 'GET', url: u, timeout: 20000, nocache: !!fresh, onerror: () => no(new Error('network error')), ontimeout: () => no(new Error('timeout')),
+        onload: x => ok({ ok: x.status >= 200 && x.status < 300, status: x.status, text: async () => x.responseText, json: async () => JSON.parse(x.responseText) }) }));
+}
 // an address's release, group or event, and the size it asked for; null for an address that isn't a front
 const caaOf = u => { const m = (u || '').match(CAA_RE); return m ? { k: m[1] || m[2], id: m[3], size: m[4] || '' } : null; };
 // the front's address once found, else its thumbnail at that size
@@ -6374,7 +6383,7 @@ const caaJson = (k, id, fresh) => {
     const key = k + '/' + id;
     if (fresh && !CAA_FRESH.has(key)) { CAA_FRESH.add(key); CAA_JSON.delete(key); }
     if (!CAA_JSON.has(key)) CAA_JSON.set(key, CAA_JSON_KEPT.has(key) && !fresh ? Promise.resolve(CAA_JSON_KEPT.get(key))
-        : mbnLog(`${caaHost(k)}/${key}`, fresh ? { cache: 'no-cache' } : undefined, { entity: k }).then(r => r.ok ? r.json() : r.status === 404 ? null : Promise.reject(new Error('HTTP ' + r.status)))
+        : caaGet(`${caaHost(k)}/${key}`, fresh, { entity: k }).then(r => r.ok ? r.json() : r.status === 404 ? null : Promise.reject(new Error('HTTP ' + r.status)))
             .then(j => { CAA_JSON_KEPT.set(key, j); return j; }, () => null));
     return CAA_JSON.get(key);
 };
