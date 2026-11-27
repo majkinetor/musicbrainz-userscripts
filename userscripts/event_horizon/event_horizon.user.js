@@ -1,9 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.27.230624
-// @version      2026.11.25.190634
-// @version      2026.11.25.190934
+// @version      2026.11.28.001710
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -15258,7 +15256,7 @@ function plyDraw() {
     document.documentElement.classList.toggle('eh-ply-bar', bar);
     const p = t.srcs.find(x => x.key === ply.src) || t.srcs[0], lb = S.playerLb || S.playerScrobble;
     const rep = S.playerRepeat === 'one' ? 'Repeat one' : S.playerRepeat === 'all' ? 'Repeat all' : 'Play once';
-    const shown = ply.paused && ply.starting !== ply.gen, play = plyB(shown ? 'play' : 'pause', (shown ? 'Play' : 'Pause') + '\n' + rep + '\nRight-click: change repeat', '', ' big').replace('</button>', S.playerRepeat === 'off' ? '</button>' : `<span class="ply-repeat" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M20.5 2.5v4h-4"/>${S.playerRepeat === 'one' ? '<text x="12" y="15.6" text-anchor="middle">1</text>' : ''}</svg></span></button>`);
+    const shown = ply.paused && !(ply.starting && ply.starting === ply.gen), play = plyB(shown ? 'play' : 'pause', (shown ? 'Play' : 'Pause') + '\n' + rep + '\nRight-click: change repeat', '', ' big').replace('</button>', S.playerRepeat === 'off' ? '</button>' : `<span class="ply-repeat" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M20.5 2.5v4h-4"/>${S.playerRepeat === 'one' ? '<text x="12" y="15.6" text-anchor="middle">1</text>' : ''}</svg></span></button>`);
     const sh = S.playerShuffle, back = sh ? (plyRemote && !PLY_WINDOW ? !!ply.back : ply.hist.length > 0) : ply.i > 0;
     const more = sh ? plyShufLeft() || (S.playerRepeat === 'all' && ply.q.length > 1) : ply.i + 1 < ply.q.length;
     const nav = plyB('prev', back ? (ply.ctl ? 'Restart track, then previous track' : 'Previous track') : 'Restart track', back || ply.ctl ? '' : ' disabled')
