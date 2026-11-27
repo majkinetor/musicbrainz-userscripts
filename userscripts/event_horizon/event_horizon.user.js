@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.27.211727
+// @version      2026.11.27.212843
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -14896,11 +14896,11 @@ function plyArm(gen, kind, pos) {
     start();
 }
 // Gapless start and crossfade (#1084). While a track plays, the next one's widget loads in a hidden second iframe
-// (YouTube, Bandcamp, Deezer and Apple: their widgets take play and volume; Apple's, in a hidden tab, takes up to 15 s
+// (YouTube, Bandcamp, Deezer, Apple and Spotify: their widgets take play and volume; Apple's, in a hidden tab, takes up to 15 s
 // to draw its play button, which it now does while the track before it plays). At the end it becomes the current widget and gets
 // play at once. With a crossfade set, it starts that many seconds before the end at volume 0, and the two volumes
 // cross; the old widget is then removed.
-const PLY_PRE = ['youtube', 'ytmusic', 'bandcamp', 'deezer', 'apple'];
+const PLY_PRE = ['youtube', 'ytmusic', 'bandcamp', 'deezer', 'apple', 'spotify'];
 function plyPreload() {
     if (plyRemote && !PLY_WINDOW) return;
     const t = ply.q[ply.i]; if (!t || t.done) return;
@@ -14951,6 +14951,7 @@ function plySwap(nx, old) {
     ply.fadeIn = old ? 0 : 1;
     PLOG.info(old ? 'crossfade' : 'gapless start', 'with the preloaded', nx.key, 'widget');
     if (nx.yt) { plyVol(); plyPost(JSON.stringify({ event: 'command', func: 'playVideo', args: [] })); }
+    else if (nx.key === 'spotify') { if (nx.ready) { const t = ply.q[ply.i]; if (t) t.kicked = true; plyVolOnce(); plyPost({ command: 'toggle' }); } }
     else plyArm(ply.gen, nx.key, 0);
     if (old) plyFadeRun(old);
 }
@@ -15048,14 +15049,17 @@ function plySeek(ms) {
 // events it was asked for. Bandcamp's, Deezer's and Apple's: what the bridge above posts from their audio.
 window.addEventListener('message', ev => {
     // the preloaded widget's first word: it is ready to start
-    if (ply.nx && ply.nx.f && ev.source === ply.nx.f.contentWindow) { plyHeard(ply.nx.f); if (!ply.nx.ready) { ply.nx.ready = true; PLOG.debug('the preloaded', ply.nx.key, 'widget answers'); } return; }
+    if (ply.nx && ply.nx.f && ev.source === ply.nx.f.contentWindow) {
+        if (ply.nx.key === 'spotify') { let d = ev.data; if (typeof d === 'string') try { d = JSON.parse(d); } catch (e) {} if (!d || d.type !== 'ready') return; }   // Spotify's toggle waits for its ready
+        plyHeard(ply.nx.f); if (!ply.nx.ready) { ply.nx.ready = true; PLOG.debug('the preloaded', ply.nx.key, 'widget answers'); } return; }
     const f = plyFrame(), t = ply.q[ply.i];
     if (!f || !t || (ev.source !== f.contentWindow && !(f.ehIa && ev.data && ev.data.ehIa === f.ehIa))) return;
     let m = ev.data; if (typeof m === 'string') { try { m = JSON.parse(m); } catch (e) { return; } }
     if (!m || typeof m !== 'object') return;
     const k = ply.kind;
     // the widget's own clock, for the crossfade's start
-    const pi = m.event === 'infoDelivery' && m.info ? m.info : typeof m.ehPly === 'string' ? { currentTime: m.pos, duration: m.dur } : null;
+    const pi = m.event === 'infoDelivery' && m.info ? m.info : typeof m.ehPly === 'string' ? { currentTime: m.pos, duration: m.dur }
+        : m.type === 'playback_update' && m.payload && k === 'spotify' ? { currentTime: m.payload.position / 1000, duration: m.payload.duration / 1000 } : null;
     if (pi && typeof pi.currentTime === 'number') ply.pos = { gen: ply.gen, pos: pi.currentTime, dur: pi.duration > 0 ? pi.duration : ply.pos?.gen === ply.gen ? ply.pos.dur : 0, when: Date.now() };
     if (pi) setTimeout(plyFadeCheck);
     if (k === 'bandcamp' || k === 'deezer' || k === 'apple' || ply.yt) {
