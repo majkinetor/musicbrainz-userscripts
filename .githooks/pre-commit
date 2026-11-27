@@ -19,6 +19,13 @@ set -e
 
 STAGED=$(git diff --cached --name-only)
 
+# A merge or rebase that left conflict markers in a file is refused (4bcb8c174 repaired one).
+if git diff --cached -U0 | grep -qE '^\+(<<<<<<<|>>>>>>>)( |$)'; then
+    echo "[pre-commit] conflict markers in the staged changes, nothing committed:"
+    git diff --cached -U0 | grep -nE '^(\+\+\+ |\+(<<<<<<<|>>>>>>>)( |$))' | grep -B1 -E '^[0-9]+:\+[<>]'
+    exit 1
+fi
+
 # lint + syntax gate (#623) — a staged monolithic userscript must parse and lint
 # clean (errors only; warnings are for a later look). Runs before any rebuild, so a
 # broken script never reaches the bundle. The bundle is not linted; Credit Hoarder's src/ has its own gate, right after.

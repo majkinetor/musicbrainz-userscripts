@@ -26,6 +26,9 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # a merge committed with --no-verify, or on GitHub, skips the hook's own check
+      - name: No conflict markers
+        run: "! git grep -nE '^(<<<<<<<|>>>>>>>)( |$)'"
       - name: Every userscript parses
         run: for f in userscripts/*/*.user.js userscripts/art_station/as_picker/*.user.js; do node --check "$f" || exit 1; done
       - name: Lint
