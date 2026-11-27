@@ -20,6 +20,7 @@ One window on a release page that asks the other scripts what the release is mis
 - **[Compare with the platforms](#compare-with-the-platforms)**: read the release on its platforms and add what it lacks: a barcode, labels and catalog numbers, a release event, track lengths.
 - **[Cover art](#cover-art)**: the best cover found, beside the current front, and Art Station's gallery, to add, order and type the other images Discogs and Amazon have.
 - **[Release credits](#release-credits)**: what the credit sources have, with a way into Credit Hoarder.
+- **[Genres](#genres)**: the genres the release's linked pages give, voted on Execute.
 - **[Inspector](#inspector)**: everything found for one track.
 - **[Execute](#execute)**: applies what you selected, script by script, in a fixed order.
 - **[Consolidate a new release](#consolidate-a-new-release)**: compare an album across the platforms and take the best of each into the release editor, or into the release MusicBrainz already has. Start from the album's page, or [from its barcode](#from-a-barcode).
@@ -38,10 +39,11 @@ Open Mission Control with its corner icon on a release page. On a phone it fills
 | Cover art                | [Art Station](../art_station/README.md)       | a better front cover, and the stores' other images     |
 | Merge suggestions        | [Fusion](../fusion/README.md)                 | duplicate recordings in the release group              |
 | Credits                  | [Credit Hoarder](../credit_hoarder/README.md) | per-track credits                                      |
+| Genres                   | [Fuzzy Logic](../fuzzy_logic/README.md)       | genres from the release's linked pages                 |
 
-Platforms, Fusion and Credit Hoarder are slow, so each has a switch under its step: **Auto** fetches during the probe, **Ask** waits for its button in the Tracks header (**Compare**, **Fetch RG**, **Fetch credits**), **Off** leaves it out. Platforms starts on Auto, Fusion and Credit Hoarder on Ask.
+Platforms, Fusion, Credit Hoarder and Fuzzy Logic are slow, so each has a switch under its step: **Auto** fetches during the probe, **Ask** waits for its button (**Compare**, **Fetch RG** and **Fetch credits** in the Tracks header, **Fetch genres** in the Genres card), **Off** leaves it out. Platforms and Fuzzy Logic start on Auto, the others on Ask.
 
-Click a step in the header to switch it off for this page, right-click to switch it off for good; click it again to switch it back on. The format icon left of the release title shows or hides the Execution order.
+Click a step in the header to switch it off for this page, right-click to switch it off for good; click it again to switch it back on. The format icon left of the release title shows or hides the Execution order. The release title and artist link their pages; when the steps need the room, they fold into the format icon, and hovering it shows them.
 
 The album links you select in the Release and entity links card are passed on to ISRC Scout before they are added, so the tracks get their links from those albums too.
 
@@ -134,6 +136,10 @@ An upload that fails is repeated as Art Station's [auto-repeat](../art_station/R
 ## Release credits
 
 Credit Hoarder's count of credits for each track, from every credit source the release links (Discogs, Qobuz, Deezer, Apple Music). Mission Control only shows them: **Import credits** opens Credit Hoarder in a new tab, on the release's relationship editor with that source, or with all of them, to review and add them there.
+
+## Genres
+
+Fuzzy Logic collects the genres from the pages the release links, as its own window does, and lists each MusicBrainz genre with the sources that gave it. The ones you haven't voted for yet start selected; the ones you have are counted at the top of the card. Execute upvotes the selected genres, also on the release group and every recording when that box is ticked in Fuzzy Logic's window. Your favourites that the links gave are listed too, unselected. Other tags, and mapping, stay in Fuzzy Logic.
 
 ## Inspector
 

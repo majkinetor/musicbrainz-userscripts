@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.27.195254
+// @version      2026.11.27.223539
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -59,9 +59,10 @@ Log.cat('System').info(mbuStartupInfo('Mission Control'));
 // review: Execute lists what it will send first, to confirm (#841); a right-click on Execute skips it
 // disabled: the providers without a mode (PC, IS, AS) switched off with their step in the header (#753)
 // platforms: the comparison with the platforms (#782), First Contact's reads: as fusion and ch
-const DEFAULTS = { fusion: 'ask', ch: 'ask', platforms: 'auto', disabled: [], left: true, right: true, linkedOpen: [], autoProbe: true, reloadAfter: true, consAfter: true, consExec: false, consExecS: 10, ccDiffOpen: false, review: true, v: 3 };
+// fl: Fuzzy Logic's genres, collected from the release's links and voted on Execute: Auto, like platforms
+const DEFAULTS = { fusion: 'ask', ch: 'ask', fl: 'auto', platforms: 'auto', disabled: [], left: true, right: true, linkedOpen: [], autoProbe: true, reloadAfter: true, consAfter: true, consExec: false, consExecS: 10, ccDiffOpen: false, review: true, v: 4 };
 // a card and the providers whose selections it holds (Tracks: the per-track ones without a card of their own)
-const CARDS = [['tracks', ['is', 'fusion', 'fc']], ['pc', ['pc']], ['as', ['as']], ['ch', ['ch']]];
+const CARDS = [['tracks', ['is', 'fusion', 'fc']], ['pc', ['pc']], ['as', ['as']], ['ch', ['ch']], ['fl', ['fl']]];
 // The cards switched off with the switch in their header: folded, and Execute leaves out what is selected
 // in them. For this page only, never saved: the next release starts with every card on.
 const OFF = new Set();
@@ -84,6 +85,12 @@ function loadSettings() {
         if (s.platforms === 'ask') delete s.platforms;
         s.v = 3;
         Log.cat('Settings').info('settings v3: the Platforms step now compares on every probe by default');
+    }
+    // v4 made the Genres step (Fuzzy Logic) Auto by default; an 'ask' saved before is the old default
+    if (!(s.v >= 4)) {
+        if (s.fl === 'ask') delete s.fl;
+        s.v = 4;
+        Log.cat('Settings').info('settings v4: the Genres step now collects on every probe by default');
     }
     return Object.assign({}, DEFAULTS, s);
 }
@@ -108,6 +115,8 @@ const STEPS = [
     ] },
     { id: 'fusion', name: 'Merge suggestions', short: 'Fusion', provider: 'Fusion', glyph: '⚛', mode: 'fusion' },
     { id: 'ch', name: 'Credits', short: 'CH', provider: 'Credit Hoarder', glyph: '✎', mode: 'ch', info: true },
+    // Fuzzy Logic's genres from the release's links; Execute votes the selected ones
+    { id: 'fl', name: 'Genres', short: 'FL', provider: 'Fuzzy Logic', glyph: '♫', mode: 'fl' },
 ];
 const PROVIDERS = STEPS.flatMap(s => s.lanes || [s]);
 // each provider's own userscript icon, for its badge (embedded: an image from raw.githubusercontent didn't load)
@@ -117,7 +126,8 @@ const PROVIDER_ICONS = {
     "is": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5JU1JDIFNjb3V0PC90aXRsZT4NCiAgICA8cGF0aCBkPSJNNjQgNjQgTDY0IDI0IEE0MCA0MCAwIDAgMSA5OSA4NCBaIiBmaWxsPSIjZTNkOGY3Ii8+DQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4NCiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPg0KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPg0KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPg0KICA8L2c+DQogIDxsaW5lIHgxPSI2NCIgeTE9IjY0IiB4Mj0iNjQiIHkyPSIyNCIgc3Ryb2tlPSIjNmY0MmMxIiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPg0KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+DQo8L3N2Zz4NCg==",
     "as": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=",
     "fusion": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==",
-    "ch": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"
+    "ch": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K",
+    "fl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+"
 };
 
 /* ── provider bus ──────────────────────────────────────────────────────────── */
@@ -629,6 +639,7 @@ function reviewLine(id, x) {
     const k = x.kind;
     if (id === 'is') return k === 'link' ? reviewTrack(x.track) + ': link ' + x.url : reviewTrack(x.track) + ': ISRC ' + (x.isrc || '?') + ((x.existing || []).length ? ' (beside ' + x.existing.join(', ') + ')' : '');
     if (id === 'as') { const b = results.as && results.as.best; return 'Front cover from ' + (x.name || x.key) + (b && b.w ? ', ' + b.w + '×' + b.h : '') + (b && b.replace ? ', replacing the current one' : ''); }
+    if (id === 'fl') return 'Vote for ' + (x.genre ? 'genre ' : 'tag ') + (x.name || x.key);
     if (k === 'barcode') return 'Barcode ' + x.code;
     if (k === 'catno') return 'Catalog number ' + x.code + (x.label && x.label.name ? ' on ' + x.label.name : '');
     if (k === 'label') return 'Label ' + ((x.label && x.label.name) || '?') + (x.code ? ', ' + x.code : '');
@@ -958,6 +969,7 @@ function mcReleaseOf(id, d) {
     const rg = d['release-group'];
     const out = {
         title: d.title || '', artist: (d['artist-credit'] || []).map(c => c.name).join(', '),
+        artists: (d['artist-credit'] || []).map(c => ({ name: c.name || '', href: c.artist && c.artist.id ? location.origin + '/artist/' + c.artist.id : '', join: c.joinphrase || '' })),
         cover: d['cover-art-archive'] && d['cover-art-archive'].front ? 'https://coverartarchive.org/release/' + id + '/front-250' : '',
         tracks, media: (d.media || []).length, format: fmts.map(x => (x.n > 1 ? x.n + '\u00d7' : '') + x.f).join(' + '),
         versions: rg ? { href: location.origin + '/release-group/' + rg.id, text: 'all versions' } : null,
@@ -989,6 +1001,7 @@ function readRelease() {
     const title = tl ? tl.textContent.trim() : h1 ? h1.textContent.trim() : document.title;
     const artist = h && h.querySelector('.subheader') ? Array.from(h.querySelectorAll('.subheader a[href*="/artist/"]')).map(a => a.textContent.trim()).join(', ') : '';
     // the release group's versions, from the header's own "see all versions" link (as Apollo's zen title)
+    const artists = readCredit(h && h.querySelector('.subheader a[href*="/artist/"]'));
     const va = h && (h.querySelector('.subheader .small a[href*="/release-group/"]') || Array.from(h.querySelectorAll('.subheader a')).find(x => /version/i.test(x.textContent || '')));   // #722 by its address
     const vn = va && (va.textContent.match(/(\d+)/) || [])[1];
     const versions = va ? { href: va.href, text: vn ? vn + (vn === '1' ? ' version' : ' versions') : 'all versions' } : null;
@@ -1019,8 +1032,31 @@ function readRelease() {
     const la = D.querySelector('#sidebar dd.language a[href*="lang"]');
     let language = null;
     try { language = la ? (decodeURIComponent(la.getAttribute('href')).match(/lang:"?([a-z]{3})\b/) || [])[1] || null : null; } catch (e) { language = null; }
-    return { title, artist, cover: cover ? cover.src : '', tracks, media: medium, format, versions, events, language };
+    return { title, artist, artists, cover: cover ? cover.src : '', tracks, media: medium, format, versions, events, language };
 }
+// the release's artist credit off its subheader: each artist's link, and the words up to the next one
+// ("feat.", " & "), so the header can link every artist as MB writes the credit
+function readCredit(first) {
+    if (!first) return [];
+    const out = [];
+    let start = first;   // a wrapped artist (span.mp, a name variation): walk the wrapper's siblings
+    while (start.parentElement && !start.parentElement.matches('.subheader')) start = start.parentElement;
+    for (let n = start; n; n = n.nextSibling) {
+        if (n.nodeType === 1 && n.matches('a[href*="/artist/"]')) out.push({ name: n.textContent.trim(), href: n.href, join: '' });
+        else if (n.nodeType === 1 && n.querySelector && n.querySelector('a[href*="/artist/"]')) { const a = n.querySelector('a[href*="/artist/"]'); out.push({ name: a.textContent.trim(), href: a.href, join: '' }); }
+        else if (out.length) {
+            const t = n.textContent || '';
+            if (n.nodeType === 1 && n.matches('.small, span.small')) break;
+            out[out.length - 1].join += t;
+        }
+    }
+    const last = out[out.length - 1];
+    if (last) last.join = '';
+    out.forEach(a => { a.join = a.join.replace(/\s+/g, ' '); });
+    return out;
+}
+// the artists as links, MB's own join words between them
+const creditHtml = list => list.map(a => (a.href ? '<a href="' + esc(a.href) + '" target="_blank" rel="noopener">' + esc(a.name) + '</a>' : esc(a.name)) + esc(a.join || '')).join('');
 
 /* ── UI ────────────────────────────────────────────────────────────────────── */
 
@@ -1052,7 +1088,7 @@ function mcStyle() {
         // header: actions | album (center) | actions — Apollo's layout
         // an opacity pulse on a layer under the header's contents: the compositor runs it, so it stays
         // smooth while the page's thread is busy (a box-shadow pulse froze and jumped: flashing)
-        + '.mc-hdr{position:relative;isolation:isolate}.mc-hdr::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:0;background:color-mix(in srgb, var(--mbu-info) 18%, transparent)}'
+        + '.mc-hdr{position:relative;isolation:isolate;z-index:5}.mc-hdr::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:0;background:color-mix(in srgb, var(--mbu-info) 18%, transparent)}'
         + '@keyframes mc-busy-pulse{0%,100%{opacity:0}50%{opacity:1}}.mc-hdr.mc-busy::after{animation:mc-busy-pulse 1.4s ease-in-out infinite;will-change:opacity}'
         + '@media (prefers-reduced-motion: reduce){.mc-hdr.mc-busy::after{animation:none;opacity:.5}}'
         + '.mc-sep{width:1px;height:20px;background:var(--mbu-border);margin:0 4px}'
@@ -1065,17 +1101,17 @@ function mcStyle() {
         + '#mc-root .mc-btn.tog{color:var(--mbu-text-weak)}#mc-root .mc-btn.tog.on{background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong);color:var(--mbu-accent-text)}'
         + '#mc-root .mc-btn.lg{padding:7px 16px;font-size:13px}'
         // #680: one header row — the release, the steps (C, on one line), Execute (N), ⚙ and ✕
-        + '.mc-hdr{display:flex;align-items:center;gap:14px;height:52px;padding:0 10px 0 12px;background:var(--mbu-bg);border-bottom:1px solid var(--mbu-border);box-shadow:var(--mbu-shadow)}'
-        + '.mc-fmt{flex:none;display:grid;place-items:center;width:30px;height:30px;color:var(--mbu-text-dim)}.mc-fmt svg{width:28px;height:28px;display:block}'
-        + '.mc-rel{display:flex;flex-direction:column;min-width:0;flex:0 1 auto;max-width:40%;padding-right:20px;line-height:1.2}.mc-ttl{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mc-art{font-size:12px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#mc-root .mc-art .mc-ver{color:var(--mbu-text-weak);text-decoration:none}#mc-root .mc-art .mc-ver:hover{color:var(--mbu-accent-text);text-decoration:underline}'
+        + '.mc-hdr{display:flex;align-items:center;gap:8px;height:52px;padding:0 10px 0 12px;background:var(--mbu-bg);border-bottom:1px solid var(--mbu-border);box-shadow:var(--mbu-shadow)}'
+        + '.mc-fmt{flex:none;display:grid;place-items:center;width:30px;height:30px;color:var(--mbu-text-dim);position:relative}.mc-hdr.mc-fold .mc-rel{display:none}.mc-relpop{display:none;position:absolute;top:100%;left:0;z-index:30;padding-top:6px;cursor:default}.mc-hdr.mc-fold .mc-fmt:hover .mc-relpop,.mc-hdr.mc-fold .mc-fmt:focus-within .mc-relpop{display:block}.mc-relcard{display:flex;flex-direction:column;gap:3px;width:320px;max-width:70vw;padding:10px 12px;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);line-height:1.3;text-align:left}#mc-root .mc-relcard a{color:inherit;text-decoration:none}#mc-root .mc-relcard a:hover{color:var(--mbu-accent-text);text-decoration:underline}.mc-relcard .t{font-weight:700;font-size:14px;color:var(--mbu-text)}.mc-relcard .a{font-size:12px;color:var(--mbu-text-dim)}#mc-root .mc-relcard .mc-ver{color:var(--mbu-text-weak)}.mc-relcard .f{font-size:11.5px;color:var(--mbu-text-weak)}.mc-relcard .h{font-size:11px;color:var(--mbu-text-weak);margin-top:4px}.mc-fmt svg{width:28px;height:28px;display:block}'
+        + '.mc-rel{display:flex;flex-direction:column;min-width:0;flex:0 1 auto;max-width:19%;padding-right:2px;line-height:1.2}#mc-root .mc-rel a,#mc-root .mcc-rel a{color:inherit;text-decoration:none}#mc-root .mc-rel a:hover,#mc-root .mcc-rel a:hover{color:var(--mbu-accent-text);text-decoration:underline}.mc-ttl{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mc-art{font-size:12px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#mc-root .mc-art .mc-ver{color:var(--mbu-text-weak);text-decoration:none}#mc-root .mc-art .mc-ver:hover{color:var(--mbu-accent-text);text-decoration:underline}'
         + '.mc-hdr .mc-act{display:flex;align-items:center;gap:4px;flex:none}#mc-root .mc-act .mc-exec{justify-content:center;min-width:var(--mc-exec-w,96px);height:28px;padding:0 12px;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong);color:var(--mbu-accent-text)}#mc-root .mc-act .mc-exec:hover:not(:disabled){background:var(--mbu-accent);border-color:var(--mbu-accent);color:var(--mbu-accent-fg)}#mc-root .mc-act .mc-exec:disabled{background:var(--mbu-bg);border-color:var(--mbu-border);color:var(--mbu-text-weak);cursor:default}'
         // the steps: a ring, then the name and the state beside it, all on one centre line; a click switches the step off or on (#753)
-        + '.mc-steps{display:flex;align-items:center;justify-content:center;gap:6px;flex:1 1 auto;min-width:0;height:100%}'
-        + '#mc-root .mc-re{flex:none;width:26px;height:26px;margin-right:4px;padding:0;border-radius:50%;border:1px solid transparent;background:none;color:var(--mbu-text-dim);font-size:14px;line-height:1;cursor:pointer}#mc-root .mc-re:hover{border-color:var(--mbu-border);background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}'
-        + '.mc-step{display:inline-flex;align-items:center;gap:7px;min-width:0;flex:0 1 auto;padding:4px 6px;border-radius:var(--mbu-radius);cursor:pointer}.mc-step:hover{background:var(--mbu-bg-hover)}.mc-hdr .mc-fmt{cursor:pointer;border-radius:var(--mbu-radius)}.mc-hdr .mc-fmt:hover{background:var(--mbu-bg-hover)}'
+        + '.mc-steps{display:flex;align-items:center;justify-content:center;gap:2px;flex:1 1 auto;min-width:0;height:100%}'
+        + '#mc-root .mc-re{flex:none;width:26px;height:26px;margin-right:2px;padding:0;border-radius:50%;border:1px solid transparent;background:none;color:var(--mbu-text-dim);font-size:14px;line-height:1;cursor:pointer}#mc-root .mc-re:hover{border-color:var(--mbu-border);background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}'
+        + '.mc-step{display:inline-flex;align-items:center;gap:5px;min-width:0;flex:0 1 auto;padding:4px 4px;border-radius:var(--mbu-radius);cursor:pointer}.mc-step:hover{background:var(--mbu-bg-hover)}.mc-hdr .mc-fmt{cursor:pointer;border-radius:var(--mbu-radius)}.mc-hdr .mc-fmt:hover{background:var(--mbu-bg-hover)}'
         // a step's words take a fixed width (cut with …, the whole of it in the tooltip): changing words and
         // ticking seconds must not move the steps; only the window's width does
-        + '.mc-step .tx{display:flex;flex-direction:column;flex:0 1 130px;width:130px;min-width:0;line-height:1.2}.mc-step b{font-size:12.5px;color:var(--mbu-text)}.mc-step i{font-style:normal;font-size:11.5px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}'
+        + '.mc-step .tx{display:flex;flex-direction:column;flex:0 1 130px;width:130px;min-width:0;line-height:1.2}.mc-step b{font-size:12.5px;color:var(--mbu-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mc-step i{font-style:normal;font-size:11.5px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}'
         // #680: no ring: the provider's own icon, bigger, so it reads; the state rides on the badge and the text
         + '.mc-ring{position:relative;flex:none;display:grid;place-items:center;width:28px;height:28px}'
         + '.mc-ring img{width:28px;height:28px;object-fit:contain;display:block;margin:0;vertical-align:0}'
@@ -1086,7 +1122,7 @@ function mcStyle() {
         + '.mc-step.stalled sup{background:var(--mbu-warn)}.mc-step.stalled i,.mc-step.stalled b{color:var(--mbu-warn)}.mc-step.reask i{cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;padding:3px 0;margin:-3px 0}.mc-step.reask i:hover{text-decoration-style:solid}'
         + '.mc-step.err sup{background:var(--mbu-error)}.mc-step.err i{color:var(--mbu-error)}'
         + '.mc-step.wait .mc-ring img{filter:grayscale(1);opacity:.5}.mc-step.wait b{color:var(--mbu-text-weak)}.mc-step.off{opacity:.45}.mc-step.off .mc-ring img{filter:grayscale(1)}.mc-step.off b{text-decoration:line-through}'
-        + '.mc-steps .mc-arrow{color:var(--mbu-text-weak);flex:none}.mc-steps .mc-par{display:inline-flex;align-items:center;gap:4px;height:40px;margin:0;background:none;padding:0 6px;border:1px dashed var(--mbu-border);border-radius:10px;box-sizing:border-box;min-width:0}'
+        + '.mc-steps .mc-arrow{color:var(--mbu-text-weak);flex:none;font-size:11px;margin:0 -1px}.mc-steps .mc-par{display:inline-flex;align-items:center;gap:4px;height:40px;margin:0;background:none;padding:0 6px;border:1px dashed var(--mbu-border);border-radius:10px;box-sizing:border-box;min-width:0}'
         + '@media (prefers-reduced-motion: reduce){.mc-step.busy .mc-ring::before{animation:none}}'
         // the corner launchers (Falcon, Fusion, ours) share MC's z-index; hide them while MC is open
         + 'html.mc-open [data-mb-corner]{display:none!important}'
@@ -1140,7 +1176,7 @@ function mcStyle() {
         + '.mc-sect-h .ic{width:22px;height:22px;border-radius:6px;background:var(--mbu-accent-soft);display:grid;place-items:center;font-size:12px;flex:none}'
         + '.mc-sect-h .ic img{width:16px;height:16px;object-fit:contain;display:block}.mc-sect-h .ic.img{width:28px;height:28px;background:none}.mc-sect-h .ic.img img{width:28px;height:28px}.mc-sect-h .t{font-weight:700;font-size:12.5px}.mc-sect-h .p{font-size:10.5px;color:var(--mbu-text-weak)}'
         + '.mc-empty{padding:10px;color:var(--mbu-text-weak);font-size:12px}'
-        + '.mc-line{display:grid;grid-template-columns:16px 16px 1fr auto;gap:8px;align-items:center;padding:4px 10px;border-bottom:1px solid var(--mbu-divider)}'
+        + '.mc-line{display:grid;grid-template-columns:16px 16px 1fr auto;gap:8px;align-items:center;padding:4px 10px;border-bottom:1px solid var(--mbu-divider)}.mc-line.mc-hassrc{grid-template-columns:16px 16px minmax(0,1fr) auto auto}.mc-srcs{display:flex;align-items:center;gap:5px}.mc-srcs b{font-size:9.5px;color:var(--mbu-text-dim)}'
         // #751: Art Station's rows, the cover's size and the pill in columns of fixed width, so the rows line up
         + '.mc-line.mc-hassize{grid-template-columns:16px 16px minmax(0,1fr) 96px 76px}.mc-line.mc-hassize>.mc-pill{justify-self:center}'
         + '#mc-root a.mc-csize{justify-self:end;font:11px/1.4 ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums;color:var(--mbu-accent-text);text-decoration:none;padding:0 6px;border:1px solid var(--mbu-border);border-radius:5px;white-space:nowrap}'
@@ -1374,14 +1410,40 @@ function header() {
     h.addEventListener('animationiteration', e => { if (e.target === h && e.pseudoElement === '::after' && !isBusy()) h.classList.remove('mc-busy'); });
     // #680: the release where Probe was (the cover is the one in the Cover art card), the steps, then
     // Execute with its count; logo, version and Auto probe live in ⚙
-    h.innerHTML = mbuHtml(fmtIcon(rel.format) + '<div class="mc-rel"><div class="mc-ttl" data-tip="' + esc(rel.title) + '">' + esc(rel.title) + '</div>'
-        + '<div class="mc-art" data-tip="' + esc(rel.artist) + '">' + esc(rel.artist || '')
+    h.innerHTML = mbuHtml(fmtIcon(rel.format) + '<div class="mc-rel"><div class="mc-ttl" data-tip="' + esc(rel.title) + '"><a href="' + esc(location.origin + '/release/' + RELEASE) + '" target="_blank" rel="noopener">' + esc(rel.title) + '</a></div>'
+        + '<div class="mc-art" data-tip="' + esc(rel.artist) + '">' + (rel.artists && rel.artists.length ? creditHtml(rel.artists) : esc(rel.artist || ''))
         + (rel.versions ? ' <a class="mc-ver" href="' + esc(rel.versions.href) + '" target="_blank" rel="noopener" data-tip="Every version of this release">(' + esc(rel.versions.text) + ')</a>' : '') + '</div></div>'
         + '<div class="mc-act"><button type="button" class="mc-btn mc-exec" data-act="exec" disabled data-tip="Apply the selected changes, step by step">Execute</button>'
         + '<button type="button" class="mc-btn ghost" data-act="cfg" data-tip="Settings">' + MBU_CFG_ICON + '</button>'
         + '<button type="button" class="mc-btn ghost" data-act="close" data-tip="Close (Esc)">✕</button></div>');
     h.insertBefore(steps(), h.querySelector('.mc-act'));
+    // majkinetor (option A): when the steps don't fit, the release folds into its format icon, and a
+    // hover on the icon shows it as a card with its links
+    const fmt = h.querySelector('.mc-fmt');
+    if (fmt) {
+        fmt.dataset.tipFull = fmt.dataset.tip || '';
+        fmt.insertAdjacentHTML('beforeend', mbuHtml('<span class="mc-relpop"><span class="mc-relcard">'
+            + '<a class="t" href="' + esc(location.origin + '/release/' + RELEASE) + '" target="_blank" rel="noopener">' + esc(rel.title) + '</a>'
+            + '<span class="a">' + (rel.artists && rel.artists.length ? creditHtml(rel.artists) : esc(rel.artist || ''))
+            + (rel.versions ? ' · <a class="mc-ver" href="' + esc(rel.versions.href) + '" target="_blank" rel="noopener">' + esc(rel.versions.text) + '</a>' : '') + '</span>'
+            + '<span class="f">' + esc(rel.format || 'Format unknown') + '</span>'
+            + '<span class="h">Click the icon: show or hide the order of the steps</span></span></span>'));
+    }
+    if (window.ResizeObserver) { let w = 0; new ResizeObserver(() => { if (h.clientWidth !== w) { w = h.clientWidth; fitHeader(h); } }).observe(h); }
     return h;
+}
+// the release folds when a step's name would be cut with it shown. Measured with it shown, in one go
+// (no paint between the two class changes); a step's words have a fixed width, so its state changing
+// doesn't move anything and only a resize asks again
+function fitHeader(h) {
+    if (!h || !h.isConnected) return;
+    const was = h.classList.contains('mc-fold');
+    h.classList.remove('mc-fold');
+    const tight = [...h.querySelectorAll('.mc-step b')].some(b => b.scrollWidth > b.clientWidth + 1);
+    h.classList.toggle('mc-fold', tight);
+    const fmt = h.querySelector('.mc-fmt');
+    if (fmt) { if (tight) delete fmt.dataset.tip; else fmt.dataset.tip = fmt.dataset.tipFull || ''; }
+    if (tight !== was) Log.cat('UI').debug('header ' + h.clientWidth + ' px: the release ' + (tight ? 'folds into its format icon' : 'shows in full'));
 }
 
 // #680: the release's format as an icon left of the title, its name in the tooltip. Only the
@@ -1601,7 +1663,13 @@ const COLS = [
     { id: 'ch', p: 'ch', head: 'Credits · CH', cell: x =>
         x.credits ? '<span data-tip="' + esc((x.list || []).map(c => c.name + ' — ' + c.role).join('\n')) + '">' + x.credits + '</span>' : '<span class="pend">—</span>' },
 ];
-const FETCH_LABEL = { fusion: 'Fetch RG', ch: 'Fetch credits', fc: 'Compare' };
+const FETCH_LABEL = { fusion: 'Fetch RG', ch: 'Fetch credits', fc: 'Compare', fl: 'Fetch genres' };
+// an Ask-mode provider with a card of its own fetches from it (Fuzzy Logic)
+function fetchBtn(p) {
+    const r = results[p.id];
+    if (!p.mode || !CARDS.some(([c]) => c === p.id) || modeOf(p) !== 'ask' || !found[p.id] || (r && r.state === 'busy') || !FETCH_LABEL[p.id]) return '';
+    return '<button type="button" class="mc-fetch" data-fetch="' + p.id + '" data-tip="Fetch now">' + (r ? '↻ ' : '') + FETCH_LABEL[p.id] + '</button>';
+}
 function colHead(c) {
     const p = PROVIDERS.find(x => x.id === c.p);
     if (!p.mode) return esc(c.head);
@@ -1990,6 +2058,7 @@ function releaseCards() {
     };
     row.innerHTML = mbuHtml(card('pc', 'Release and entity links') + card('as', 'Cover art'));
     if (modeNow('ch') !== 'off') row.append(releaseCredits());
+    if (modeNow('fl') !== 'off') row.insertAdjacentHTML('beforeend', mbuHtml(card('fl', 'Genres')));
     row._cards = [...row.children];
     let w = 0;
     new ResizeObserver(() => { if (row.clientWidth !== w) { w = row.clientWidth; layoutCards(row); } }).observe(row);
@@ -2129,7 +2198,7 @@ function linkedBtn(linked, k) {
     const nm = x => (isEnt(x) ? (x.entity.name || '') + ' · ' : '') + (x.name || x.key);
     return '<button type="button" class="mc-linked' + (open ? ' on' : '') + '" data-act="linked" data-lk="' + esc(k) + '" data-tip="'
         + esc('Already linked\n' + linked.map(x => '- ' + nm(x)).join('\n') + (open ? '\nClick: fold them back' : '\nClick: list them as rows')) + '">'
-        + [...by].map(([k, xs]) => '<span class="mc-pico' + (xs[0].entity ? ' mc-ent' : '') + '" data-tip="' + esc(xs.map(nm).join(', ')) + '">' + stIcon(k, 14) + (xs.length > 1 ? '<sub>' + xs.length + '</sub>' : '') + '</span>').join('')
+        + [...by].filter(([k]) => stIcon(k, 14)).map(([k, xs]) => '<span class="mc-pico' + (xs[0].entity ? ' mc-ent' : '') + '" data-tip="' + esc(xs.map(nm).join(', ')) + '">' + stIcon(k, 14) + (xs.length > 1 ? '<sub>' + xs.length + '</sub>' : '') + '</span>').join('')
         + '<span class="mc-lk">✓ ' + linked.length + '</span></button>';
 }
 // a repaint rebuilds the card, which reloads its images: the cover thumbnails blinked on each
@@ -2146,7 +2215,7 @@ function setCard(box, html) {
 function paintCards() {
     ui.querySelectorAll('[data-card]').forEach(box => {
         const id = box.dataset.card, p = PROVIDERS.find(x => x.id === id), r = results[id];
-        if (!r || r.state !== 'done') { setCard(box, mbuHtml('<div class="mc-empty">' + esc(p.provider) + ': ' + esc(stateText(p)) + (r ? '' : '. Probe fills this in.') + '</div>')); return; }
+        if (!r || r.state !== 'done') { setCard(box, mbuHtml('<div class="mc-empty">' + esc(p.provider) + ': ' + esc(stateText(p)) + (r ? '' : fetchBtn(p) ? ' ' + fetchBtn(p) : '. Probe fills this in.') + '</div>')); return; }
         if (!r.findings.length) { setCard(box, mbuHtml((r.summary ? '<div class="mc-summary">' + esc(r.summary) + '</div>' : '') + '<div class="mc-empty">Nothing to report.</div>')); return; }
         const sum = r.summary ? '<div class="mc-summary">' + esc(r.summary) + '</div>' : '';
         const ap = (r.applied ? '<div class="mc-applied ' + (r.applied.ok ? 'ok' : 'err') + '">' + (r.applied.ok ? '✓ ' : '✕ ') + esc(r.applied.note || (r.applied.ok ? 'done' : 'failed'))
@@ -2173,7 +2242,7 @@ function paintCards() {
         const bcRowsOf = () => r.findings.filter(x => isBc(x) && !placedCats.has(x.key));
         const none = r.findings.filter(x => x.state === 'none');
         const slot = box.parentNode.querySelector('.mc-sect-h .end');
-        if (slot) slot.innerHTML = mbuHtml(pc ? '' : linkedBtn(linked, id));
+        if (slot) slot.innerHTML = mbuHtml(pc ? '' : linkedBtn(linked, id) + fetchBtn(p));
         // the row is the toggle, no tick box (#680); a taken-in row is tinted and marked ✓
         // PC's barcodes (#680): the release's links grouped by barcode, a lane each (leading zeros
         // aside, as PC compares them): the release's own first, in green, then the others by size,
@@ -2206,15 +2275,18 @@ function paintCards() {
             const on = pick && picked[id] && picked[id].has(x.key);
             const pill = x.role === 'searched' ? ['idle', 'searched'] : x.role === 'best' && x.state === 'new' ? ['add', 'enters'] : isBc(x) && x.state === 'linked' ? ['ok', 'added'] : PILL[x.state] || ['idle', x.state];
             // in a lane, the barcode and its reason are on the lane: only a differently written barcode stays
-            return '<div class="mc-line ' + esc(x.state) + (x.cover ? ' mc-hassize' : '') + (x.entity ? ' mc-ent' : '') + (lane ? ' mc-in' : '') + (pick ? ' mc-pick' : '') + (on ? ' on' : '') + '"'
+            const srcs = Array.isArray(x.sources) && x.sources.some(s => s && s.icon) ? x.sources.filter(s => s && s.icon) : null;
+            return '<div class="mc-line ' + esc(x.state) + (x.cover ? ' mc-hassize' : '') + (srcs ? ' mc-hassrc' : '') + (x.entity ? ' mc-ent' : '') + (lane ? ' mc-in' : '') + (pick ? ' mc-pick' : '') + (on ? ' on' : '') + '"'
                 + (pick ? ' data-prov="' + id + '" data-key="' + esc(x.key) + '" data-tip="' + (on ? 'Taken in\nClick: leave it out' : 'Click: take it in') + '"' : '') + '>'
                 + '<span class="mc-tick">' + (on ? '✓' : '') + '</span>'
-                + '<span class="mc-pico">' + (x.kind === 'catno' || x.kind === 'label' ? CATNO_SVG : x.kind === 'event' || x.kind === 'lengths' ? FIELD_SVG : isBc(x) ? BARCODE_SVG : stIcon(x.icon || x.key, 14)) + '</span>'
+                + '<span class="mc-pico">' + (id === 'fl' ? HASH_SVG : x.kind === 'catno' || x.kind === 'label' ? CATNO_SVG : x.kind === 'event' || x.kind === 'lengths' ? FIELD_SVG : isBc(x) ? BARCODE_SVG : stIcon(x.icon || x.key, 14)) + '</span>'
                 + '<div class="mc-lt"><div class="t">' + (x.kind === 'event' ? 'Release event <b>' + esc(x.code) + '</b>' : x.kind === 'lengths' ? 'Track lengths for <b>' + esc(x.code) + '</b>' : x.kind === 'label' ? 'Label <b>' + esc(x.label && x.label.name || '') + '</b>' + (x.code ? ' · cat. no. <b class="mc-bcn">' + esc(x.code) + '</b>' : '') : x.kind === 'catno' ? 'Cat. no. <b class="mc-bcn">' + esc(x.code) + '</b> · ' + esc(x.label && x.label.name || '') : isBc(x) ? 'Barcode <b class="mc-bcn">' + esc(x.code) + '</b>' : entName(x)) + '</div>'
                 + (x.url ? '<a class="s" target="_blank" rel="noopener" href="' + esc(x.url) + '" data-tip="' + esc(x.url) + '">' + esc(shortUrl(x.url)) + '</a>' : '')
                 + whyHtml(x, lane) + '</div>'
                 // #751: Art Station's row, the size of the platform's own cover in a column of its own, a link to the cover
                 + (x.cover ? coverChip(x) : '')
+                // Fuzzy Logic's genre: the platforms that gave it, as icons on the right
+                + (srcs ? '<span class="mc-srcs">' + srcs.map(s => '<span class="mc-pico" data-tip="' + esc(s.name || s.icon) + '">' + (stIcon(s.icon, 14) || '<b>' + esc(String(s.name || s.icon).slice(0, 2)) + '</b>') + '</span>').join('') + '</span>' : '')
                 + (lane && x.state !== 'linked' ? '<span></span>' : '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span>') + '</div>';
         };
         // PC's links in sections: the release's, then the artists', then the labels', each under its
@@ -2280,6 +2352,8 @@ function paintCards() {
     });
 }
 // #727: a catalog number's icon, a tag
+// a genre: Event Horizon's #
+const HASH_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--mbu-text-dim)"><path d="M5 9h14M5 15h14M10 4L8 20M16 4l-2 16"/></svg>';
 const CATNO_SVG = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" style="color:var(--mbu-text-dim)"><path d="M1.5 7.6V1.5h6.1l5 5-6.1 6.1z"/><circle cx="4.6" cy="4.6" r="1.1"/></svg>';
 // #782: a release field's icon (release event, track lengths), a calendar
 const FIELD_SVG = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" style="color:var(--mbu-text-dim)"><rect x="1.5" y="2.5" width="11" height="10" rx="1.5"/><path d="M1.5 6h11M4.5 1v3M9.5 1v3"/></svg>';
@@ -2625,7 +2699,7 @@ function onClick(e) {
     // a stalled probe's status line asks again (the rest of the step still switches it off)
     if (stp && stp.classList.contains('reask') && t.closest('.tx i')) { askAgain(stp.dataset.step, 'again on request'); return; }
     if (stp) { toggleProvider(stp.dataset.step); return; }
-    if (t.closest('.mc-hdr .mc-fmt')) { S.left = !S.left; saveSettings(); paintSides(); return; }
+    if (t.closest('.mc-hdr .mc-fmt') && !t.closest('.mc-relpop')) { S.left = !S.left; saveSettings(); paintSides(); return; }
     if (!act) return;
     switch (act.dataset.act) {
         case 'probe': {
@@ -5466,10 +5540,11 @@ function ccPaintHeader() {
     const t = CC.ui.querySelector('.mcc-ttl'), sub = CC.ui.querySelector('.mcc-sub');
     const title = m.fields && m.fields.title.win ? m.fields.title.win.val : CC.src ? CC.src.rel.title : 'Consolidate';
     const artist = m.fields && m.fields.artist.win ? m.fields.artist.win.val : CC.src ? ccCredit(CC.src.rel.credit) : '';
-    if (t) { t.textContent = title; t.dataset.tip = title; }
+    if (t) { t.innerHTML = mbuHtml(CC.src && CC.src.url ? '<a href="' + esc(CC.src.url) + '" target="_blank" rel="noopener">' + esc(title) + '</a>' : esc(title)); t.dataset.tip = title; }
     const slot = CC.ui.querySelector('.mcc-fmt-slot'), fmt = ccFormat();
     if (slot && slot.dataset.fmt !== fmt) { slot.dataset.fmt = fmt; slot.innerHTML = mbuHtml(fmtIcon(fmt) || '<img src="' + ICON_URL + '" alt="" width="28" height="28">'); }
-    if (sub) { sub.textContent = artist; sub.dataset.tip = artist; }   // majkinetor: only the artist; the Source step links the platform
+    const credit = m.fields && m.fields.artist.win ? m.fields.artist.win.data : CC.src ? CC.src.rel.credit : null;
+    if (sub) { sub.innerHTML = mbuHtml(Array.isArray(credit) && credit.length ? creditHtml(credit.map(a => ({ name: a.name || '', href: a.url || '', join: a.join || '' }))) : esc(artist)); sub.dataset.tip = artist; }   // majkinetor: only the artist; the Source step links the platform
     CC.ui.querySelectorAll('[data-cc="open"]').forEach(b => { b.disabled = !m.fields || CC.seeded; b.textContent = CC.seeded ? 'Opening the release editor…' : 'Add release →'; });
     CC.ui.querySelectorAll('[data-cc="more"]').forEach(b => { b.disabled = !m.fields || CC.seeded; });
     ccPaintSteps();
