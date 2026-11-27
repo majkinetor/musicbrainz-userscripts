@@ -27,6 +27,8 @@ The row of source buttons shows what each one gave. Click a source to leave its 
 
 With [Collect tags when a page opens](#settings) on, the launcher's badge counts the new genres before you open the window.
 
+On a release, [Mission Control](../mission_control/README.md#genres) lists the genres in its Genres card and votes the ones selected there.
+
 Event Horizon's tag editor gets a small Fuzzy Logic button beside its close button, showing the count. Votes made from there go through Event Horizon.
 
 ## Voting

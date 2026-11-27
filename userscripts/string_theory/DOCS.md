@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-27 22:27 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-27 22:16 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -921,7 +921,7 @@ The header's **Show** menu picks the columns: **Artist** shows by itself on a Va
 
 The player is on unless **Enable player** is turned off in the settings. The play button on a track number plays that recording; **Play** in the tracklist's header plays the release; right-click either to add to the queue. On a recording or release collection, **Play** queues the collection.
 
-It plays from the sources in [Player sources](#player-sources). When a track has links to several of them, **Sources** in the settings decides which one plays: drag a source to move it, click it to turn it off. The tracklist's link order does not matter. The next track loads ahead, and **Crossfade** blends the two tracks, except on SoundCloud and the Internet Archive.
+It plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music, SoundCloud, Bandcamp and the Internet Archive. A release linked to an Internet Archive item plays each track from the item, in the best quality that your browser plays (FLAC first). On YouTube, Bandcamp, Deezer, Apple Music and Spotify the next track loads ahead and **Crossfade** blends them.
 
 Click the track name for the queue. Its head counts the releases and loose recordings: the releases count shows their covers as a grid in place of the tracks, and a cover jumps to its release, right-click removes its tracks; the recordings count jumps to them. While a collection loads, the head shows how many of its entries are loaded. Right-click Play to cycle repeat; **Shuffle** plays each track once in random order; the wheel winds five seconds. The source menu also has:
 
@@ -930,25 +930,6 @@ Click the track name for the queue. Its head counts the releases and loose recor
 - **Recent playlists…**: the last five queues.
 
 **Send listens to ListenBrainz** scrobbles what plays, after half a track or four minutes. **Get token** opens ListenBrainz's settings for the token.
-
-#### Player sources
-
-The player uses a recording's link to each source. For Tidal, Amazon Music and the Internet Archive, a link on the release also plays each track by its place in the release, when the recording has no link of its own. A preview is a short part of the track, which the site plays when you are not signed in to it.
-
-| Source           | Links                       | Plays                                                              | Crossfade |
-| ---------------- | --------------------------- | ------------------------------------------------------------------ | --------- |
-| Bandcamp         | track                       | the full track, as the track page plays it                         | yes       |
-| YouTube Music    | video                       | the full track                                                     | yes       |
-| Spotify          | track, album                | the full track when signed in, else a 30 s preview                 | yes       |
-| YouTube          | video                       | the full track                                                     | yes       |
-| Apple Music      | song                        | the full track when signed in, else a 90 s preview                 | yes       |
-| Tidal            | track; album on the release | a 30 s preview when signed out                                     | yes       |
-| Deezer           | track, album                | the full track when signed in, else a 30 s preview                 | yes       |
-| Amazon Music     | track; album on the release | a 30 s preview                                                     | yes       |
-| SoundCloud       | track                       | the full track                                                     | no        |
-| Internet Archive | file; item on the release   | the file, in the best quality that your browser plays (FLAC first) | no        |
-
-The table lists the sources in the default order of **Sources**. 7digital is not a source, because it has no embedded player.
 
 ### Releases and discography
 
@@ -1052,7 +1033,6 @@ Right-click the corner icon.
 | Player → Show playlist track number   | off                                                       | the playing track's number in the playlist    |
 | Player → Left click                   | Replace queue                                             | replace the queue or add to it                |
 | Player → Crossfade                    | 5 s                                                       | **Off** for none                              |
-| Player → Sources                      | as in [Player sources](#player-sources)                   | which plays first; a click turns one off      |
 | Player → Collection playlist limit    | 1000                                                      | most tracks taken from a collection           |
 | Player → Show ListenBrainz menu items | on                                                        | the player's ListenBrainz links               |
 | Player → Send listens to ListenBrainz | off                                                       | with the **LB token** beside it               |
@@ -2551,6 +2531,7 @@ One window on a release page that asks the other scripts what the release is mis
 - **[Compare with the platforms](#compare-with-the-platforms)**: read the release on its platforms and add what it lacks: a barcode, labels and catalog numbers, a release event, track lengths.
 - **[Cover art](#cover-art)**: the best cover found, beside the current front, and Art Station's gallery, to add, order and type the other images Discogs and Amazon have.
 - **[Release credits](#release-credits)**: what the credit sources have, with a way into Credit Hoarder.
+- **[Genres](#genres)**: the genres the release's linked pages give, voted on Execute.
 - **[Inspector](#inspector)**: everything found for one track.
 - **[Execute](#execute)**: applies what you selected, script by script, in a fixed order.
 - **[Consolidate a new release](#consolidate-a-new-release)**: compare an album across the platforms and take the best of each into the release editor, or into the release MusicBrainz already has. Start from the album's page, or [from its barcode](#from-a-barcode).
@@ -2569,8 +2550,9 @@ Open Mission Control with its corner icon on a release page. On a phone it fills
 | Cover art                | [Art Station](../art_station/README.md)       | a better front cover, and the stores' other images     |
 | Merge suggestions        | [Fusion](../fusion/README.md)                 | duplicate recordings in the release group              |
 | Credits                  | [Credit Hoarder](../credit_hoarder/README.md) | per-track credits                                      |
+| Genres                   | [Fuzzy Logic](../fuzzy_logic/README.md)       | genres from the release's linked pages                 |
 
-Platforms, Fusion and Credit Hoarder are slow, so each has a switch under its step: **Auto** fetches during the probe, **Ask** waits for its button in the Tracks header (**Compare**, **Fetch RG**, **Fetch credits**), **Off** leaves it out. Platforms starts on Auto, Fusion and Credit Hoarder on Ask.
+Platforms, Fusion, Credit Hoarder and Fuzzy Logic are slow, so each has a switch under its step: **Auto** fetches during the probe, **Ask** waits for its button (**Compare**, **Fetch RG** and **Fetch credits** in the Tracks header, **Fetch genres** in the Genres card), **Off** leaves it out. Platforms starts on Auto, the others on Ask.
 
 Click a step in the header to switch it off for this page, right-click to switch it off for good; click it again to switch it back on. The format icon left of the release title shows or hides the Execution order.
 
@@ -2665,6 +2647,10 @@ An upload that fails is repeated as Art Station's [auto-repeat](../art_station/R
 ### Release credits
 
 Credit Hoarder's count of credits for each track, from every credit source the release links (Discogs, Qobuz, Deezer, Apple Music). Mission Control only shows them: **Import credits** opens Credit Hoarder in a new tab, on the release's relationship editor with that source, or with all of them, to review and add them there.
+
+### Genres
+
+Fuzzy Logic collects the genres from the pages the release links, as its own window does, and lists each MusicBrainz genre with the sources that gave it. The ones you haven't voted for yet start selected; the ones you have are counted at the top of the card. Execute upvotes the selected genres, also on the release group and every recording when that box is ticked in Fuzzy Logic's window. Your favourites that the links gave are listed too, unselected. Other tags, and mapping, stay in Fuzzy Logic.
 
 ### Inspector
 
@@ -2772,6 +2758,8 @@ The row of source buttons shows what each one gave. Click a source to leave its 
 **Genres** shows only MusicBrainz genres and your favourites. **All** shows every collected tag.
 
 With [Collect tags when a page opens](#settings-9) on, the launcher's badge counts the new genres before you open the window.
+
+On a release, [Mission Control](../mission_control/README.md#genres) lists the genres in its Genres card and votes the ones selected there.
 
 Event Horizon's tag editor gets a small Fuzzy Logic button beside its close button, showing the count. Votes made from there go through Event Horizon.
 

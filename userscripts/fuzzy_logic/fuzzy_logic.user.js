@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.27.195254
+// @version      2026.11.27.221631
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm, RateYourMusic and Album of the Year, read when you open their pages), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -4437,6 +4437,83 @@
   }
   addEventListener('popstate', () => setTimeout(navCheck));
   new MutationObserver(() => navCheck()).observe(document.documentElement, { childList: true, subtree: true });
+
+  // ── Mission Control adapter ───────────────────────────────────────────────
+  // Mission Control asks over document events with JSON-string details (userscripts/mission_control/DEVELOP.md).
+  // On a release: a probe collects as the window does (a collect already done for this release is reused) and
+  // reports one finding per MusicBrainz genre or favourite the links gave; apply upvotes the selected ones, on the
+  // release group and recordings too when the window's checkbox is on.
+  const mcSend = (type, d) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(d) }));
+  const mcRel = () => TYPE === 'release' && MBID ? MBID : null;
+  const mcSleep = ms => new Promise(r => setTimeout(r, ms));
+  const mcHello = () => { const rel = mcRel(); if (rel) mcSend('mc:provider', { id: 'fl', name: NAME, version: VER, release: rel, capabilities: ['probe', 'apply'] }); };
+  const mcParse = e => { try { return JSON.parse(e.detail) || {}; } catch (x) { return null; } };
+  function mcFindings() {
+    const out = [];
+    let other = 0;
+    for (const e of sorted()) {
+      if (!e.srcs.size) continue;   // a favourite no link gave: the window offers it, Mission Control doesn't
+      if (!e.genre && !e.fav) { other++; continue; }
+      const as = [...e.orig].filter(o => o.toLowerCase() !== e.name);
+      const why = [[...e.srcs.keys()].map(s => SOURCES[s]).join(', ')].concat(as.length ? ['as ' + as.join(', ')] : []);
+      const state = S.have.has(e.name) ? 'linked' : e.name.includes(',') ? 'withheld' : e.genre ? 'new' : 'unsure';
+      if (state === 'withheld') why.push('has a comma, which MusicBrainz splits: map it in Fuzzy Logic first');
+      if (state === 'unsure') why.push('a favourite, not a MusicBrainz genre');
+      out.push({ key: e.name, name: e.name, state, why: why.join(' · '), sources: [...e.srcs.keys()], genre: !!e.genre });
+    }
+    return { findings: out, other };
+  }
+  document.addEventListener('mc:discover', () => { LOG.info('Mission Control asked — answering as provider fl'); mcHello(); });
+  document.addEventListener('mc:probe', async e => {
+    const d = mcParse(e), rel = mcRel();
+    if (!d || !rel || d.release !== rel || (d.only && !d.only.includes('fl'))) return;
+    const say = note => mcSend('mc:progress', { id: 'fl', run: d.run, state: 'busy', note });
+    const note = () => {
+      const st = Object.values(S.status), done = st.filter(v => v.state !== 'run').length;
+      return st.length ? 'reading ' + done + ' of ' + plural(st.length, 'source') : 'collecting genres';
+    };
+    LOG.info('Mission Control probe ' + d.run);
+    say('collecting genres');
+    const tick = setInterval(() => say(note()), 5000);
+    try {
+      if (!S.ran && !S.busy) collect();
+      while (S.busy || !S.ran) { await mcSleep(300); if (mcRel() !== rel) return; }
+      // your own votes, so a genre you voted for reads as linked
+      for (let i = 0; i < 40 && !ownKnown(); i++) { ownNow(); await mcSleep(250); }
+      S.have = haveNow();
+      const { findings, other } = mcFindings();
+      const srcs = Object.keys(S.status).filter(k => S.status[k].ok).map(k => SOURCES[k]);
+      const nNew = findings.filter(x => x.state === 'new').length;
+      const summary = !Object.keys(S.status).length ? 'No supported links on this release'
+        : plural(findings.length, 'genre') + (srcs.length ? ' from ' + srcs.join(', ') : '') + (nNew < findings.length ? ' · ' + nNew + ' not voted yet' : '') + (other ? ' · ' + plural(other, 'other tag') + ' in Fuzzy Logic' : '');
+      LOG.info('Mission Control probe: ' + summary);
+      mcSend('mc:findings', { id: 'fl', run: d.run, release: rel, findings, summary });
+    } catch (x) {
+      LOG.error('Mission Control probe failed: ' + x.message);
+      mcSend('mc:findings', { id: 'fl', run: d.run, release: rel, findings: [], summary: 'Failed: ' + x.message });
+    } finally { clearInterval(tick); }
+  });
+  document.addEventListener('mc:apply', async e => {
+    const d = mcParse(e), rel = mcRel();
+    if (!d || d.id !== 'fl' || !rel || d.release !== rel) return;
+    const tags = (d.keys || []).filter(t => t && !t.includes(','));
+    const done = o => mcSend('mc:applied', Object.assign({ id: 'fl', run: d.run }, o));
+    if (!tags.length) { done({ ok: true, sent: 0, note: 'nothing to vote' }); return; }
+    if (!loggedIn) { done({ ok: false, sent: 0, note: 'log in to vote' }); return; }
+    if (d.dry) { LOG.info('Mission Control dry run: would upvote ' + tags.join(', ')); done({ ok: true, sent: 0, note: 'dry run: would vote ' + plural(tags.length, 'genre') }); return; }
+    try {
+      mcSend('mc:progress', { id: 'fl', run: d.run, state: 'busy', note: 'voting ' + plural(tags.length, 'genre') });
+      const n = await vote(await targets(), tags, 'upvote');
+      tags.forEach(t => { S.have.add(t); S.ent.add(t); S.sel.delete(t); const o = own.get(ownKey()); if (o) o.add(t); });
+      document.dispatchEvent(new CustomEvent('mbu-tags-voted', { detail: { path: '/' + TYPE + '/' + MBID, kind: 'upvote', genres: tags.filter(t => (S.tags.get(t) || {}).genre), tags: tags.filter(t => !(S.tags.get(t) || {}).genre) } }));
+      badge(); draw();
+      done({ ok: true, sent: tags.length, note: 'voted ' + plural(tags.length, 'genre') + ' on ' + n + ' entit' + (n === 1 ? 'y' : 'ies') });
+    } catch (x) {
+      LOG.error('Mission Control vote failed: ' + x.message);
+      done({ ok: false, sent: 0, note: 'vote failed: ' + x.message, retry: /HTTP (429|5\d\d|undefined)/.test(x.message) });
+    }
+  });
+  mcHello();
 
   window.__fuzzyLogic = S;   // for the specs
   mkDock();
