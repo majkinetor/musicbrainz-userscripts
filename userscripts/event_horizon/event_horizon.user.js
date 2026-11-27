@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.27.200536
+// @version      2026.11.27.201841
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -31,6 +31,7 @@
 // @match        https://bandcamp.com/EmbeddedPlayer/*
 // @match        https://widget.deezer.com/widget/*
 // @match        https://open.spotify.com/embed/*
+// @match        https://embed.music.apple.com/*
 // @match        https://www.youtube-nocookie.com/embed/*
 // @exclude-match https://picard.musicbrainz.org/*
 // @run-at       document-start
@@ -135,11 +136,14 @@ if (window.top !== window && location.hostname === 'www.youtube-nocookie.com' &&
     }
     return;
 }
-// Inside Bandcamp's or Deezer's player widget, in the player's frame (#1063): neither starts on its own nor says when a
-// track ends. Once the page asks, this presses the widget's play button and tells the page how its audio plays. A widget
-// on any other site is left alone: nothing happens until a parent sends {ehPlyCmd}.
-if (window.top !== window && (location.hostname === 'bandcamp.com' && location.pathname.startsWith('/EmbeddedPlayer/') || location.hostname === 'widget.deezer.com')) {
+// Inside Bandcamp's, Deezer's or Apple Music's player widget, in the player's frame (#1063): none starts on its own or
+// says when a track ends. Once the page asks, this presses the widget's play button and tells the page how its audio
+// plays. Apple's button is in its embed's shadow root, and once its <audio> exists, that is played and paused instead.
+// A widget on any other site is left alone: nothing happens until a parent sends {ehPlyCmd}.
+if (window.top !== window && (location.hostname === 'bandcamp.com' && location.pathname.startsWith('/EmbeddedPlayer/') || location.hostname === 'widget.deezer.com' || location.hostname === 'embed.music.apple.com')) {
+    const APPLE = location.hostname === 'embed.music.apple.com';
     const BTN = location.hostname === 'bandcamp.com' ? '#big_play_button, #play' : '[data-testid="widget-player-play"]';
+    const button = a => APPLE ? (a ? null : document.querySelector('embed-root')?.shadowRoot?.querySelector('button.play-initial')) : document.querySelector(BTN);
     let armed = false, last = 0, restoring = false, restoreMute = null, restoreReady = false, vol = -1, media = null, told = '';   // vol: the page's volume, 0 to 1, put on the audio before it sounds
     const post = (state, a) => { if (armed) try { window.parent.postMessage({ ehPly: state, pos: a ? a.currentTime : 0, dur: a ? a.duration : 0 }, '*'); } catch (e) {} };
     const mediaSetup = () => {
@@ -168,7 +172,7 @@ if (window.top !== window && (location.hostname === 'bandcamp.com' && location.p
         const a = document.querySelector('audio');
         if (a && vol >= 0) a.volume = vol;
         if (a && a.paused !== want) return;   // already as asked
-        const b = document.querySelector(BTN);
+        const b = button(a);
         if (b) b.click(); else if (a) want ? a.play().catch(() => {}) : a.pause();
         return !!(b || a);
     };
@@ -14661,12 +14665,12 @@ function plyGo(i, want) {
     // loaded with no click behind it (a share link, a restore): the widget refuses sound, so Play reloads it under the click
     ply.cold = navigator.userActivation?.isActive === false ? gen : 0;
     plyVolLoad();
-    // a track waits paused until its widget says it plays; YouTube autoplays, Apple's says nothing (see the blur below)
+    // a track waits paused until its widget says it plays; YouTube autoplays
     if (ply.cur && !ply.q.includes(ply.cur)) { ply.cur = null; ply.hist = []; }   // a new playlist starts shuffle afresh
     if (S.playerShuffle) { if (ply.cur && ply.cur !== t && !plyBack) ply.hist.push(ply.cur); t.sh = true; }
     ply.cur = t;
     ply.i = i; ply.src = ply.kind = p.key; ply.paused = !e.yt; ply.yt = !!e.yt;
-    ply.ctl = p.key !== 'apple'; ply.ends = !!e.yt || p.key === 'spotify' || p.key === 'soundcloud';
+    ply.ctl = true; ply.ends = !!e.yt || p.key === 'spotify' || p.key === 'soundcloud';
     t.src = p.key; t.url = p.urls[0].url;
     PLOG.info('plays', t.key, t.title, 'from', p.key, t.len ? Math.round(t.len / 1000) + ' s' : 'no length');
     plyWake(true); plyMedia(t);
@@ -15011,7 +15015,7 @@ function plyVolShow(v) {
     const b = plyCtl && plyCtl.querySelector('[data-ply="mute"]');
     if (b) { b.innerHTML = plyVolIc(v); b.setAttribute('aria-pressed', String(!v)); b.dataset.tip = v ? 'Mute' : 'Unmute'; b.setAttribute('aria-label', b.dataset.tip); }
 }
-// a jump to ms into the track, in each widget's words; Apple's can't be told
+// a jump to ms into the track, in each widget's words
 function plySeek(ms) {
     if (plyRemote && !PLY_WINDOW) { plyControl('seek', ms); return; }
     const k = ply.kind, t = ply.q[ply.i]; if (!t || !ply.ctl) return;
@@ -15024,7 +15028,7 @@ function plySeek(ms) {
 }
 // what the widgets say. YouTube: its state, 0 ended, 1 playing, 2 paused. Spotify: ready, then playback_update with
 // isPaused, position and duration (it doesn't start on its own: told to toggle once ready). SoundCloud: ready, then the
-// events it was asked for. Bandcamp's and Deezer's: what the bridge above posts from their audio.
+// events it was asked for. Bandcamp's, Deezer's and Apple's: what the bridge above posts from their audio.
 window.addEventListener('message', ev => {
     // the preloaded widget's first word: it is ready to start
     if (ply.nx && ply.nx.f && ev.source === ply.nx.f.contentWindow) { plyHeard(ply.nx.f); if (!ply.nx.ready) { ply.nx.ready = true; PLOG.debug('the preloaded', ply.nx.key, 'widget answers'); } return; }
@@ -15037,7 +15041,7 @@ window.addEventListener('message', ev => {
     const pi = m.event === 'infoDelivery' && m.info ? m.info : typeof m.ehPly === 'string' ? { currentTime: m.pos, duration: m.dur } : null;
     if (pi && typeof pi.currentTime === 'number') ply.pos = { gen: ply.gen, pos: pi.currentTime, dur: pi.duration > 0 ? pi.duration : ply.pos?.gen === ply.gen ? ply.pos.dur : 0, when: Date.now() };
     if (pi) setTimeout(plyFadeCheck);
-    if (k === 'bandcamp' || k === 'deezer' || ply.yt) {
+    if (k === 'bandcamp' || k === 'deezer' || k === 'apple' || ply.yt) {
         if (typeof m.ehPlyMedia === 'string') { LOG.info('player: Media Session', m.ehPlyMedia); return; }
         if (typeof m.ehPlyAction === 'string') {
             LOG.info('player: widget system media action', m.ehPlyAction, 'track:', t.title, 'source:', k);
@@ -15078,11 +15082,6 @@ window.addEventListener('message', ev => {
         if (m.ehPly === 'ended') plyEnded(k); else if (m.ehPly !== 'hello') plyState(m.ehPly === 'pause');
     }
 });
-// Apple's widget says nothing and can't be started: a click into it is taken as its play, and its clock starts
-window.addEventListener('blur', () => setTimeout(() => {
-    const f = plyFrame();
-    if (f && document.activeElement === f && ply.kind === 'apple' && ply.paused) { PLOG.info('Apple Music widget clicked, its clock runs'); plyState(false); }
-}));
 // the controls: one element, at the bottom (A, the bar) or in the pinned header (B); outside the header, as a chip at the top right
 let plyCtl = null;
 let plyVgOpen = false;
