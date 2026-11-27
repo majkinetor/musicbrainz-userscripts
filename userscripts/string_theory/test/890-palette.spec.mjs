@@ -116,4 +116,14 @@ test.describe('palette', () => {
     await page.keyboard.press('Control+Shift+Space');
     check(!(await page.$('#st-pal')), 'off, the hotkey does nothing');
   });
+  test('a Log command opens that script’s log window', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+    await open(page, inject);
+    await page.keyboard.type('log: ');
+    const logs = (await rows(page)).filter(r => r.startsWith('Log: '));
+    check(logs.length > 0, `the scripts on the page have Log commands (${await rows(page)})`);
+    await page.keyboard.type(logs[0].slice(5));
+    await page.keyboard.press('Enter');
+    await page.waitForSelector('#mbu-logpop', { timeout: 5000 });
+    check(!(await page.$('#st-pal')), 'the palette closes, the log window stays');
+  });
 });
