@@ -1,10 +1,10 @@
-import { test, check, until } from '../../../dev/test/harness.mjs';
+import { test, check, until, answerGm } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Event Horizon' } });
 
 const LABEL = 'https://test.musicbrainz.org/label/04201e6d-c430-4a53-a9a0-56170825fbde';
 
-test('a missing group thumbnail recovers from its release cover', { tag: '@sandbox' }, async ({ page, inject }) => {
+test('a missing group thumbnail recovers from its release cover', { tag: '@sandbox' }, async ({ page, context, inject }) => {
   await page.goto(LABEL);
   await inject('event_horizon');
   await until(() => page.locator('[data-lbmode="groups"][aria-pressed="true"]').count(), n => n > 0);
@@ -15,9 +15,10 @@ test('a missing group thumbnail recovers from its release cover', { tag: '@sandb
   const full = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>';
   await page.route(`https://coverartarchive.org/release-group/${id}/front*`, route => route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg"/>' }));
   // the group has no listing either, at once: left to the real archive, its 404 could come after the release's
-  // cover and send the image on to the kind's mark
-  await page.route(`https://coverartarchive.org/release-group/${id}`, route => route.fulfill({ status: 404, headers: { 'access-control-allow-origin': '*' }, body: '' }));
-  await page.route(`https://coverartarchive.org/release/${id}`, route => route.fulfill({ headers: { 'access-control-allow-origin': '*' }, json: { images: [{ front: true, image: full }] } }));
+  // cover and send the image on to the kind's mark. On the sandbox the listings come from its own archive, through
+  // the script manager, which a page route never meets
+  answerGm(context, ({ url }) => url === `https://beta.coverartarchive.org/release-group/${id}` ? { status: 404, body: '' }
+    : url === `https://beta.coverartarchive.org/release/${id}` ? { status: 200, body: JSON.stringify({ images: [{ front: true, image: full }] }) } : null);
   // the broken one is marked and read back by its mark: the table can render again meanwhile, and then the first
   // image is a fresh one with its real cover. A render that drops the marked one gets it set up again.
   const marked = page.locator('table.lbg img[data-lbtest]');

@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { test, check, until, idle, attachShot } from '../../../dev/test/harness.mjs';
+import { test, check, until, idle, attachShot, answerGm } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Event Horizon' } });
 
@@ -9,18 +9,21 @@ const RG = 'b1392450-e666-3926-a536-22c65f834433';
 // A release group's Artwork tab reads every release's listing and hashes the images; Art Station draws the
 // gallery from what Event Horizon sends: look-alikes merged across releases, grouped by type or release, the
 // viewer over a tile's row (#1116).
-test('a release group\'s Artwork tab gathers the art of all its releases', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+test('a release group\'s Artwork tab gathers the art of all its releases', { tag: '@sandbox' }, async ({ page, context, inject }, testInfo) => {
   test.setTimeout(600000);
-  // one release's listing names an image the archive doesn't have (a listing not rewritten yet after a removal)
+  // one release's listing names an image the archive doesn't have (a listing not rewritten yet after a removal).
+  // On the sandbox the listings come from its own archive, through the script manager, which a page route never meets
+  // The listings are asked several at once: the first one takes the ghost before its answer is in, and one
+  // without images gives it back
   let ghost = '';
-  await page.route(/coverartarchive\.org\/release\/[0-9a-f-]{36}\/?$/, async r => {
-    const res = await r.fetch(), j = await res.json().catch(() => null);
-    if (!ghost && j && j.images && j.images.length) {
-      const im = j.images[0], base = im.image.replace(/\/[^/]+$/, '');
-      ghost = r.request().url();
-      j.images.push({ ...im, id: 9999999999, front: false, types: ['Other'], comment: 'ghost', image: base + '/9999999999.jpg', thumbnails: { 250: base + '/9999999999-250.jpg', small: base + '/9999999999-250.jpg' } });
-    }
-    await r.fulfill({ response: res, json: j });
+  answerGm(context, async ({ url }) => {
+    if (ghost || !/^https:\/\/beta\.coverartarchive\.org\/release\/[0-9a-f-]{36}\/?$/.test(url)) return null;
+    ghost = url;
+    const res = await context.request.get(url, { failOnStatusCode: false }), j = await res.json().catch(() => null);
+    if (!j || !j.images || !j.images.length) { ghost = ''; return { status: res.status(), body: await res.text() }; }
+    const im = j.images[0], base = im.image.replace(/\/[^/]+$/, '');
+    j.images.push({ ...im, id: 9999999999, front: false, types: ['Other'], comment: 'ghost', image: base + '/9999999999.jpg', thumbnails: { 250: base + '/9999999999-250.jpg', small: base + '/9999999999-250.jpg' } });
+    return { status: 200, body: JSON.stringify(j) };
   });
   await page.goto(`https://test.musicbrainz.org/release-group/${RG}`, { waitUntil: 'domcontentloaded' });
   await idle(page);
@@ -132,7 +135,7 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   const posts = [];
   await page.route('**/*', r => { if (r.request().method() === 'POST') { posts.push(r.request().url()); return r.abort(); } return r.continue(); });
   // Edit keeps in view the image that was at the top
-  const tiles = gv.locator('.as-gv-body .as-gv-t[data-gvid]'), ti = Math.min(3, await tiles.count() - 1), aid = await tiles.nth(ti).getAttribute('data-gvid');
+  const tiles = gv.locator('.as-gv-body .as-gv-t[data-gvid]'), ti = Math.min(3, await tiles.count() - 1);
   // a phone: the bar drops its labels for icons, so it takes a row or two, not five
   const vp = page.viewportSize();
   await page.setViewportSize({ width: 390, height: 800 });
@@ -145,6 +148,9 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   check(await until(() => gv.locator('.as-gv-bar.mbu-compact').count(), n => !n) === 0, 'at full width the labels come back');
   await tiles.nth(ti).evaluate(e => { const h = document.querySelector('.as-gv-head').getBoundingClientRect().bottom; window.scrollBy(0, e.getBoundingClientRect().top - h - 10); });
   const ay = (await tiles.nth(ti).boundingBox()).y;
+  // the image kept is the first one on the top row: a tile further along can be a look-alike from another release,
+  // whose card is in that release's section while editing
+  const aid = await page.evaluate(y => [...document.querySelectorAll('.as-gv-body .as-gv-t[data-gvid]')].find(t => t.offsetParent && Math.abs(t.getBoundingClientRect().top - y) < 2).dataset.gvid, ay);
   await gv.locator('[data-gvedmode]').click();
   const as = gv.locator('.as-gv-as #as-root');
   await until(() => as.locator('.as-card').count(), n => n > 0);

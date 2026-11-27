@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.27.150054
+// @version      2026.11.27.151754
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -6361,6 +6361,14 @@ const CAA_RE = /^https:\/\/(?:coverartarchive\.org\/(release|release-group)|even
 // the sandbox has its own archive (beta.coverartarchive.org, served from test.musicbrainz.org): production's lists images
 // the sandbox's database doesn't have, whose edit forms there answer 404
 const CAA_ORIGIN = location.hostname === 'test.musicbrainz.org' ? 'https://beta.coverartarchive.org' : 'https://coverartarchive.org';
+// an image the sandbox's archive lacks (a release copied from production keeps production's images) comes from
+// production's: capture its first error before any other handler, which would give the image up
+if (CAA_ORIGIN !== 'https://coverartarchive.org') document.addEventListener('error', e => {
+  const im = e.target;
+  if (!(im instanceof HTMLImageElement) || !/^https:\/\/beta\.coverartarchive\.org\//.test(im.src)) return;
+  e.stopImmediatePropagation();
+  im.src = im.src.replace(/^https:\/\/beta\./, 'https://');
+}, true);
 const caaHost = k => k === 'event' ? 'https://eventartarchive.org' : CAA_ORIGIN;
 // an archive listing. The sandbox's archive redirects to test.musicbrainz.org, whose browser check a page's fetch can't pass
 // there (a fetch sends no cookies after a redirect from another site): read it through the script manager, which sends them
