@@ -30,7 +30,7 @@ import { readFile } from 'node:fs/promises';
 import { test, check, expect, sourceOf } from '../../../dev/test/harness.mjs';
 import { openArtStation } from './as.mjs';
 
-test.use({ gm: { name: 'Art Station', xhr: 'none', values: { 'artstation:settings': JSON.stringify({ autoRepeat: true, autoRepeatMin: 60, autoRepeatTimes: 61, arV: 1 }) } } });
+test.use({ gm: { name: 'Art Station', values: { 'artstation:settings': JSON.stringify({ autoRepeat: true, autoRepeatMin: 60, autoRepeatTimes: 61, arV: 1 }) } } });
 
 test('a manual Repeat keeps auto-repeat going; the countdown never sticks at 0; counts are live', { tag: ['@sandbox'] }, async ({ page, context, inject }) => {
   const code = await readFile(sourceOf('art_station'), 'utf8');
