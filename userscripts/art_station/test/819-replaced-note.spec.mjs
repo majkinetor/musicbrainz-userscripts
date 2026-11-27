@@ -60,6 +60,7 @@ test('#819: the removal of a rotated cover names the image and the edit that rep
   const note = rem.text.replace(/\s+/g, ' ');   // MusicBrainz shortens a long URL in a note's text: its link has it whole
   console.log(note + '\n' + rem.links.join('\n'));
   check(/Replaced by \S+ \(\d+×\d+, [\d.]+ [KM]?B\), this image rotated 90°/.test(note), 'the note names the new image, its size and the rotation');
-  check(rem.links.some(u => new RegExp(`^https://coverartarchive\\.org/release/${release}/\\d+\\.jpg$`).test(u)), '…links the new image');
+  // the sandbox's own archive: the new image is there, not in production's
+  check(rem.links.some(u => new RegExp(`^https://beta\\.coverartarchive\\.org/release/${release}/\\d+\\.jpg$`).test(u)), '…links the new image');
   check(/Added in /.test(note) && rem.links.includes(`${SANDBOX}/edit/${add.id}`), `…and the edit that added it, #${add.id}`);
 });

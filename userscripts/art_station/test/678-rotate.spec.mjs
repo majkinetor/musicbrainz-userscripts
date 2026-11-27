@@ -87,6 +87,6 @@ test.describe('rotate in the viewer (#678)', () => {
     await page.click('#as-commit .as-cm-more');
     await page.click('#as-commit .as-cm-dryrun');
     const note = await until(() => page.evaluate(() => [...document.querySelectorAll('#as-commit .as-cm-payload')].map(e => e.textContent).find(t => /remove-cover-art/.test(t)) || ''), t => /confirm\.edit_note/.test(t), { timeout: 20000 });
-    check(/Replaced by https:\/\/coverartarchive\.org\/release\/[0-9a-f-]{36}\/‹image_id›\.jpg \(\d+×\d+, [\d.]+ [KM]?B\), this image rotated 90°/.test(note), `the removal says what replaces it (${note})`);
+    check(/Replaced by https:\/\/beta\.coverartarchive\.org\/release\/[0-9a-f-]{36}\/‹image_id›\.jpg \(\d+×\d+, [\d.]+ [KM]?B\), this image rotated 90°/.test(note), `the removal says what replaces it (${note})`);
   });
 });
