@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.27.115726
+// @version      2026.11.27.122442
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5502,7 +5502,7 @@ async function keptCover(rel, img) {
 }
 const caa = id => kept('caa:' + id, async () => {
     const t0 = performance.now();
-    try { const r = await mbnLog('https://coverartarchive.org/release/' + id, undefined, { entity: 'release' }); fetchLog('CAA release ' + id, t0, r); if (r.status === 404) return '{}'; if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); } catch (e) { fetchLog('CAA release ' + id, t0, null, e); throw e; }
+    try { const r = await mbnLog(caaHost('release') + '/release/' + id, undefined, { entity: 'release' }); fetchLog('CAA release ' + id, t0, r); if (r.status === 404) return '{}'; if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); } catch (e) { fetchLog('CAA release ' + id, t0, null, e); throw e; }
 }).then(t => JSON.parse(t).images || [], () => []);
 // platforms by host; the rest fall back to their name as a monogram
 const HOSTS = [
@@ -6307,7 +6307,10 @@ function caaStore(name, ms) {
 // the address of a front that loads ('' when none does), for 30 minutes: a fresh upload's thumbnails come later
 const CAA_LIST = new Map(), CAA_CV = caaStore('eh:caa-cv', 30 * 60 * 1000), CAA_TRIED = new WeakSet();
 const CAA_RE = /^https:\/\/(?:coverartarchive\.org\/(release|release-group)|eventartarchive\.org\/(event))\/([0-9a-f-]{36})\/front(?:-(\d+))?$/;
-const caaHost = k => k === 'event' ? 'https://eventartarchive.org' : 'https://coverartarchive.org';
+// the sandbox has its own archive (beta.coverartarchive.org, served from test.musicbrainz.org): production's lists images
+// the sandbox's database doesn't have, whose edit forms there answer 404
+const CAA_ORIGIN = location.hostname === 'test.musicbrainz.org' ? 'https://beta.coverartarchive.org' : 'https://coverartarchive.org';
+const caaHost = k => k === 'event' ? 'https://eventartarchive.org' : CAA_ORIGIN;
 // an address's release, group or event, and the size it asked for; null for an address that isn't a front
 const caaOf = u => { const m = (u || '').match(CAA_RE); return m ? { k: m[1] || m[2], id: m[3], size: m[4] || '' } : null; };
 // the front's address once found, else its thumbnail at that size

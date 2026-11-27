@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.27.122045
+// @version      2026.11.27.122442
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -28,6 +28,9 @@
 // page), no uploads yet (Add/Enter-edit submission land next).
 (function () {
   'use strict';
+  // the sandbox has its own archive (beta.coverartarchive.org, served from test.musicbrainz.org): production's lists images
+  // the sandbox's database doesn't have, whose edit forms there answer 404
+  const CAA_ORIGIN = location.hostname === 'test.musicbrainz.org' ? 'https://beta.coverartarchive.org' : 'https://coverartarchive.org';
   // #1090 VGMdb is behind Cloudflare, which a GM request can't pass: Art Station opens the album in a tab
   // (#mbu-as=<token>), and this copy, running there, hands the page back through GM storage
   if (/(^|\.)vgmdb\.net$/.test(location.hostname)) {
@@ -1086,7 +1089,7 @@
     const releaseLinks = () => rel === PAGE_REL && !sharedLinks ? mbpReleaseLinks() : relLinks;   // #722 the release's own list, in any language
     const caa = () => new Promise(res => {
       try {
-        mbnGm({ method: 'GET', url: 'https://coverartarchive.org/release/' + rel, timeout: 20000,
+        mbnGm({ method: 'GET', url: CAA_ORIGIN + '/release/' + rel, timeout: 20000,
           onload: r => { try { res(r.status === 200 ? JSON.parse(r.responseText) : { images: [] }); } catch (e) { res(null); } },
           onerror: () => res(null), ontimeout: () => res(null) });
       } catch (e) { res(null); }
@@ -1404,7 +1407,7 @@
   const IS_ADD = !!M[3];
   const entOf = id => IS_EVENT
     ? { kind: 'event',   base: `/event/${id}`,   art: 'event-art', archive: `https://eventartarchive.org/event/${id}`, noun: 'event art', Noun: 'Event art' }
-    : { kind: 'release', base: `/release/${id}`, art: 'cover-art', archive: `https://coverartarchive.org/release/${id}`, noun: 'cover art', Noun: 'Cover art' };
+    : { kind: 'release', base: `/release/${id}`, art: 'cover-art', archive: `${CAA_ORIGIN}/release/${id}`, noun: 'cover art', Noun: 'Cover art' };
   let ENT = entOf(MBID);
 
   // Deep-link to the current user's Cover/Event Art edit history — the MB edit
@@ -10123,7 +10126,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     if (!d || !d.release || !Array.isArray(d.images) || !d.images.length) return;
     if (!VIEW_ONLY) { if (!IS_EVENT && d.release === MBID && byId(d.start)) { e.preventDefault(); openLightbox(d.start); } return; }   // this release's own gallery, with all its tools
     e.preventDefault();
-    CAA = 'https://coverartarchive.org/release/' + d.release;
+    CAA = CAA_ORIGIN + '/release/' + d.release;
     MODEL = d.images.map((x, i) => ({ id: x.id, types: x.types || [], comment: x.comment || '', order: i, _img: x.image, _pdf: /\.pdf$/i.test(x.image || '') }));
     openLightbox(byId(d.start) ? d.start : MODEL[0].id);
     const ov = document.getElementById('as-lb'); if (ov) ov.classList.add('as-lb-ro');
@@ -10268,7 +10271,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
         if (e) { if (e.types.join('|') === types.join('|') && e.comment === comment) done.ed.delete(id); else { types = e.types.slice(); comment = e.comment; } }
         // the archive the listing names (the sandbox's differs from production's), from a thumbnail's or the image's URL
         const th = im.thumbnails || {}, u = th['250'] || th.small || image;
-        _gvCaa.set(id, /\/release\/[0-9a-f-]{36}\/[^/]+$/i.test(u) ? u.replace(/\/[^/]+$/, '').replace(/^http:/, 'https:') : 'https://coverartarchive.org/release/' + r.id);
+        _gvCaa.set(id, /\/release\/[0-9a-f-]{36}\/[^/]+$/i.test(u) ? u.replace(/\/[^/]+$/, '').replace(/^http:/, 'https:') : CAA_ORIGIN + '/release/' + r.id);
         const p = was.get(id) || {};
         out.push({ id, types, comment, order: out.length, w: p.w || 0, h: p.h || 0, _noDim: p._noDim, bytes: SIZES.get(id) || 0, fmt: FORMATS.get(id) || fileFormat(image), _del: false, _new: false, _pending: false,
           _pdf: /\.pdf(\?|$)/i.test(image), _img: image, _origTypes: types.slice(), _origComment: comment, _origOrder: out.length,
@@ -10593,8 +10596,8 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
     if (_lb) closeLightbox();
     const was = { MODEL, CAA, VIEW_ONLY, QUIET }, ov0 = document.getElementById('as-lb'), ro = !!(ov0 && ov0.classList.contains('as-lb-ro'));
     VIEW_ONLY = QUIET = true;
-    _gvCaa = new Map(seq.map(x => [x.id, 'https://coverartarchive.org/release/' + x.r.id]));
-    CAA = 'https://coverartarchive.org/release/' + it.r.id;
+    _gvCaa = new Map(seq.map(x => [x.id, CAA_ORIGIN + '/release/' + x.r.id]));
+    CAA = CAA_ORIGIN + '/release/' + it.r.id;
     MODEL = seq.map((x, i) => ({ id: x.id, types: x.types, comment: [gvRelLabel(x.r), x.comment].filter(Boolean).join(' · '), _relId: x.r.id, _relLab: gvRelLabel(x.r), _relCmt: x.comment || '', order: i, _img: x.image, _pdf: false }));
     _gvRestore = () => { MODEL = was.MODEL; CAA = was.CAA; VIEW_ONLY = was.VIEW_ONLY; QUIET = was.QUIET; _gvCaa = null; const ov = document.getElementById('as-lb'); if (ov && !ro) ov.classList.remove('as-lb-ro'); };
     asLog.info(`Group gallery: viewer on ${it.id} of ${it.r.id}, ${seq.length} in the row`);
