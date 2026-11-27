@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.26.195253
+// @version      2026.11.27.115726
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -6456,6 +6456,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   let _lbJustBlurred = false;   // bridges the mousedown-blur → click gap so defocusing the comment doesn't also close the viewer
   function paintCmtArea(ov, it) {
     const area = ov.querySelector('.as-lb-cmtarea'); if (!area) return;
+    if (VIEW_ONLY && it._relId) { area.innerHTML = `<div class="as-lb-cmt-text" style="cursor:default"><a class="as-lb-rel" href="/release/${esc(it._relId)}/cover-art" target="_blank" rel="noopener" data-tip="Open this release's artwork in a new tab">${esc(it._relLab || it._relId)}</a>${it._relCmt ? ' · ' + esc(it._relCmt) : ''}</div>`; area.querySelector('a').onclick = e => e.stopPropagation(); return; }
     if (VIEW_ONLY) { area.innerHTML = it.comment ? `<div class="as-lb-cmt-text" style="cursor:default">${esc(it.comment)}</div>` : ''; return; }
     if (_lbEditCmt) {
       area.innerHTML = `<input class="as-lb-cmt" placeholder="comment…" spellcheck="false" list="as-cmt-presets">`;
@@ -9819,6 +9820,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   #as-lb .as-rmopen{position:static;font-size:12px;padding:3px 10px}
   .as-lb-cmtarea{width:0;min-width:100%;display:flex;justify-content:center;align-items:center;min-height:34px}   /* one height for the ✎ button, the text and the input */
   .as-lb-cmt{width:100%;font-size:13px;font-family:inherit;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:var(--mbu-text-on-accent);border-radius:7px;padding:7px 11px;text-align:center}
+  .as-lb-rel{color:inherit;text-decoration:underline;text-decoration-color:rgba(255,255,255,.4);text-underline-offset:3px}.as-lb-rel:hover{text-decoration-color:currentColor}
   .as-lb-cmt-text{font-size:14px;font-family:inherit;color:var(--mbu-text-on-accent);text-align:center;line-height:1.4;padding:4px 8px;cursor:text;max-width:100%;word-break:break-word}
   .as-lb-cmt-text:hover{color:#e7dffb}
   .as-lb-cmt::placeholder{color:rgba(255,255,255,.45)}
@@ -10444,6 +10446,8 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     const left = isNaN(d) ? '' : d <= 0 ? ' · closing' : ` · ${d} day${d === 1 ? '' : 's'}`;
     return `<span class="as-rmopen as-gv-rm" data-tip="${o.length === t.items.length ? '' : `${o.length} of ${t.items.length}: `}a removal open for votes${o.length === 1 ? `, edit #${esc(o[0].edit)}` : ''}">${o.length > 1 ? o.length + ' removals' : 'removal'} open${left}</span>`;
   };
+  // Merge off: Event Horizon stops hashing look-alikes until it is on again
+  const gvHashTell = () => { if (GV.d && GV.d.rg) document.dispatchEvent(new CustomEvent('mbu-art-group-pause', { detail: JSON.stringify({ rg: GV.d.rg, nohash: !GV.merge }) })); };
   function gvTileHtml(t, si) {
     const it = t.items[0];
     // a PDF booklet's page count, when its comment gives one ("12 pages"), marked as a stack's is
@@ -10457,12 +10461,12 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
       <figcaption>${esc(cap)}</figcaption></figure>`;
   }
   function gvNote(d, all, tiles) {
-    const p = d.progress || {}, live = !d.wait && (p.read < p.total || !p.hashed);
+    const p = d.progress || {}, live = !d.wait && (p.read < p.total || (!p.hashed && GV.merge));
     const btn = live && (p.busy || p.paused) ? `<button type="button" class="as-gv-pause" data-gvpause>${p.paused ? GV_SVG.play + ' Resume' : GV_SVG.pause + ' Pause'}</button>` : '';
     const nRel = (d.releases || []).filter(r => r.images && r.images.length).length;
     const txt = d.wait ? 'Reading the releases…'
       : p.read < p.total ? `Reading ${p.read} of ${p.total} releases${p.paused ? ' · paused' : ''}`
-      : !p.hashed ? `Merging look-alikes${p.ht ? ` ${p.hn || 0}/${p.ht}` : '…'}${p.paused ? ' · paused' : ''}`
+      : !p.hashed && GV.merge ? `Merging look-alikes${p.ht ? ` ${p.hn || 0}/${p.ht}` : '…'}${p.paused ? ' · paused' : ''}`
       : !all.length ? 'No release in this group has artwork.'
       : `${all.length} image${all.length === 1 ? '' : 's'} on ${nRel} release${nRel === 1 ? '' : 's'}${!GV.merge ? '' : !tiles.cut ? ' · no look-alikes' : ` · ${tiles.cut} look-alike${tiles.cut === 1 ? '' : 's'} merged`}`;
     return `<span class="as-gv-txt">${esc(txt)}</span>${btn}${GV.dl ? `<span class="as-gv-dlnote">${esc(GV.dl)}</span>` : ''}`;
@@ -10569,7 +10573,7 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
     VIEW_ONLY = QUIET = true;
     _gvCaa = new Map(seq.map(x => [x.id, 'https://coverartarchive.org/release/' + x.r.id]));
     CAA = 'https://coverartarchive.org/release/' + it.r.id;
-    MODEL = seq.map((x, i) => ({ id: x.id, types: x.types, comment: [gvRelLabel(x.r), x.comment].filter(Boolean).join(' · '), order: i, _img: x.image, _pdf: false }));
+    MODEL = seq.map((x, i) => ({ id: x.id, types: x.types, comment: [gvRelLabel(x.r), x.comment].filter(Boolean).join(' · '), _relId: x.r.id, _relLab: gvRelLabel(x.r), _relCmt: x.comment || '', order: i, _img: x.image, _pdf: false }));
     _gvRestore = () => { MODEL = was.MODEL; CAA = was.CAA; VIEW_ONLY = was.VIEW_ONLY; QUIET = was.QUIET; _gvCaa = null; const ov = document.getElementById('as-lb'); if (ov && !ro) ov.classList.remove('as-lb-ro'); };
     asLog.info(`Group gallery: viewer on ${it.id} of ${it.r.id}, ${seq.length} in the row`);
     openLightbox(it.id);
@@ -10659,7 +10663,7 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
       if (b && el.contains(b)) {
         if (b.dataset.gvsize) { gvSize(TILE_SIZES[+b.dataset.gvsize][1]); return; }
         if (b.dataset.gvby) { GV.by = b.dataset.gvby; gvRender(); if (_grp) render(); return; }
-        if (b.dataset.gvchip) { const k = b.dataset.gvchip; GV[k] = !GV[k]; gvRender(); return; }
+        if (b.dataset.gvchip) { const k = b.dataset.gvchip; GV[k] = !GV[k]; if (k === 'merge') gvHashTell(); gvRender(); return; }
         if ('gvedmode' in b.dataset) { if (GV.edit) grpExit(); else grpEnter(); return; }
         if ('gvpause' in b.dataset) { const p = (GV.d && GV.d.progress) || {}; document.dispatchEvent(new CustomEvent('mbu-art-group-pause', { detail: JSON.stringify({ rg: GV.d.rg, paused: !p.paused }) })); return; }
         if ('gvdl' in b.dataset) { GV.menu = !GV.menu; GV.toc = false; gvRender(); return; }
@@ -10721,7 +10725,9 @@ In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` :
     if (!d || !d.rg || !slot) return;
     e.preventDefault();
     if (!GV.d || GV.d.rg !== d.rg) { if (_grp) grpExit(true); GV.sel.clear(); GV.menu = false; GV.rm = new Map(); asLog.info(`Group gallery: ${d.rg}`); }
+    const newRg = !GV.d || GV.d.rg !== d.rg;
     GV.d = d;
+    if (newRg && !GV.merge) gvHashTell();
     if (!GV.el || GV.el.parentNode !== slot) { GV.el = gvMount(slot); GV.html = GV.bar = ''; }
     gvRender();
     if (GV.rmRg !== d.rg) gvLoadRm();
