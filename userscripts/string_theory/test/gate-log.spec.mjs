@@ -47,10 +47,13 @@ test.describe('gate log', () => {
     check(/shown \(failed\)/.test(await page.textContent('#st-gate .st-gate-n')), 'the title names the filter');
     await page.click('#st-gate-sum .st-gate-tl[data-sf=bad]');
     check(!/shown/.test(await page.textContent('#st-gate .st-gate-n')), 'a second click shows all again');
-    // a request's own row: a run of like requests has a header row (tr.rq.grp), which opens the run, not steps
-    await page.click('#st-gate tr.rq:not(.grp)');
+    // a request's own row: a run of like requests has a header row (tr.rq.grp), which opens the run, not steps.
+    // The seeded retried one: the page's own requests are newer, so the first row can be one still waiting in the
+    // gate, which has no try yet and so no try in its lane.
+    await page.locator('#st-gate tr.rq:not(.grp)', { has: page.locator('.st-gate-pill', { hasText: /^OK ↻2$/ }) }).click();
     check(await page.$('#st-gate tr.steps'), 'a click shows the steps');
-    check(await page.$$eval('#st-gate tr.steps .st-gl-req .st-gl-f', l => l.length) >= 1, 'an open row shows its own lane');
+    const tries = await page.$$eval('#st-gate tr.steps .st-gl-req .st-gl-f', l => l.length);
+    check(tries === 2, `an open row shows its own lane, with each try (${tries})`);
     await page.click('#st-gate tr.rq', { button: 'right' });
     const rq = await page.$$eval('#st-gate tr.rq:not(.grp)', l => l.length), steps = await page.$$eval('#st-gate tr.steps', l => l.length);
     check(steps === rq, `a right click shows the steps of every row (${steps} of ${rq})`);
