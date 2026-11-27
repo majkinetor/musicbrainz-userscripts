@@ -18,6 +18,16 @@ test('Fuzzy Logic reports genres in the Genres card on the probe', { tag: ['@san
   await page.waitForSelector('#mc-root');
   check(await page.locator('#mc-root .mc-ttl a[href*="/release/"]').count() === 1, 'the header title links the release');
   check(await page.locator('#mc-root .mc-art a[href*="/artist/"]').count() >= 1, 'the header artist links the artist');
+  // the release folds into its format icon when the steps need the room; hover shows it as a card
+  await page.setViewportSize({ width: 1000, height: 900 });
+  const folded = await until(() => page.evaluate(() => document.querySelector('#mc-root .mc-hdr').classList.contains('mc-fold')), v => v, 5_000);
+  check(folded, 'at 1000 px the release folds into its format icon');
+  await page.hover('#mc-root .mc-hdr .mc-fmt');
+  check(await page.locator('#mc-root .mc-relcard a[href*="/release/"]').isVisible(), 'hovering the icon shows the release card with its link');
+  await page.screenshot({ path: 'test-results/mc-fold.png', clip: { x: 0, y: 0, width: 1000, height: 200 } });
+  await page.setViewportSize({ width: 2200, height: 900 });
+  check(await until(() => page.evaluate(() => !document.querySelector('#mc-root .mc-hdr').classList.contains('mc-fold')), v => v, 5_000), 'a wide window shows the release in full');
+  await page.setViewportSize({ width: 1600, height: 1000 });
   check(await page.locator('#mc-root [data-card="fl"] [data-fetch="fl"]').count() === 0, 'Auto mode: no Fetch genres button');
   const r = await until(() => page.evaluate(() => window.__mcTest.results().fl), v => v && v.state === 'done', 120_000);
   check(r && r.state === 'done', 'Fuzzy Logic answered the probe');

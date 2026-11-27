@@ -43,7 +43,7 @@ Open Mission Control with its corner icon on a release page. On a phone it fills
 
 Platforms, Fusion, Credit Hoarder and Fuzzy Logic are slow, so each has a switch under its step: **Auto** fetches during the probe, **Ask** waits for its button (**Compare**, **Fetch RG** and **Fetch credits** in the Tracks header, **Fetch genres** in the Genres card), **Off** leaves it out. Platforms and Fuzzy Logic start on Auto, the others on Ask.
 
-Click a step in the header to switch it off for this page, right-click to switch it off for good; click it again to switch it back on. The format icon left of the release title shows or hides the Execution order.
+Click a step in the header to switch it off for this page, right-click to switch it off for good; click it again to switch it back on. The format icon left of the release title shows or hides the Execution order. The release title and artist link their pages; when the steps need the room, they fold into the format icon, and hovering it shows them.
 
 The album links you select in the Release and entity links card are passed on to ISRC Scout before they are added, so the tracks get their links from those albums too.
 

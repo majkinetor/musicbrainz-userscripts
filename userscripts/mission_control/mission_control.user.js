@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.27.222417
+// @version      2026.11.27.223539
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -1088,7 +1088,7 @@ function mcStyle() {
         // header: actions | album (center) | actions — Apollo's layout
         // an opacity pulse on a layer under the header's contents: the compositor runs it, so it stays
         // smooth while the page's thread is busy (a box-shadow pulse froze and jumped: flashing)
-        + '.mc-hdr{position:relative;isolation:isolate}.mc-hdr::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:0;background:color-mix(in srgb, var(--mbu-info) 18%, transparent)}'
+        + '.mc-hdr{position:relative;isolation:isolate;z-index:5}.mc-hdr::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:0;background:color-mix(in srgb, var(--mbu-info) 18%, transparent)}'
         + '@keyframes mc-busy-pulse{0%,100%{opacity:0}50%{opacity:1}}.mc-hdr.mc-busy::after{animation:mc-busy-pulse 1.4s ease-in-out infinite;will-change:opacity}'
         + '@media (prefers-reduced-motion: reduce){.mc-hdr.mc-busy::after{animation:none;opacity:.5}}'
         + '.mc-sep{width:1px;height:20px;background:var(--mbu-border);margin:0 4px}'
@@ -1101,17 +1101,17 @@ function mcStyle() {
         + '#mc-root .mc-btn.tog{color:var(--mbu-text-weak)}#mc-root .mc-btn.tog.on{background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong);color:var(--mbu-accent-text)}'
         + '#mc-root .mc-btn.lg{padding:7px 16px;font-size:13px}'
         // #680: one header row — the release, the steps (C, on one line), Execute (N), ⚙ and ✕
-        + '.mc-hdr{display:flex;align-items:center;gap:10px;height:52px;padding:0 10px 0 12px;background:var(--mbu-bg);border-bottom:1px solid var(--mbu-border);box-shadow:var(--mbu-shadow)}'
-        + '.mc-fmt{flex:none;display:grid;place-items:center;width:30px;height:30px;color:var(--mbu-text-dim)}.mc-fmt svg{width:28px;height:28px;display:block}'
-        + '.mc-rel{display:flex;flex-direction:column;min-width:0;flex:0 1 auto;max-width:24%;padding-right:6px;line-height:1.2}#mc-root .mc-rel a,#mc-root .mcc-rel a{color:inherit;text-decoration:none}#mc-root .mc-rel a:hover,#mc-root .mcc-rel a:hover{color:var(--mbu-accent-text);text-decoration:underline}.mc-ttl{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mc-art{font-size:12px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#mc-root .mc-art .mc-ver{color:var(--mbu-text-weak);text-decoration:none}#mc-root .mc-art .mc-ver:hover{color:var(--mbu-accent-text);text-decoration:underline}'
+        + '.mc-hdr{display:flex;align-items:center;gap:8px;height:52px;padding:0 10px 0 12px;background:var(--mbu-bg);border-bottom:1px solid var(--mbu-border);box-shadow:var(--mbu-shadow)}'
+        + '.mc-fmt{flex:none;display:grid;place-items:center;width:30px;height:30px;color:var(--mbu-text-dim);position:relative}.mc-hdr.mc-fold .mc-rel{display:none}.mc-relpop{display:none;position:absolute;top:100%;left:0;z-index:30;padding-top:6px;cursor:default}.mc-hdr.mc-fold .mc-fmt:hover .mc-relpop,.mc-hdr.mc-fold .mc-fmt:focus-within .mc-relpop{display:block}.mc-relcard{display:flex;flex-direction:column;gap:3px;width:320px;max-width:70vw;padding:10px 12px;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);line-height:1.3;text-align:left}#mc-root .mc-relcard a{color:inherit;text-decoration:none}#mc-root .mc-relcard a:hover{color:var(--mbu-accent-text);text-decoration:underline}.mc-relcard .t{font-weight:700;font-size:14px;color:var(--mbu-text)}.mc-relcard .a{font-size:12px;color:var(--mbu-text-dim)}#mc-root .mc-relcard .mc-ver{color:var(--mbu-text-weak)}.mc-relcard .f{font-size:11.5px;color:var(--mbu-text-weak)}.mc-relcard .h{font-size:11px;color:var(--mbu-text-weak);margin-top:4px}.mc-fmt svg{width:28px;height:28px;display:block}'
+        + '.mc-rel{display:flex;flex-direction:column;min-width:0;flex:0 1 auto;max-width:19%;padding-right:2px;line-height:1.2}#mc-root .mc-rel a,#mc-root .mcc-rel a{color:inherit;text-decoration:none}#mc-root .mc-rel a:hover,#mc-root .mcc-rel a:hover{color:var(--mbu-accent-text);text-decoration:underline}.mc-ttl{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mc-art{font-size:12px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#mc-root .mc-art .mc-ver{color:var(--mbu-text-weak);text-decoration:none}#mc-root .mc-art .mc-ver:hover{color:var(--mbu-accent-text);text-decoration:underline}'
         + '.mc-hdr .mc-act{display:flex;align-items:center;gap:4px;flex:none}#mc-root .mc-act .mc-exec{justify-content:center;min-width:var(--mc-exec-w,96px);height:28px;padding:0 12px;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong);color:var(--mbu-accent-text)}#mc-root .mc-act .mc-exec:hover:not(:disabled){background:var(--mbu-accent);border-color:var(--mbu-accent);color:var(--mbu-accent-fg)}#mc-root .mc-act .mc-exec:disabled{background:var(--mbu-bg);border-color:var(--mbu-border);color:var(--mbu-text-weak);cursor:default}'
         // the steps: a ring, then the name and the state beside it, all on one centre line; a click switches the step off or on (#753)
-        + '.mc-steps{display:flex;align-items:center;justify-content:center;gap:6px;flex:1 1 auto;min-width:0;height:100%}'
-        + '#mc-root .mc-re{flex:none;width:26px;height:26px;margin-right:4px;padding:0;border-radius:50%;border:1px solid transparent;background:none;color:var(--mbu-text-dim);font-size:14px;line-height:1;cursor:pointer}#mc-root .mc-re:hover{border-color:var(--mbu-border);background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}'
-        + '.mc-step{display:inline-flex;align-items:center;gap:7px;min-width:0;flex:0 1 auto;padding:4px 6px;border-radius:var(--mbu-radius);cursor:pointer}.mc-step:hover{background:var(--mbu-bg-hover)}.mc-hdr .mc-fmt{cursor:pointer;border-radius:var(--mbu-radius)}.mc-hdr .mc-fmt:hover{background:var(--mbu-bg-hover)}'
+        + '.mc-steps{display:flex;align-items:center;justify-content:center;gap:2px;flex:1 1 auto;min-width:0;height:100%}'
+        + '#mc-root .mc-re{flex:none;width:26px;height:26px;margin-right:2px;padding:0;border-radius:50%;border:1px solid transparent;background:none;color:var(--mbu-text-dim);font-size:14px;line-height:1;cursor:pointer}#mc-root .mc-re:hover{border-color:var(--mbu-border);background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}'
+        + '.mc-step{display:inline-flex;align-items:center;gap:5px;min-width:0;flex:0 1 auto;padding:4px 4px;border-radius:var(--mbu-radius);cursor:pointer}.mc-step:hover{background:var(--mbu-bg-hover)}.mc-hdr .mc-fmt{cursor:pointer;border-radius:var(--mbu-radius)}.mc-hdr .mc-fmt:hover{background:var(--mbu-bg-hover)}'
         // a step's words take a fixed width (cut with …, the whole of it in the tooltip): changing words and
         // ticking seconds must not move the steps; only the window's width does
-        + '.mc-step .tx{display:flex;flex-direction:column;flex:0 1 130px;width:130px;min-width:0;line-height:1.2}.mc-step b{font-size:12.5px;color:var(--mbu-text)}.mc-step i{font-style:normal;font-size:11.5px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}'
+        + '.mc-step .tx{display:flex;flex-direction:column;flex:0 1 130px;width:130px;min-width:0;line-height:1.2}.mc-step b{font-size:12.5px;color:var(--mbu-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mc-step i{font-style:normal;font-size:11.5px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}'
         // #680: no ring: the provider's own icon, bigger, so it reads; the state rides on the badge and the text
         + '.mc-ring{position:relative;flex:none;display:grid;place-items:center;width:28px;height:28px}'
         + '.mc-ring img{width:28px;height:28px;object-fit:contain;display:block;margin:0;vertical-align:0}'
@@ -1122,7 +1122,7 @@ function mcStyle() {
         + '.mc-step.stalled sup{background:var(--mbu-warn)}.mc-step.stalled i,.mc-step.stalled b{color:var(--mbu-warn)}.mc-step.reask i{cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;padding:3px 0;margin:-3px 0}.mc-step.reask i:hover{text-decoration-style:solid}'
         + '.mc-step.err sup{background:var(--mbu-error)}.mc-step.err i{color:var(--mbu-error)}'
         + '.mc-step.wait .mc-ring img{filter:grayscale(1);opacity:.5}.mc-step.wait b{color:var(--mbu-text-weak)}.mc-step.off{opacity:.45}.mc-step.off .mc-ring img{filter:grayscale(1)}.mc-step.off b{text-decoration:line-through}'
-        + '.mc-steps .mc-arrow{color:var(--mbu-text-weak);flex:none}.mc-steps .mc-par{display:inline-flex;align-items:center;gap:4px;height:40px;margin:0;background:none;padding:0 6px;border:1px dashed var(--mbu-border);border-radius:10px;box-sizing:border-box;min-width:0}'
+        + '.mc-steps .mc-arrow{color:var(--mbu-text-weak);flex:none;font-size:11px;margin:0 -1px}.mc-steps .mc-par{display:inline-flex;align-items:center;gap:4px;height:40px;margin:0;background:none;padding:0 6px;border:1px dashed var(--mbu-border);border-radius:10px;box-sizing:border-box;min-width:0}'
         + '@media (prefers-reduced-motion: reduce){.mc-step.busy .mc-ring::before{animation:none}}'
         // the corner launchers (Falcon, Fusion, ours) share MC's z-index; hide them while MC is open
         + 'html.mc-open [data-mb-corner]{display:none!important}'
@@ -1417,7 +1417,33 @@ function header() {
         + '<button type="button" class="mc-btn ghost" data-act="cfg" data-tip="Settings">' + MBU_CFG_ICON + '</button>'
         + '<button type="button" class="mc-btn ghost" data-act="close" data-tip="Close (Esc)">✕</button></div>');
     h.insertBefore(steps(), h.querySelector('.mc-act'));
+    // majkinetor (option A): when the steps don't fit, the release folds into its format icon, and a
+    // hover on the icon shows it as a card with its links
+    const fmt = h.querySelector('.mc-fmt');
+    if (fmt) {
+        fmt.dataset.tipFull = fmt.dataset.tip || '';
+        fmt.insertAdjacentHTML('beforeend', mbuHtml('<span class="mc-relpop"><span class="mc-relcard">'
+            + '<a class="t" href="' + esc(location.origin + '/release/' + RELEASE) + '" target="_blank" rel="noopener">' + esc(rel.title) + '</a>'
+            + '<span class="a">' + (rel.artists && rel.artists.length ? creditHtml(rel.artists) : esc(rel.artist || ''))
+            + (rel.versions ? ' · <a class="mc-ver" href="' + esc(rel.versions.href) + '" target="_blank" rel="noopener">' + esc(rel.versions.text) + '</a>' : '') + '</span>'
+            + '<span class="f">' + esc(rel.format || 'Format unknown') + '</span>'
+            + '<span class="h">Click the icon: show or hide the order of the steps</span></span></span>'));
+    }
+    if (window.ResizeObserver) { let w = 0; new ResizeObserver(() => { if (h.clientWidth !== w) { w = h.clientWidth; fitHeader(h); } }).observe(h); }
     return h;
+}
+// the release folds when a step's name would be cut with it shown. Measured with it shown, in one go
+// (no paint between the two class changes); a step's words have a fixed width, so its state changing
+// doesn't move anything and only a resize asks again
+function fitHeader(h) {
+    if (!h || !h.isConnected) return;
+    const was = h.classList.contains('mc-fold');
+    h.classList.remove('mc-fold');
+    const tight = [...h.querySelectorAll('.mc-step b')].some(b => b.scrollWidth > b.clientWidth + 1);
+    h.classList.toggle('mc-fold', tight);
+    const fmt = h.querySelector('.mc-fmt');
+    if (fmt) { if (tight) delete fmt.dataset.tip; else fmt.dataset.tip = fmt.dataset.tipFull || ''; }
+    if (tight !== was) Log.cat('UI').debug('header ' + h.clientWidth + ' px: the release ' + (tight ? 'folds into its format icon' : 'shows in full'));
 }
 
 // #680: the release's format as an icon left of the title, its name in the tooltip. Only the
@@ -2673,7 +2699,7 @@ function onClick(e) {
     // a stalled probe's status line asks again (the rest of the step still switches it off)
     if (stp && stp.classList.contains('reask') && t.closest('.tx i')) { askAgain(stp.dataset.step, 'again on request'); return; }
     if (stp) { toggleProvider(stp.dataset.step); return; }
-    if (t.closest('.mc-hdr .mc-fmt')) { S.left = !S.left; saveSettings(); paintSides(); return; }
+    if (t.closest('.mc-hdr .mc-fmt') && !t.closest('.mc-relpop')) { S.left = !S.left; saveSettings(); paintSides(); return; }
     if (!act) return;
     switch (act.dataset.act) {
         case 'probe': {
