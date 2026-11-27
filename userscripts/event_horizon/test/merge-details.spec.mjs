@@ -13,7 +13,7 @@ const changes = `<table class="tbl merge-releases"><thead><tr><th>Release</th><t
 test('individual merge edits preserve all changes and keep voting separate', async ({ page }) => {
   const src = await functionSource('event_horizon', ['histParse', 'histExpand', 'histSt', 'histTime', 'histNoteTime', 'histVoters']);
   const parsed = await page.evaluate(({ src, changes }) => {
-    const parse = new Function('const LOG = { debug() {} }; const MBID = /[0-9a-f-]{36}/;\n' + src + '\nreturn histParse;')();
+    const parse = new Function('const LOG = { debug() {} }; const MBID = /[0-9a-f-]{36}/; const ME = \'\';\n' + src + '\nreturn histParse;')();
     const header = '<div class="edit-header open edit-merge merge-releases"><h1>Edit #157416007 - Merge releases</h1></div>';
     // A translated heading must work too; the comparison and message remain in order.
     const single = parse('<div id="content">' + header + '<h2>Änderungen</h2>' + changes + '<h2>Abstimmungen</h2><table class="vote-tally"><tr><td class="vote">1 yes : 0 no</td></tr></table></div>');
