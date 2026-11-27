@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.27.222715
+// @version      2026.11.27.230624
 // @version      2026.11.25.190634
 // @version      2026.11.25.190934
 // @description  An alternative MusicBrainz viewer.
@@ -14982,11 +14982,11 @@ function plyArm(gen, kind, pos) {
     start();
 }
 // Gapless start and crossfade (#1084). While a track plays, the next one's widget loads in a hidden second iframe
-// (YouTube, Bandcamp, Deezer, Apple and Spotify: their widgets take play and volume; Apple's, in a hidden tab, takes up to 15 s
+// (every source: their widgets take play and volume, and the Internet Archive's audio is the script's own; Apple's, in a hidden tab, takes up to 15 s
 // to draw its play button, which it now does while the track before it plays). At the end it becomes the current widget and gets
 // play at once. With a crossfade set, it starts that many seconds before the end at volume 0, and the two volumes
 // cross; the old widget is then removed.
-const PLY_PRE = ['youtube', 'ytmusic', 'bandcamp', 'deezer', 'apple', 'tidal', 'amazonmusic', 'spotify'];
+const PLY_PRE = ['youtube', 'ytmusic', 'bandcamp', 'deezer', 'apple', 'tidal', 'amazonmusic', 'spotify', 'soundcloud', 'archive'];
 function plyPreload() {
     if (plyRemote && !PLY_WINDOW) return;
     const t = ply.q[ply.i]; if (!t || t.done) return;
@@ -15011,7 +15011,21 @@ function plyPreload() {
         }, { once: true });
         PLOG.debug('preloads', nt.key, nt.title, 'from', p.key);
     };
+    // the Internet Archive's file is found first, then buffers in its own blank frame, silent until the swap
+    if (e.ia) {
+        plyIaFile(e.ia).then(url => {
+            const dock = plyRoot().querySelector('.ply-dock');
+            if (ply.nx !== nx) return;
+            if (!url || !dock) { ply.nx = null; return; }
+            dock.insertAdjacentHTML('beforeend', '<iframe class="ply-nx" height="0" title="Player"></iframe>');
+            nx.f = dock.lastElementChild; plyAudio(nx.f, url);
+            nx.loaded = nx.ready = true;
+            PLOG.debug('preloads', nt.key, nt.title, 'from the Internet Archive');
+        });
+        return;
+    }
     if (e.yt) make(e.url.replace('autoplay=1', 'autoplay=0'));
+    else if (p.key === 'soundcloud') make(e.url.replace('auto_play=true', 'auto_play=false'));
     else if (!e.bc) make(e.url.replace('autoplay=true', 'autoplay=false'));   // Deezer's would start on its own
     else plyBandcamp(e.bc).then(url => { if (url) make(url); else if (ply.nx === nx) ply.nx = null; });
 }
@@ -15020,6 +15034,8 @@ function plyFadeCheck() {
     const fade = +S.playerFade || 0, nx = ply.nx, t = ply.q[ply.i];
     if (!fade || !nx || !nx.ready || ply.fadeIv || !t || t.done || ply.paused || !plyHasVol() || (plyRemote && !PLY_WINDOW)) return;
     if (nx.i !== plyNextIdx()) return;
+    // a SoundCloud widget that starts pauses every other one: SoundCloud into SoundCloud starts without a gap, unfaded
+    if (ply.kind === 'soundcloud' && nx.key === 'soundcloud') return;
     const ps = ply.pos && ply.pos.gen === ply.gen ? ply.pos : null;
     const total = ps && ps.dur > 0 ? ps.dur : (t.len || 0) / 1000;
     const left = ps && ps.dur > 0 ? ps.dur - ps.pos - (Date.now() - ps.when) / 1000 : ((t.len || 0) - (t.played || 0)) / 1000;
@@ -15037,6 +15053,7 @@ function plySwap(nx, old) {
     ply.fadeIn = old ? 0 : 1;
     PLOG.info(old ? 'crossfade' : 'gapless start', 'with the preloaded', nx.key, 'widget');
     if (nx.yt) { plyVol(); plyPost(JSON.stringify({ event: 'command', func: 'playVideo', args: [] })); }
+    else if (nx.key === 'soundcloud') { for (const v of ['finish', 'play', 'pause', 'playProgress']) plyPost(JSON.stringify({ method: 'addEventListener', value: v })); plyVolOnce(); plyPost(JSON.stringify({ method: 'play' })); }
     else if (nx.key === 'spotify') { if (nx.ready) { const t = ply.q[ply.i]; if (t) t.kicked = true; plyVolOnce(); plyPost({ command: 'toggle' }); } }
     else plyArm(ply.gen, nx.key, 0);
     if (old) plyFadeRun(old);
@@ -15136,7 +15153,7 @@ function plySeek(ms) {
 window.addEventListener('message', ev => {
     // the preloaded widget's first word: it is ready to start
     if (ply.nx && ply.nx.f && ev.source === ply.nx.f.contentWindow) {
-        if (ply.nx.key === 'spotify') { let d = ev.data; if (typeof d === 'string') try { d = JSON.parse(d); } catch (e) {} if (!d || d.type !== 'ready') return; }   // Spotify's toggle waits for its ready
+        if (ply.nx.key === 'spotify' || ply.nx.key === 'soundcloud') { let d = ev.data; if (typeof d === 'string') try { d = JSON.parse(d); } catch (e) {} if (!d || (ply.nx.key === 'spotify' ? d.type : d.method) !== 'ready') return; }   // Spotify's toggle waits for its ready
         plyHeard(ply.nx.f); if (!ply.nx.ready) { ply.nx.ready = true; PLOG.debug('the preloaded', ply.nx.key, 'widget answers'); } return; }
     const f = plyFrame(), t = ply.q[ply.i];
     if (!f || !t || (ev.source !== f.contentWindow && !(f.ehIa && ev.data && ev.data.ehIa === f.ehIa))) return;
@@ -19339,7 +19356,7 @@ function cfgBody() {
             + ckRow('playerCover', 'Show cover', 'The playing track\'s cover before its title, when the player is in the top bar\nClick it: open the release')
             + ckRow('playerNo', 'Show playlist track number', 'The playing track\'s number in the playlist, before its title')
             + row('Left click', [['replace', 'Replace queue'], ['append', 'Add to queue']].map(([v, l]) => chip('playerClick', v, S.playerClick === v, l)).join(''), 'Right-click does the other action')
-            + row('Crossfade', [[0, 'Off'], [1, '1 s'], [2, '2 s'], [3, '3 s'], [5, '5 s'], [8, '8 s']].map(([n, l]) => chip('playerFade', n, S.playerFade === n, l)).join(''), 'Fades one track into the next\nSoundCloud and the Internet Archive start the next track without a fade')
+            + row('Crossfade', [[0, 'Off'], [1, '1 s'], [2, '2 s'], [3, '3 s'], [5, '5 s'], [8, '8 s']].map(([n, l]) => chip('playerFade', n, S.playerFade === n, l)).join(''), 'Fades one track into the next\nFrom one SoundCloud track into another, the next starts without a fade')
             + row('Sources', plyOrder().map(k => { const off = S.playerSrcOff.includes(k), i = plyOrder().filter(x => !S.playerSrcOff.includes(x)).indexOf(k); return `<button type="button" class="chip p" data-g="plySrc" data-k="${k}" aria-pressed="${!off}" data-tip="${off ? 'Not used' : i ? 'Tried ' + (i + 1) + (i === 1 ? 'nd' : i === 2 ? 'rd' : 'th') : 'Played first'}\nClick to ${off ? 'use' : 'turn off'}, drag to reorder">${icon({ key: k, name: PLY_NAME[k] }, 16)}${esc(PLY_NAME[k])}${off ? '' : `<span class="ord">${i + 1}</span>`}</button>`; }).join(''), 'Which source a track plays from, when it has several')
             + row('Collection playlist limit', [100, 500, 1000, 5000].map(n => chip('playerMax', n, S.playerMax === n, String(n))).join(''), 'Maximum tracks loaded into the playlist from a collection')
             + ckRow('playerLb', 'Show ListenBrainz menu items', 'Links in the player to the track and the release in ListenBrainz')
