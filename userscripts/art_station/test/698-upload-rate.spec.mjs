@@ -29,12 +29,17 @@ test('the commit window shows the live upload rate, then the average', { tag: ['
     const x = c.getContext('2d'), d = x.createImageData(700, 700);
     for (let i = 0; i < d.data.length; i++) d.data[i] = i % 4 === 3 ? 255 : Math.random() * 256;
     x.putImageData(d, 0, 0);
-    const file = new File([await new Promise(r => c.toBlob(r, 'image/png'))], 'rate-698.png', { type: 'image/png' });
-    const dt = new DataTransfer(); dt.items.add(file);
-    window.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt }));
-    return file.size;
+    window.__rate698 = new File([await new Promise(r => c.toBlob(r, 'image/png'))], 'rate-698.png', { type: 'image/png' });
+    return window.__rate698.size;
   });
-  check(await until(() => page.evaluate(() => !document.querySelector('.as-commit')?.disabled), Boolean), `fixture: a ${size} B file staged`);
+  // Art Station takes a drop only once the archive's listing is in, which can come after the gallery shows: a drop
+  // before that goes to MusicBrainz's own uploader and stages nothing, so drop again until the card is there
+  const staged = () => page.evaluate(() => !!document.querySelector('.as-card.new') && document.querySelector('.as-commit')?.disabled === false);
+  const ok = await until(async () => {
+    await page.evaluate(() => { const dt = new DataTransfer(); dt.items.add(window.__rate698); window.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt })); });
+    return until(staged, Boolean, { timeout: 3000 }).catch(() => false);
+  }, Boolean, { timeout: 30000 });
+  check(ok, `fixture: a ${size} B file staged`);
 
   const cdp = await context.newCDPSession(page);
   await cdp.send('Network.enable');
