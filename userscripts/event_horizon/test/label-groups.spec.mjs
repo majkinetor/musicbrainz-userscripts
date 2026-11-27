@@ -14,9 +14,17 @@ test('a missing group thumbnail recovers from its release cover', { tag: '@sandb
   const id = '00000000-0000-4000-8000-000000000001';
   const full = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>';
   await page.route(`https://coverartarchive.org/release-group/${id}/front*`, route => route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg"/>' }));
+  // the group has no listing either, at once: left to the real archive, its 404 could come after the release's
+  // cover and send the image on to the kind's mark
+  await page.route(`https://coverartarchive.org/release-group/${id}`, route => route.fulfill({ status: 404, headers: { 'access-control-allow-origin': '*' }, body: '' }));
   await page.route(`https://coverartarchive.org/release/${id}`, route => route.fulfill({ headers: { 'access-control-allow-origin': '*' }, json: { images: [{ front: true, image: full }] } }));
-  await img.evaluate((el, id) => { el.dataset.lbcovers = id; el.src = 'https://coverartarchive.org/release-group/00000000-0000-4000-8000-000000000001/front-250'; el.dispatchEvent(new Event('error')); el.dispatchEvent(new Event('error')); }, id);
-  const src = await until(() => page.locator('table.lbg img[data-lbcovers]').first().evaluateAll(xs => xs[0]?.getAttribute('src') || ''), value => value === full);
+  // the broken one is marked and read back by its mark: the table can render again meanwhile, and then the first
+  // image is a fresh one with its real cover. A render that drops the marked one gets it set up again.
+  const marked = page.locator('table.lbg img[data-lbtest]');
+  const src = await until(async () => {
+    if (!await marked.count()) await img.evaluate((el, id) => { el.dataset.lbtest = '1'; el.dataset.lbcovers = id; el.src = 'https://coverartarchive.org/release-group/00000000-0000-4000-8000-000000000001/front-250'; el.dispatchEvent(new Event('error')); }, id);
+    return marked.evaluateAll(xs => xs[0]?.getAttribute('src') || '');
+  }, value => value === full);
   check(src === full, 'full release cover replaces the missing group thumbnail: ' + src);
 });
 
