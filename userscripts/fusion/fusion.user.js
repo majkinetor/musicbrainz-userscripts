@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.27.195254
+// @version      2026.11.27.205856
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -5302,8 +5302,8 @@ function fsStyle() {
         + '.fs-relerr{color:var(--fs-red)}'
         + '.fs-gt{font-weight:700;font-size:12.5px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
         + '.fs-ghdr-grid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}'
-        + '.fs-ghl{display:flex;align-items:center;gap:8px;min-width:0}'
-        + '.fs-ghr{display:flex;align-items:center;gap:8px;justify-self:end;min-width:0}'
+        + '.fs-ghl{display:flex;align-items:center;gap:8px;min-width:200px}'   // a narrow card: the title keeps some room, the chips wrap instead
+        + '.fs-ghr{display:flex;align-items:center;gap:8px;justify-self:end;min-width:max-content}'   // the buttons never shrink under the chips
         + '.fs-gnum{width:20px;flex-shrink:0;text-align:right;font-weight:800;font-size:12px;color:var(--fs-muted);cursor:help}'
         + '.fs-sig span{box-sizing:border-box;min-width:64px;text-align:center}'   // a long label (Country/Date) widens its chip, never spills out of it
         + '.fs-tier-strict{border-left-color:var(--mbu-ok);background:rgba(28,155,99,.045)}'

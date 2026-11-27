@@ -9,8 +9,8 @@
 // FUSION_SRC=<old build> to watch it stay silent.
 import { test, check, requireLogin, mbJson, until, frames } from '../../../dev/test/harness.mjs';
 
-// The chip row is about 530px wide, so at 1500px it already reaches the length column, and at 1200px the
-// header overflows (the title collapses to 0, the chips run under the buttons): 1800 and 1500 keep the two cases apart.
+// The chip row is about 530px wide, so at 1500px it already reaches the length column: 1800 and 1500 keep the two
+// cases apart. At 1200px the chips wrap to a second line, and the title and the buttons keep their room.
 test.use({ viewport: { width: 1800, height: 1000 }, deviceScaleFactor: 2, gm: { name: 'Fusion' } });
 
 test('lengths outside tolerance warn in the chip, the badge, the row and the tooltip', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
@@ -89,12 +89,19 @@ test('lengths outside tolerance warn in the chip, the badge, the row and the too
   await page.evaluate(id => { window.__fusion.STATE.collapsedGroups.delete(id); window.__fusion.renderAll(); }, ids.g1);
 
   // a narrower window: the length column slides under the chips, so the badge must fall back
-  // beside the title rather than sit on the title, the chips or the buttons. (Much narrower —
-  // ~1200px — and the header itself overflows: the title track collapses to 0 and the buttons
-  // spill out of the card, with or without this badge. Nothing to assert there.)
+  // beside the title rather than sit on the title, the chips or the buttons
   await page.setViewportSize({ width: 1500, height: 1000 });
   await frames(page);   // ResizeObserver → rAF → placeLenBadges
   const gn = await geo();
   console.log('narrow    :', JSON.stringify(gn));
   check(gn && gn.inHdr && !gn.clash, `narrower window (1500px) → badge still clear of title/chips/buttons (col=${gn && gn.col})`);
+
+  // narrower still: the title keeps its room, and the chips wrap instead of running under the buttons
+  await page.setViewportSize({ width: 1200, height: 1000 });
+  await frames(page);
+  const gs = await geo(), r = gs && gs.rects, w = k => r[k][2] - r[k][0];
+  console.log('1200      :', JSON.stringify(gs));
+  check(gs && w('.fs-gt') >= 40, `1200px → the title still shows (${gs && w('.fs-gt')}px)`);
+  check(gs && r['.fs-sig'][2] <= r['.fs-ghr'][0] && r['.fs-ghr'][2] <= r['.fs-ghdr'][2], `…the chips end before the buttons, which stay in the card (${gs && JSON.stringify([r['.fs-sig'], r['.fs-ghr'], r['.fs-ghdr']])})`);
+  check(gs && gs.inHdr && !gs.clash, '…and the badge stays clear of them');
 });
