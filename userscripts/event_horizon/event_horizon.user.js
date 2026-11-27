@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.27.210914
+// @version      2026.11.27.211727
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -169,6 +169,9 @@ if (window.top !== window && (location.hostname === 'bandcamp.com' && location.p
             window.parent.postMessage({ ehPlyMedia: 'widget handlers: ' + ok.join(', ') + (failed.length ? '; failed: ' + failed.join(', ') : '') }, '*');
         } catch (e) { try { window.parent.postMessage({ ehPlyMedia: 'widget session failed: ' + e.message }, '*'); } catch (x) {} }
     };
+    // Apple's widget that starts writes mk-player-tsid to its storage, and every other Apple widget that sees the change
+    // pauses: a crossfade's old track stopped, or the new one. The change never reaches the widget's own code here.
+    if (APPLE) window.addEventListener('storage', ev => { if (ev.key === 'mk-player-tsid') ev.stopImmediatePropagation(); }, true);
     for (const k of ['play', 'pause', 'ended']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement) { if (k === 'play' && vol >= 0) ev.target.volume = vol; if (k === 'play' && restoring && !restoreReady) { if (restoreMute === null) restoreMute = ev.target.muted; ev.target.muted = true; } if (k === 'play') mediaSetup(); post(k, ev.target); } }, true);
     for (const k of ['playing', 'loadedmetadata']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement && vol >= 0 && Math.abs(ev.target.volume - vol) > 0.005) ev.target.volume = vol; }, true);
     document.addEventListener('timeupdate', ev => { if (ev.target instanceof HTMLMediaElement && Date.now() - last > 900) { last = Date.now(); post(ev.target.paused ? 'pause' : 'time', ev.target); } }, true);
