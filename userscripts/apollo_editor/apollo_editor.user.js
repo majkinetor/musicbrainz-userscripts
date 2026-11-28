@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.27
+// @version      2026.11.28
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -10876,10 +10876,22 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       while (Date.now() - t0 < 3000 && document.querySelectorAll('tr.track').length < want) await frame();
       await frame(); await frame();
     }
+    // An error in the add step (MB's rows, the re-render) used to end Apply silently: the new tracks
+    // stayed blank and the window open. Log it and go on; the writes below don't need the re-render.
+    let _applying = false;
     async function apply(which) {
+      if (_applying) return; _applying = true;
+      try { await applyNow(which); }
+      catch (e) { Log.cat('Tool').error('track parser: apply failed', e && e.stack || e); toast('⚠ Apply failed, see the log'); }
+      finally { _applying = false; }
+    }
+    async function applyNow(which) {
       const s = stats();
       if (which === 'all' && !s.locked) {
-        if (s.n > s.nT) { addTracks(curMi, s.n - s.nT); await newRowsMounted(); }
+        if (s.n > s.nT) {
+          try { addTracks(curMi, s.n - s.nT); } catch (e) { Log.cat('Tool').warn('track parser: adding tracks threw, going on', e && e.stack || e); }
+          await newRowsMounted();
+        }
         else if (s.n < s.nT) {
           for (let ti = s.nT - 1; ti >= s.n; ti--) removeTrack({ mi: curMi, ti, number: ti + 1 });
           Log.cat('Tool').info('track parser: removed', s.nT - s.n, 'track(s) from the end of medium', curMi + 1, 'to match', s.n, 'line(s)');
@@ -10888,7 +10900,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const nT = tracks().length; let wrote = 0;
       _selfEdit = true;   // #483: bulk-apply is our own write, and rebuild(true) below already does the one resync it needs
       try {
-        filled().forEach((r, i) => {
+        filled().forEach((r, i) => { try {
           if (i >= nT) return; const pr = parseRow(r); if (!pr) return;
           const entry = { mi: curMi, ti: i };
           if ((which === 'all' || which === 'title') && pr.title != null && pr.title !== '') setTitle(entry, pr.title);
@@ -10896,7 +10908,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           if ((which === 'all' || which === 'length') && pr.length && lpValid(pr.length)) setLength(entry, pr.length);
           if ((which === 'all' || which === 'pos') && pr.pos != null && pr.pos !== '') setNumber(entry, pr.pos);
           wrote++;
-        });
+        } catch (e) { Log.cat('Tool').warn('track parser: row', i + 1, 'failed', e && e.message); } });
       } finally { _selfEdit = false; }
       rebuild(true);
       tpPatKeep(_tpPattern);
