@@ -2,7 +2,7 @@ import { test, check, until } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Event Horizon' } });
 
-test('revoke an application inline and keep the profile navigation', { tag: '@sandbox' }, async ({ page, inject }) => {
+test('revoke an application inline and keep the profile navigation', { tag: ['@sandbox', '@flaky'] }, async ({ page, inject }) => {
   const name = 'EH revoke test ' + Date.now();
   await page.goto('https://test.musicbrainz.org/account/applications/register');
   await page.locator('[name="application.name"]').fill(name);
