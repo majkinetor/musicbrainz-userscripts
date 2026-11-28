@@ -17,7 +17,9 @@ const NETWORK = /fetch failed|ECONNRESET|ECONNREFUSED|ETIMEDOUT|ENOTFOUND|EAI_AG
 export function cause(error, annotations = []) {
   const noted = annotations.find(a => a.type === 'cause');
   if (noted && /^rate-limit/.test(noted.description || '')) return 'rate-limit';
-  const text = String(error || '');
+  // a report's error quotes the spec's code ("  18 |   …", "> 20 | …") and its stack: only the error
+  // itself counts, or a spec that fakes a 503 to test a retry reads as rate-limited (2026-11-28, ISRC Scout 607)
+  const text = String(error || '').split('\n').filter(l => !/^\s*>?\s*\d+\s*\|/.test(l) && !/^\s+at\s/.test(l)).join('\n');
   if (RATE_LIMIT.test(text)) return 'rate-limit';
   if (NETWORK.test(text)) return 'network';
   return 'test';

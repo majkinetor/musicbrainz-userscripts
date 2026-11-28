@@ -17,7 +17,8 @@ test('the button shows the real count once the dialog has loaded the release', {
     // asked before the replay: the page-load lookup is throttled
     before: () => answerGm(context, ({ url }) => (/\/ws\/2\/release\/[0-9a-f-]{36}\?/.test(url) && !opened ? { status: 503, body: '{"error": "Your requests are exceeding the allowable rate limit."}' } : null)),
   });
-  await page.waitForFunction(() => (b => b && !b.classList.contains('ii-loading'))(document.getElementById('ii-btn')), null, { timeout: 30000 });
+  // the gate gives up on the 503s after its growing holds: 29-45 s measured (2026-11-28), so 30 s failed most runs
+  await page.waitForFunction(() => (b => b && !b.classList.contains('ii-loading'))(document.getElementById('ii-btn')), null, { timeout: 90000 });
   const before = await page.evaluate(() => document.getElementById('ii-btn-status').textContent);
   check(before === '?', `the throttled page load leaves "?" (${before})`);
   opened = true;
