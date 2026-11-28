@@ -3621,9 +3621,7 @@
                   .map(x => x.replace(/&amp;/g, '&').replace(/([?&]f=)\d+/, '$15')))];
               if (rovi.length) return rovi.map((url, i) => ({ url, types: i ? [] : ['Front'] }));
               const og = ImageMaximizer.metaImage(html, u.href);
-              // a page without a cover shares the AllMusic logo; only a cover image counts
-              if (og && /\/release\/mr\d+\/|rovicorp\.com\//.test(og)) return [{ url: og, types: ['Front'] }];
-              throw new Error('AllMusic shows no cover for this album');
+              return og ? [{ url: og, types: ['Front'] }] : [];
           } },
           { id: 'amazon', name: 'Amazon', host: /(^|\.)amazon\.(com|ca|de|fr|it|es|nl|pl|se|in|sg|ae|sa|eg|cn|jp|co\.jp|co\.uk|com\.au|com\.br|com\.mx|com\.tr|com\.be)$/, async find(u) {
               const asin = (u.pathname.match(/\/(?:gp\/product|dp|albums|hz\/audible\/mlp\/mfpdp)\/([A-Z\d]{10})(?:[/?]|$)/i) || [])[1];
