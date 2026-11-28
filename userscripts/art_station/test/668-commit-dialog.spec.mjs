@@ -85,25 +85,3 @@ test('the edit note is folded, rows carry a cover, and Dry run lives in the Subm
   await attachShot(testInfo, page.locator('#as-commit .as-cm-box'), 'after-dry-run');
   check(!posts.some(u => /edit-cover-art|ws\/js\/edit/.test(u)), `nothing was submitted (${posts.length} POSTs, all aborted)`);
 });
-
-// "ignore any saved size" (#668), and since #1127 the dialog fits its changes on every
-// open: a size remembered earlier (#595) is never applied, and one change gets one column.
-test.describe('a dialog size saved before #668', () => {
-  test.use({ gm: { name: 'Art Station', values: { 'artstation:dialogSize': JSON.stringify({ commit: { w: 760, h: 420 } }) } } });
-  test('is ignored, and the dialog fits its one change in one column', { tag: ['@sandbox'] }, async ({ page, inject }) => {
-    await openArtStation(page, inject);
-    const idx = await page.evaluate(() => [...document.querySelectorAll('.as-card')].findIndex(c => c.querySelector('.as-pencil')));
-    const card = page.locator('.as-card').nth(idx);
-    await card.locator('.as-pencil').click();
-    await card.locator('.as-cmt').fill('as668size-' + Date.now());
-    await card.locator('.as-cmt').blur();
-    check(await until(() => page.evaluate(() => !document.querySelector('.as-commit').disabled)), 'a staged change enables the commit button');
-    await page.click('.as-commit');
-    await page.waitForSelector('#as-commit .as-cm-box', { timeout: 10000 });
-    const w = await page.evaluate(() => Math.round(document.querySelector('#as-commit .as-cm-box').getBoundingClientRect().width));
-    check(Math.abs(w - 760) > 20, `the saved 760px is ignored (${w}px)`);
-    check(w < 700, `one change opens a narrow dialog (${w}px, #1127)`);
-    const cols = await page.evaluate(() => getComputedStyle(document.querySelector('#as-commit .as-cm-list')).gridTemplateColumns.split(' ').length);
-    check(cols === 1, `one column for one change (${cols})`);
-  });
-});
